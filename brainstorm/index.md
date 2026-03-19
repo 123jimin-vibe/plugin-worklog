@@ -23,9 +23,13 @@ This would make the following practices obsolete:
 - Task tracking (such as [beads](https://github.com/steveyegge/beads)).
 - Context management.
 
-### Onboarding
+### Direct Consequences of Imperfectness
 
-### Agent Context
+However, a *real* AI agent neither has infinite context window nor prefect context retention.
+
+### Problems under Idealistic Workflow
+
+On the other hand, there are a few issues that may happen even with perfect context.
 
 --------
 
