@@ -26,10 +26,19 @@ This would make the following practices obsolete:
 ### Direct Consequences of Imperfectness
 
 However, a *real* AI agent neither has infinite context window nor prefect context retention.
+"Token economy" has to be taken into account when building context, results in following side-effects.
+
+- Loss of continuity.
+- No "learning from failures".
+- Violation of DRY.
+  - Re-implementing existing features, especially when it's something "trivial" to be documented.
+- Failure to take care of relevant code and/or documentation.
 
 ### Problems under Idealistic Workflow
 
 On the other hand, there are a few issues that may happen even with perfect context.
+
+- "Leakage" of implementation into tests.
 
 --------
 
