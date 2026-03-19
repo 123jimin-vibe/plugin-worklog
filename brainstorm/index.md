@@ -1,5 +1,29 @@
 # Worklog
 
+## Motivation
+
+### "Idealistic" AI Agent Workflow
+
+Let's assume that an AI agent has *infinite context window* with *perfect context retention*.
+
+1. Human describes what they want in natural language.
+2. Agent is fed with following resources:
+    - Contents of every file in the project.
+    - Knowledge base, including documentation for the project and dependencies, relevant articles, ...
+    - All history, including every prior decisions and mistakes.
+3. Agent writes code. Agent remembers.
+4. Human reviews, give feedback. Agent remembers.
+5. Next session: agent picks up exactly where it left off, as if it's been working on a second ago.
+6. Agent exactly knows what's done, what's pending, what's tried and failed, what's decided and why.
+
+This would make the following practices obsolete:
+
+### Onboarding
+
+### Agent Context
+
+--------
+
 ## Ideas
 
 - Manage bug and work tracking in-repo.
