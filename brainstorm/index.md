@@ -29,7 +29,8 @@ However, a *real* AI agent neither has infinite context window nor prefect conte
 "Token economy" has to be taken into account when building context, results in following side-effects.
 
 - Loss of continuity.
-- No "learning from failures".
+  - No "learning from failures".
+  - Existing counter-measures (`CLAUDE.md`, `AGENTS.md`) [don't work well](./resource/context-file-effectiveness.md).
 - Violation of DRY.
   - Re-implementing existing features, especially when it's something "trivial" to be documented.
 - Failure to take care of relevant code and/or documentation.
@@ -39,6 +40,10 @@ However, a *real* AI agent neither has infinite context window nor prefect conte
 On the other hand, there are a few issues that may happen even with perfect context.
 
 - "Leakage" of implementation into tests.
+- Strategic judgment failures.
+  - No abort/continue calibration.
+  - Blindness to tech debt (future cost-of-change).
+  - Defaults to append *only* instead of occasional refactor.
 
 --------
 
