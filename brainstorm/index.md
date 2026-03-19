@@ -18,6 +18,11 @@ Let's assume that an AI agent has *infinite context window* with *perfect contex
 
 This would make the following practices obsolete:
 
+- `AGENTS.md` and `CLAUDE.md` to prevent agents from committing common mistakes.
+- Design documentations: context likely contains all necessary information for design.
+- Task tracking (such as [beads](https://github.com/steveyegge/beads)).
+- Context management.
+
 ### Onboarding
 
 ### Agent Context
