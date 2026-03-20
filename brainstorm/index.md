@@ -2,6 +2,26 @@
 
 ## Motivation
 
+### Goals of Software Architecture
+
+These are not specific to AI Agent programming.
+
+- Software development is typically classified in 5 stages:
+  1. Requirements
+  2. Architecture Design
+  3. Detail Design
+  4. Implementation
+  5. QA / Testing
+- Broadly speaking, there are two classes of lifecycle models:
+  - Sequential (Waterfall)
+  - Iterative (Agile, XP, ...)
+  - For software development, iterative methods are usually better.
+- Requirements are rarely fixed.
+  - Frequent modifications based on changing requirements is common.
+    - Even with much consideration, one understands their project better as it's being implemented, and this process, one learns which requirements are required for the project.
+  - Premature design decisions become more costly.
+- Cost of fixing bugs is lowest when caught at the earliest stage possible.
+
 ### "Idealistic" AI Agent Workflow
 
 Let's assume that an AI agent has *infinite context window* with *perfect context retention*.
@@ -46,7 +66,11 @@ On the other hand, there are a few issues that may happen even with perfect cont
   - Blindness to tech debt (future cost-of-change).
   - Defaults to append *only* instead of occasional refactor.
 
-## Key Ideas
+## Goals
+
+The goal of this plugin is to provide...
+
+## Ideas
 
 --------
 
