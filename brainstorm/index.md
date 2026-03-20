@@ -1,132 +1,152 @@
 # Worklog
 
-This directory is a **brainstorm** for a plugin that enforces software development methodology on AI agents. It starts with problem analysis and requirement gathering; design decisions and plans may follow once the reasoning justifies them.
+Brainstorm for a plugin that enforces software development methodology on AI agents. Starts with problem analysis and requirement gathering; design decisions follow once reasoning justifies them.
 
-- `resource/` — external references (research papers, prior art surveys, paradigm evaluations). Raw material, not conclusions. In particular, the previous revision of the worklog (`worklog-skill-v1.md`) and paradigm evaluations (`development-paradigms.md`) are prior attempts and analyses — not authoritative. Their ideas must be independently justified before adoption. Empirical findings (e.g. `context-file-effectiveness.md`) can be treated as evidence.
-- `pitfalls.md` — catalog of known AI agent failure modes relevant to this plugin.
-- `case-study-bfc.md` — observations from a project that used the previous version of the worklog system.
-- `expr-spec-structure.md` — evaluation of approaches for representing project specs (in-source docgen, per-directory README, flat/hierarchical separate directory, wiki-style, ADRs, etc.), with simulations against bfc.
+- `resource/` — external references (research papers, prior art, paradigm evaluations). Raw material, not conclusions.
+  - `worklog-skill-v1.md` and `development-paradigms.md` are prior attempts — not authoritative. Ideas from them require independent justification before adoption.
+  - Empirical findings (e.g. `context-file-effectiveness.md`) can be treated as evidence.
+- `pitfalls.md` — catalog of AI agent failure modes relevant to this plugin.
+- `case-study-bfc.md` — observations from a project that used the previous worklog system.
+- `expr-spec-structure.md` — evaluation of spec representation approaches (in-source docgen, per-directory README, flat/hierarchical separate directory, wiki-style, ADRs, etc.), with simulations against bfc.
 - `expr-documentation.md` — documentation structure (TODO).
 
 ## Motivation
 
 ### Goals of Software Architecture
 
-These well-known observations are not specific to AI Agent programming.
+These observations are general to software engineering, not specific to AI agents.
 
-- Small toy-project and large project **can't be developed using the same methodology**.
-  - LEGO house vs. a mile-high skyscraper.
-- Software development is typically classified in 5 stages:
+- Small and large projects **require different methodologies**.
+  - LEGO house vs. mile-high skyscraper.
+- Software development stages:
   1. Requirements
   2. Architecture Design
   3. Detail Design
   4. Implementation
   5. QA / Testing
-- Broadly speaking, there are two classes of lifecycle models:
+- Two classes of lifecycle models:
   - Sequential (Waterfall)
   - Iterative (Agile, XP, ...)
-  - For software development, iterative methods are usually better.
-  - Fixed requirements is best-case scenario, but rarely achievable in practice.
-    - Frequent modifications based on changing requirements is common.
-    - This makes premature design decisions more costly.
-    - One also discovers true requirements through the act of implementation itself.
-- Cost of fixing bugs is lowest when caught at the earliest stage possible.
+  - Iterative is usually superior for software.
+  - Fixed requirements are ideal but rare in practice.
+    - Requirements change frequently.
+    - Premature design decisions become costly under change.
+    - True requirements are often discovered through implementation.
+- Bug fix cost is lowest when caught at the earliest stage.
 
-Those observation imply principles on software architecture design:
+These observations imply the following architectural principles:
 
-Requirements must be explicit, and must capture *intent*:
+Requirements must be explicit and capture *intent*:
 
-- Focus on *what* and *why*, but not *how*.
-- Prefer "XX is problematic" but not "YY needs to be improved/implemented for XX".
-- Must be written in a way that avoids programming-related aspects.
-  - Exception: problem domain itself is relevant to programming.
+- Focus on *what* and *why*, not *how*.
+- Prefer "XX is problematic" over "YY needs to be improved/implemented for XX".
+- Avoid programming-specific framing.
+  - Exception: the problem domain itself is programming-related.
 
-Architecture should be optimized for *localizing changes on changing requirements*:
+Architecture should *localize the impact of changing requirements*:
 
-- Reasons behind decisions should be specified.
+- Record reasons behind decisions.
 - A requirement change should touch as few components as possible.
-- Define *building blocks*, where:
-  - Responsibilities are clearly defined.
-  - Dependency to other building blocks should be kept at minimum.
-  - Communication between blocks should be clearly defined, including endorsement or prohibition on dependence relationship.
-- *Business constraints* should be clearly specified, including its effect on the architecture.
-- Changing UI (CLI/GUI/webpage/...) should be easily done.
-- Should specify required amount of *robustness*, which also serves as a guide that prevents *over-engineering robustness*.
-- Should specify expected requirement changes with strategy to execute them.
-- Should be *simple*.
-  - Should feel "natural and easy".
-  - Largely independent (but still non-ignorable) from execution environment and programming langauge.
-  - Should exclude unnecessary features.
-- Should explicitly specify *dangers*.
+- Define *building blocks* with:
+  - Clearly defined responsibilities.
+  - Minimal dependencies on other blocks.
+  - Explicitly declared allowed and forbidden inter-block dependencies.
+- Clearly specify *business constraints* and their architectural effects.
+- UI layer (CLI/GUI/webpage/...) should be easily replaceable.
+- Specify required *robustness* level — this also prevents over-engineering robustness.
+- Specify anticipated requirement changes and strategies for handling them.
+- Be *simple*.
+  - Feel "natural and easy".
+  - Largely independent from (but still aware of) execution environment and programming language.
+  - Exclude unnecessary features.
+- Explicitly specify *dangers*.
 
-Detail design should be derived from and consistent with the architecture:
+Detail design should derive from and be consistent with the architecture:
 
 - Minimal complexity.
-  - Avoid "clever" solutions, prefer "simple" solutions that are easy to understand.
-  - Always find opportunity to *remove* features that are not relevant to the scope of the project.
+  - Prefer "simple and obvious" over "clever".
+  - Actively remove features outside the project's scope.
 - Ease of maintenance.
-- Loose connection.
+- Loose coupling.
 - Extensibility and reusability.
-- Components: high fan-in (used by many) and low fan-out (depends on few).
+- Components: high fan-in (used by many), low fan-out (depends on few).
 
 ### "Idealistic" AI Agent Workflow
 
-Let's assume that an AI agent has *infinite context window* with *perfect context retention*.
+Assume an AI agent with *infinite context window* and *perfect context retention*.
 
 1. Human describes what they want in natural language.
-2. Agent is fed with following resources:
-    - Contents of every file in the project.
-    - Knowledge base, including documentation for the project and dependencies, relevant articles, ...
-    - All history, including every prior decisions and mistakes.
-3. Agent writes code. Agent remembers.
-4. Human reviews, give feedback. Agent remembers.
-5. Next session: agent picks up exactly where it left off, as if it's been working on a second ago.
-6. Agent exactly knows what's done, what's pending, what's tried and failed, what's decided and why.
+2. Agent receives:
+    - Every file in the project.
+    - Knowledge base: project docs, dependency docs, relevant articles.
+    - Full history: every prior decision and mistake.
+3. Agent writes code. Remembers everything.
+4. Human reviews and gives feedback. Agent remembers.
+5. Next session: agent resumes exactly where it left off.
+6. Agent knows precisely what's done, what's pending, what failed, what was decided and why.
 
-This would make the following practices obsolete:
+This would make the following obsolete:
 
-- `AGENTS.md` and `CLAUDE.md` to prevent agents from committing common mistakes.
-- Design documentations: context likely contains all necessary information for design.
-- Task tracking (such as [beads](https://github.com/steveyegge/beads)).
+- `AGENTS.md` / `CLAUDE.md` for preventing repeated mistakes.
+- Design documentation: context already contains all necessary information.
+- Task tracking (e.g. [beads](https://github.com/steveyegge/beads)).
 - Context management.
 
 ### Direct Consequences of Imperfectness
 
-However, a *real* AI agent neither has infinite context window nor prefect context retention.
-"Token economy" has to be taken into account when building context, results in following side-effects.
+A real AI agent has neither infinite context nor perfect retention. Token economy constrains context construction, causing:
 
 - Loss of continuity.
-  - Have to onboard each time.
-  - No "learning from failures".
-  - Existing counter-measures (`CLAUDE.md`, `AGENTS.md`) [don't work well](./resource/context-file-effectiveness.md).
-- Violation of DRY.
-  - Re-implementing existing features, especially when it's something "trivial" to be documented.
-- Failure to take care of relevant code and/or documentation.
+  - Must re-onboard each session.
+  - No learning from failures.
+  - Existing mitigations (`CLAUDE.md`, `AGENTS.md`) [are ineffective](./resource/context-file-effectiveness.md).
+- DRY violations.
+  - Re-implementing existing features — especially those too trivial to have been documented, so the agent never discovers them.
+- Failing to update related code and documentation.
 
 ### Problems under Idealistic Workflow
 
-On the other hand, there are a few issues that may happen even with perfect context.
+Issues that persist even with perfect context:
 
-- "Leakage" of implementation into tests.
-- Strategic judgment failures.
+- Implementation leaking into tests.
+- Strategic judgment failures:
   - No abort/continue calibration.
   - Blindness to tech debt (future cost-of-change).
-  - Defaults to append *only* instead of occasional refactor.
+  - Append-only bias instead of occasional refactoring.
 
 ## Goals
 
-The **meta-goal** of this plugin is to make using AI agents for large, real-world projects to be usable while remaining to be **reliable** even with minimal (but present) human supervision.
+**Meta-goal:** make AI agents usable and **reliable** for large, real-world projects, even under minimal human supervision.
 
-The goal of this plugin is to provide and enforce domain and language-agnostic software development methodology to AI agents.
+**Goal:** provide and enforce domain- and language-agnostic software development methodology for AI agents.
 
-This revision aims to be **empirical**: methods must be validated through real-world usage before being considered effective. TDD is assumed as a baseline correct method; other methods require testing to justify adoption.
+**Empirical stance:** methods must be validated through real-world usage before being considered effective. TDD is assumed as a baseline; other methods require empirical justification.
 
-Performance of knowledge base operations is not a concern at this stage — linear scan over specs/plans/tasks is acceptable. Optimize for correctness of methodology first; performance can be addressed later if needed.
+**Non-goal (for now):** performance of knowledge base operations. Linear scan over specs/plans/tasks is acceptable. Correctness of methodology comes first.
 
 ## Method (Plan)
 
-- Information (TBD) stored in forms of Markdown with TOML frontmatter.
-  - In-repo Python files (don't forget `.gitignore`) for managing information (like worklog v1).
-  - Maybe use <https://github.com/steveyegge/beads>, but I prefer simplicity now.
+- Information (TBD) stored as Markdown with TOML frontmatter.
+  - In-repo Python scripts for managing data (as in worklog v1). Must `.gitignore`.
+  - Consider <https://github.com/steveyegge/beads>; prefer simplicity for now.
+
+Scratch directory structure for `/worklog/`:
+
+- `/worklog/spec/**/s0000-spec-name.md`
+  - **Authoritative architectural specification** of a component.
+  - Source components (file/class/function/...) tagged with `@worklog s0000` comments.
+    - Bikeshedding: exact comment form.
+  - Important: nested folders or frontmatter for categorization?
+  - Bikeshedding: include `s0000-` prefix in filename?
+- `/worklog/task/t0000-task-name.md`
+  - A unit of work to be implemented.
+  - Bikeshedding: where to put completed tasks?
+  - Bikeshedding: `task`, `job`, or `work`?
+
+Unanswered questions:
+
+- How to store ADRs?
+- How to represent **incomplete specs**?
+  - Treating plans and specs as entirely separate seems inadequate.
 
 ## Method (Concrete)
