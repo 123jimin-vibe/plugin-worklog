@@ -146,21 +146,27 @@ Scratch directory structure for `/worklog/`:
   - Bikeshedding: where to put completed tasks?
   - Bikeshedding: `task`, `job`, or `work`?
 
+TODO:
+
+- Onboarding
+- Decision Records
+- Relationships Between Specs
+  - Cross-cutting specs (e.g. logging conventions, error handling policy)
+- Specifying Dangers
+- Anticipated Changes
+- Test <-> Spec Traceability
+- Agent Workflow
+  - Task lifecycle (creation → implementation → completion)
+  - Enforcement mechanisms (hooks, workflow gates, self-validation, ...)
+
 Unanswered questions:
 
-- How to store ADRs?
 - How to represent **incomplete specs**?
   - Treating plans and specs as entirely separate seems inadequate.
-- Which hooks to add for enforcement?
 - How should specs evolve? (Versioning? Diff history? Or rely on git history alone?)
-- What is the task lifecycle? (Creation → implementation → completion workflow.)
-  - What enforcement mechanisms follow from this? (Workflow gates, self-validation, mandatory spec-first, etc.)
 - Can a task exist without a corresponding spec?
   - Likely yes for "chore" tasks (e.g. fix typos throughout codebase).
 - Can a task create a spec?
-- Where do cross-cutting specs (e.g. logging conventions, error handling policy) belong?
-  - These are specs not localized to a single building block.
-  - Bikeshedding: "common" / "util" / "infrastructure" / ... component?
 - What constitutes empirical validation of a method?
   - Indicator (not metric): natural average LoC per file, average LoC and files edited per commit.
   - Optimizing or prompting agents on these indicators is forbidden — optimizing a metric induces reward-hacking.
