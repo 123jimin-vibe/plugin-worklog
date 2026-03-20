@@ -124,7 +124,7 @@ Issues that persist even with perfect context:
 
 **Non-goal (for now):** performance of knowledge base operations. Linear scan over specs/plans/tasks is acceptable. Correctness of methodology comes first.
 
-## Method (Plan)
+## Design Sketch
 
 - Information (TBD) stored as Markdown with TOML frontmatter.
   - In-repo Python scripts for managing data (as in worklog v1). Must `.gitignore`.
@@ -134,6 +134,9 @@ Scratch directory structure for `/worklog/`:
 
 - `/worklog/spec/**/s0000-spec-name.md`
   - **Authoritative architectural specification** of a component.
+    - All tests MUST be derived from specs, and MUST be written BEFORE spec is implemented.
+    - If specs contradict with docs/tests/impls, spec takes priority.
+      - If a clear mistake is suspected, agents MUST ask user and MUST NOT silently fix specs.
   - Source components (file/class/function/...) tagged with `@worklog s0000` comments.
     - Bikeshedding: exact comment form.
   - Important: nested folders or frontmatter for categorization?
@@ -148,5 +151,16 @@ Unanswered questions:
 - How to store ADRs?
 - How to represent **incomplete specs**?
   - Treating plans and specs as entirely separate seems inadequate.
-
-## Method (Concrete)
+- Which hooks to add for enforcement?
+- How should specs evolve? (Versioning? Diff history? Or rely on git history alone?)
+- What is the task lifecycle? (Creation → implementation → completion workflow.)
+  - What enforcement mechanisms follow from this? (Workflow gates, self-validation, mandatory spec-first, etc.)
+- Can a task exist without a corresponding spec?
+  - Likely yes for "chore" tasks (e.g. fix typos throughout codebase).
+- Can a task create a spec?
+- Where do cross-cutting specs (e.g. logging conventions, error handling policy) belong?
+  - These are specs not localized to a single building block.
+  - Bikeshedding: "common" / "util" / "infrastructure" / ... component?
+- What constitutes empirical validation of a method?
+  - Indicator (not metric): natural average LoC per file, average LoC and files edited per commit.
+  - Optimizing or prompting agents on these indicators is forbidden — optimizing a metric induces reward-hacking.
