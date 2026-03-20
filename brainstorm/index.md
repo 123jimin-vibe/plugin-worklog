@@ -158,6 +158,23 @@ TODO:
 - Agent Workflow
   - Task lifecycle (creation → implementation → completion)
   - Enforcement mechanisms (hooks, workflow gates, self-validation, ...)
+  - Trigger-based rules vs. reference documents (agents don't re-read reference docs on every action; triggers fire at action time)
+- Spec Content Guidance
+  - What goes inside a spec? Observable behavior vs. implementation details.
+  - Over-specification resistance: agents default to API signatures and field names, not behavior.
+- Schema Enforcement
+  - Canonical frontmatter schema definition.
+  - Validation mechanism (bfc showed schema inconsistency creeping in without enforcement).
+- Task Types
+  - Investigation/research tasks (bfc t0007: started as research, not implementation).
+  - Chore tasks (no spec relationship).
+  - Implementation tasks (spec-linked).
+- Task Sizing
+  - bfc evidence: successful tasks completable in a single session.
+  - The one large task that worked had an unusually detailed plan.
+- Context Budget
+  - How much of the worklog should an agent load per session?
+  - Avoid "document-directed exploration" trap (context-file-effectiveness.md).
 
 Unanswered questions:
 
@@ -170,3 +187,15 @@ Unanswered questions:
 - What constitutes empirical validation of a method?
   - Indicator (not metric): natural average LoC per file, average LoC and files edited per commit.
   - Optimizing or prompting agents on these indicators is forbidden — optimizing a metric induces reward-hacking.
+- Is the plan tier intentionally removed or deferred?
+  - v1 had spec/plan/task; current sketch has spec/task only.
+  - The spec/plan boundary was problematic in practice (pitfalls.md, case-study-bfc.md).
+- Source code markers (`@worklog`): keep, automate, or drop?
+  - bfc evidence: 1 of ~40 files adopted them. Manual maintenance failed.
+  - Viable only if fully automated.
+- Multi-agent coordination: in scope?
+  - Concurrent agents may conflict on spec/task modifications.
+  - Sub-agents lose parent context; no inter-agent communication channel.
+- Agent-agnosticism: methodology vs. implementation boundary?
+  - Methodology is domain- and language-agnostic; first implementation is a Claude Code skill.
+  - Should the methodology be portable across agents (Claude Code, Codex, Copilot)?
