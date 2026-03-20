@@ -1,7 +1,10 @@
 # Worklog
 
-- `resource/`
-- `pitfalls.md`
+This directory is a **brainstorm** for a plugin that enforces software development methodology on AI agents. It starts with problem analysis and requirement gathering; design decisions and plans may follow once the reasoning justifies them.
+
+- `resource/` — external references (research papers, prior art surveys, paradigm evaluations). Raw material, not conclusions. In particular, the previous revision of the worklog (`worklog-skill-v1.md`) and paradigm evaluations (`development-paradigms.md`) are prior attempts and analyses — not authoritative. Their ideas must be independently justified before adoption. Empirical findings (e.g. `context-file-effectiveness.md`) can be treated as evidence.
+- `pitfalls.md` — catalog of known AI agent failure modes relevant to this plugin.
+- `case-study-bfc.md` — observations from a project that used the previous version of the worklog system.
 
 ## Motivation
 
@@ -115,5 +118,9 @@ The **meta-goal** of this plugin is to make using AI agents for large, real-worl
 The goal of this plugin is to provide and enforce domain and language-agnostic software development methodology to AI agents.
 
 ## Method (Plan)
+
+- Information (TBD) stored in forms of Markdown with TOML frontmatter.
+  - In-repo Python files (don't forget `.gitignore`) for managing information (like worklog v1).
+  - Maybe use <https://github.com/steveyegge/beads>, but I prefer simplicity now.
 
 ## Method (Concrete)
