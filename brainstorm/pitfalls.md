@@ -10,20 +10,66 @@ This file documents pitfalls for AI agents:
 
 ### Context and Memory
 
-- Lack of **Theory of Mind**
-- Unable to **Learn from Previous Failures**
-- No **Self Consistency** across Sessions
+- **Lack of Theory of Mind**
+  - Cannot adopt a clean-reader perspective, even when explicitly instructed.
+  - Manual progress exports (e.g. to `.md`) implicitly assume the reader shares the author's full context — they never do.
+- **Unable to Learn from Previous Failures**
+  - Same mistakes recur across sessions.
+  - History is ephemeral and agent-local; not serializable or shareable.
+- **No Self-Consistency across Sessions**
+  - Cross-session document drift: agents generate/edit documents that contradict earlier artifacts from previous sessions.
+  - No self-consistency verification across the corpus of agent-produced content.
+
+### Context Economy
+
+- **Context Files Are Counterproductive** ([reference](./resource/context-file-effectiveness.md))
+  - LLM-generated context files (AGENTS.md, CLAUDE.md) *reduce* success rates by ~3% while increasing cost >20%.
+  - Developer-written context files barely help (+4%).
+  - Context files add unnecessary requirements that agents faithfully follow — even when those requirements make the task harder (style guides, architecture overviews, testing mandates).
+  - Agents explore *document-directed* instead of *task-directed* when context files are present, burning tokens on orthogonal concerns.
+  - Valuable context is already embedded in well-engineered codebases (types, tests, linter configs, directory structure) — AGENTS.md is the *worst* delivery mechanism for every kind of context it typically contains.
 
 ### Strategic Judgment
 
 - **No Abort/Continue Calibration**
   - Spirals into "easy-to-do" rewrites instead of revising architectures.
   - Bails prematurely when a task is more complex than expected.
+  - No effort-vs-value estimation.
 - **Append-Only Bias**
   - Does not try to reuse existing code, nor to factor out common occurrences.
   - Does not remove dead code or consolidate duplicates.
+  - Resulting file bloat compounds context problems over time.
 - **Blindness to Tech Debt**
   - Optimizes for **"works now" over "easy to change later"**.
+  - Cannot recognize when creating debt or when existing debt makes the task disproportionately expensive.
+  - No model of change frequency — treats throwaway scripts and core domain modules with identical care.
+- **Poor Change Locality**
+  - Code satisfies the immediate task but doesn't organize for future edits.
+- **No Refactoring Judgment**
+  - Does not initiate refactoring; can't distinguish messy-but-stable code (ugly but rarely touched — low ROI to clean up) from messy-and-hot code (ugly *and* frequently modified — high ROI to clean up because every future change pays the mess tax).
+
+### Codebase Awareness
+
+- **Reinvention of Existing Code**
+  - Struggles with external and internal libraries: reinvents logic that already exists in dependencies or elsewhere in the repo.
+  - Especially prevalent for "trivial" utilities that are too small to document but too useful to duplicate.
+
+### Multi-Agent Coordination
+
+- **Sub-agents Lose Parent Context**
+  - When spawning sub-agents, the parent's full context is not transferred.
+- **No Inter-Agent Communication**
+  - No shared state or communication channel between concurrent agents working on the same repo.
+- **No Self-Awareness for Orchestration**
+  - Agents lack awareness of their role, scope, and dependencies relative to other agents.
+
+### Safety and Security
+
+- **Quiet Antipatterns in Generated Code**
+  - Security: SQL injection, XSS, insecure defaults.
+  - Performance: N+1 queries, unbounded allocations.
+  - Reliability: bare catch, no backoff on retries.
+  - Agents know the correct patterns when asked, but satisfying the immediate task drowns out defensive concerns.
 
 ## Limitations on using TDD/DDD
 
@@ -38,6 +84,9 @@ This file documents pitfalls for AI agents:
   - They even miss "common and realistic" bad-path cases.
 - **Test Biased Towards Implementation**
   - Even if implementation clearly does not match intended behavior, agents write tests that pass the existing implementation.
+- **Implementation-Coupled Tests**
+  - Tests mirror implementation structure (mock arrangements, call order) rather than observable behavior.
+  - Creates a ratchet that punishes refactoring — changing internals breaks tests even when behavior is preserved.
 - **No Test Decomposition**
   - Tests become hundreds or thousands of lines, even when separation by domain is possible.
 - **Hierarchy Confusion**
