@@ -4,8 +4,10 @@
 
 ### Goals of Software Architecture
 
-These are not specific to AI Agent programming.
+These well-known observations are not specific to AI Agent programming.
 
+- Small toy-project and large project **can't be developed using the same methodology**.
+  - LEGO house vs. a mile-high skyscraper.
 - Software development is typically classified in 5 stages:
   1. Requirements
   2. Architecture Design
@@ -16,11 +18,48 @@ These are not specific to AI Agent programming.
   - Sequential (Waterfall)
   - Iterative (Agile, XP, ...)
   - For software development, iterative methods are usually better.
-- Requirements are rarely fixed.
-  - Frequent modifications based on changing requirements is common.
-    - Even with much consideration, one understands their project better as it's being implemented, and this process, one learns which requirements are required for the project.
-  - Premature design decisions become more costly.
+  - Fixed requirements is best-case scenario, but rarely achievable in practice.
+    - Frequent modifications based on changing requirements is common.
+    - This makes premature design decisions more costly.
+    - One also discovers true requirements through the act of implementation itself.
 - Cost of fixing bugs is lowest when caught at the earliest stage possible.
+
+Those observation imply principles on software architecture design:
+
+Requirements must be explicit, and must capture *intent*:
+
+- Focus on *what* and *why*, but not *how*.
+- Prefer "XX is problematic" but not "YY needs to be improved/implemented for XX".
+- Must be written in a way that avoids programming-related aspects.
+  - Exception: problem domain itself is relevant to programming.
+
+Architecture should be optimized for *localizing changes on changing requirements*:
+
+- Reasons behind decisions should be specified.
+- A requirement change should touch as few components as possible.
+- Define *building blocks*, where:
+  - Responsibilities are clearly defined.
+  - Dependency to other building blocks should be kept at minimum.
+  - Communication between blocks should be clearly defined, including endorsement or prohibition on dependence relationship.
+- *Business constraints* should be clearly specified, including its effect on the architecture.
+- Changing UI (CLI/GUI/webpage/...) should be easily done.
+- Should specify required amount of *robustness*, which also serves as a guide that prevents *over-engineering robustness*.
+- Should specify expected requirement changes with strategy to execute them.
+- Should be *simple*.
+  - Should feel "natural and easy".
+  - Largely independent (but still non-ignorable) from execution environment and programming langauge.
+  - Should exclude unnecessary features.
+- Should explicitly specify *dangers*.
+
+Detail design should be derived from and consistent with the architecture:
+
+- Minimal complexity.
+  - Avoid "clever" solutions, prefer "simple" solutions that are easy to understand.
+  - Always find opportunity to *remove* features that are not relevant to the scope of the project.
+- Ease of maintenance.
+- Loose connection.
+- Extensibility and reusability.
+- Components: high fan-in (used by many) and low fan-out (depends on few).
 
 ### "Idealistic" AI Agent Workflow
 
@@ -74,7 +113,7 @@ The goal of this plugin is to provide...
 
 --------
 
-<!-- Draft -->
+<!-- Related but discussion points may not align with the new version above. -->
 
 ## Ideas
 
