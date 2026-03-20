@@ -6,6 +6,7 @@ This directory is a **brainstorm** for a plugin that enforces software developme
 - `pitfalls.md` — catalog of known AI agent failure modes relevant to this plugin.
 - `case-study-bfc.md` — observations from a project that used the previous version of the worklog system.
 - `expr-spec-structure.md` — evaluation of approaches for representing project specs (in-source docgen, per-directory README, flat/hierarchical separate directory, wiki-style, ADRs, etc.), with simulations against bfc.
+- `expr-documentation.md` — documentation structure (TODO).
 
 ## Motivation
 
