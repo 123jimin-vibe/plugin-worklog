@@ -5,6 +5,7 @@ This directory is a **brainstorm** for a plugin that enforces software developme
 - `resource/` — external references (research papers, prior art surveys, paradigm evaluations). Raw material, not conclusions. In particular, the previous revision of the worklog (`worklog-skill-v1.md`) and paradigm evaluations (`development-paradigms.md`) are prior attempts and analyses — not authoritative. Their ideas must be independently justified before adoption. Empirical findings (e.g. `context-file-effectiveness.md`) can be treated as evidence.
 - `pitfalls.md` — catalog of known AI agent failure modes relevant to this plugin.
 - `case-study-bfc.md` — observations from a project that used the previous version of the worklog system.
+- `expr-spec-structure.md` — evaluation of approaches for representing project specs (in-source docgen, per-directory README, flat/hierarchical separate directory, wiki-style, ADRs, etc.), with simulations against bfc.
 
 ## Motivation
 
