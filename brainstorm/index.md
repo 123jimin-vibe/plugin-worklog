@@ -117,6 +117,8 @@ The **meta-goal** of this plugin is to make using AI agents for large, real-worl
 
 The goal of this plugin is to provide and enforce domain and language-agnostic software development methodology to AI agents.
 
+This revision aims to be **empirical**: methods must be validated through real-world usage before being considered effective. TDD is assumed as a baseline correct method; other methods require testing to justify adoption.
+
 ## Method (Plan)
 
 - Information (TBD) stored in forms of Markdown with TOML frontmatter.
