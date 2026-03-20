@@ -120,6 +120,8 @@ The goal of this plugin is to provide and enforce domain and language-agnostic s
 
 This revision aims to be **empirical**: methods must be validated through real-world usage before being considered effective. TDD is assumed as a baseline correct method; other methods require testing to justify adoption.
 
+Performance of knowledge base operations is not a concern at this stage — linear scan over specs/plans/tasks is acceptable. Optimize for correctness of methodology first; performance can be addressed later if needed.
+
 ## Method (Plan)
 
 - Information (TBD) stored in forms of Markdown with TOML frontmatter.
