@@ -145,6 +145,12 @@ Scratch directory structure for `/worklog/`:
   - A unit of work to be implemented.
   - Bikeshedding: where to put completed tasks?
   - Bikeshedding: `task`, `job`, or `work`?
+- `/worklog/script/`
+  - Python scripts for bookkeeping. Version-tracked. `.gitignore` for Python artifacts (`.pyc`, `__pycache__/`).
+  - Validation: frontmatter schema enforcement, dangling cross-references, stale `blocked_by`, missing required fields.
+  - Summarization: condensed worklog state for onboarding / context budget.
+  - Search: reverse-lookup references (which tasks modify a spec, which specs a task touches).
+  - Marker generation: infer and maintain `@worklog` source code markers from spec-to-source mappings.
 
 TODO:
 
@@ -162,9 +168,6 @@ TODO:
 - Spec Content Guidance
   - What goes inside a spec? Observable behavior vs. implementation details.
   - Over-specification resistance: agents default to API signatures and field names, not behavior.
-- Schema Enforcement
-  - Canonical frontmatter schema definition.
-  - Validation mechanism (bfc showed schema inconsistency creeping in without enforcement).
 - Task Types
   - Investigation/research tasks (bfc t0007: started as research, not implementation).
   - Chore tasks (no spec relationship).
@@ -190,9 +193,6 @@ Unanswered questions:
 - Is the plan tier intentionally removed or deferred?
   - v1 had spec/plan/task; current sketch has spec/task only.
   - The spec/plan boundary was problematic in practice (pitfalls.md, case-study-bfc.md).
-- Source code markers (`@worklog`): keep, automate, or drop?
-  - bfc evidence: 1 of ~40 files adopted them. Manual maintenance failed.
-  - Viable only if fully automated.
 - Multi-agent coordination: in scope?
   - Concurrent agents may conflict on spec/task modifications.
   - Sub-agents lose parent context; no inter-agent communication channel.
