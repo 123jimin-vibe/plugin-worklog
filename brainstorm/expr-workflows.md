@@ -124,9 +124,9 @@ Production is broken, immediate fix needed.
 
 ### Do we need all of these as first-class entities?
 
-**Spec** — Yes. Proven in v1. Living reference, no status, always current.
+**Spec** — Yes. Proven in v1. Living reference, always current.
 
-**Plan** — Probably yes, despite v1's boundary problems. Workflows 1, 3, and 4 all naturally produce multi-task initiatives that need coordination. The fix isn't removing plans — it's clarifying the boundary: plans describe *work to be done*; specs describe *what currently exists*. A plan is consumed (archived) when its tasks complete; a spec persists.
+**Plan** — **Problematic. See "The Plan/Spec Duplication Problem" below.** The content of a plan IS a proto-spec. In practice, plan content migrates to spec once implemented, creating structural duplication that agents amplify.
 
 **Task** — Yes. Proven in v1. The atomic work unit.
 
@@ -136,7 +136,139 @@ Production is broken, immediate fix needed.
 
 **Milestone** — Probably NO as a first-class entity. Tags or a simple metadata field on plans/tasks can group things by release. Full milestone tracking is project management, not development methodology.
 
-### Recommended first-class entities: **spec, plan, task, decision**
+### Recommended first-class entities: **spec, task, decision** (plan absorbed into spec)
+
+---
+
+## The Plan/Spec Duplication Problem
+
+### The diagnosis
+
+The real problem with plans isn't unclear boundaries — it's that **a plan's core content IS the spec, written before the code exists.** During implementation, agents duplicate this content from plan → spec.
+
+Evidence from bfc:
+
+**p0002 (plan) vs s0010 (spec):** Both describe the same optimizer passes — same code examples, same structure, same level of detail. The plan was written first. As tasks implemented passes, content was copied into the spec. The plan became a stale duplicate.
+
+**p0009 (plan):** Contains TypeScript interfaces, a 5-phase implementation breakdown, a file impact table. This is a complete design specification wearing a "plan" label. Once implemented, all of it would be copy-pasted into a spec file (or the plan just sits there, abandoned, with the same content living in the spec).
+
+**The fundamental issue:** "what the design will be" and "what the design currently is" are the SAME document at different points in time. Splitting them into separate entities forces duplication at the moment of implementation.
+
+### Alternative: Spec with progression
+
+Instead of spec + plan as separate entities, use **a single spec entity with progression tracking**:
+
+```markdown
++++
+id = "s0010"
+title = "Optimization passes"
+created = 2026-03-16
+tags = ["optimizer", "bsm"]
++++
+
+## Overview
+
+Optimizations fall into two categories: [...]
+
+## Trivial Optimizations
+
+### Clear Loop ✅
+
+[full description]
+
+### Multiply-Add Loop ✅
+
+[full description]
+
+### Dead Loop at Start ✅
+
+[full description]
+
+## Optimizer Passes
+
+### Clear Loop ✅
+
+[full description]
+
+### Set + Add Fusion
+
+- [ ] Implement in `optimize/set-add-fusion.ts`
+- [ ] Test: adjacent Set+Add fused
+- [ ] Test: adjacent Set+Set fused
+
+[full description — this is both the "plan" and the "spec"]
+
+### Constant Folding
+
+- [ ] Implement CellState tracker
+- [ ] Dead loop elimination via known-zero
+- [ ] Set-to-add conversion when value known
+
+[full description]
+```
+
+#### How this works
+
+1. **Spec is written first** — describes the intended design, including parts not yet implemented.
+2. **Unimplemented sections have checklists** — these ARE the plan. No separate plan entity needed.
+3. **Tasks reference spec sections** — "implement s0010 § Set+Add Fusion" rather than "implement p0002 step 3."
+4. **As tasks complete, checklists get checked off** — the spec progressively becomes "current state" without any content migration.
+5. **Git diff shows the progression** — `git log s0010-optimization.md` shows the spec evolving from design → implemented. No separate plan-to-spec copy step.
+
+#### What this eliminates
+
+- **Content duplication**: the design lives in ONE place at all times.
+- **Plan-to-spec migration**: there's nothing to migrate. The spec IS the plan.
+- **Stale plans**: can't have a stale plan if plans don't exist separately.
+- **The "archive plan" ceremony**: no plan to archive. Tasks archive; specs persist.
+- **The agent copy-paste failure mode**: agents can't duplicate content between plan/spec because there's only one file.
+
+#### What this changes about task semantics
+
+Tasks no longer `implement` a plan. Instead:
+
+- `modifies` — spec IDs this task updates (same as v1)
+- Tasks describe *what work to do* in their body; the *design* lives in the spec.
+- A task body says "implement the Set+Add Fusion pass described in s0010" — it doesn't repeat the design.
+
+#### Concerns and tradeoffs
+
+**Incomplete specs feel wrong?** A spec that describes things that don't exist yet blurs the "spec = current truth" principle. But this is already the reality — p0002 described passes that didn't exist yet, and s0010 was supposed to describe only what existed. The boundary was fictional.
+
+Counter-argument: a spec with unchecked items is MORE honest than a separate plan. The checklist explicitly marks what's real and what's aspirational. A "clean" spec with a hidden plan gives a false sense of completeness.
+
+**Large specs become unwieldy?** If a spec grows to describe 20 planned features, it gets long. But:
+- This is a signal that the spec should be split into sub-specs (which is healthy architecture anyway).
+- A plan covering 20 features would be equally unwieldy.
+- Spec sections can link to child specs: `s0010` → `s0010-a` (trivial opts), `s0010-b` (optimizer passes).
+
+**Multi-task coordination?** Plans coordinated multiple tasks. Without plans, how do you express "tasks T1, T2, T3 should be done in order to complete the Optimization feature"?
+- The spec's checklist IS the coordination mechanism. Unchecked items = remaining work. Task dependencies expressed via `blocked_by`.
+- For truly large initiatives spanning multiple specs: a "meta-spec" or "epic" that cross-references the component specs. But this is rare — bfc had 7 plans over months, and most targeted a single spec.
+
+**Where does "how to implement" go?** Plans often contained implementation strategy (file impact tables, phasing, etc.) that doesn't belong in a spec. Options:
+- Task body: if it's task-specific implementation detail.
+- Spec appendix / collapsible section: if it's design rationale that future readers need.
+- Decision record: if it's "we chose approach X over Y because Z."
+- **Just don't write it**: file impact tables (p0009) are over-specification. The agent can figure out which files to change. Implementation phasing can go in task descriptions.
+
+### Revised entity model
+
+| Entity | Role | Status? | Archive? |
+|--------|------|---------|----------|
+| **Spec** | Living design reference. Includes planned (unchecked) and implemented (checked) sections. | No explicit status. Progression visible via checklists. | Never archived. Updated in-place. |
+| **Task** | Atomic unit of work. | `pending` → `active` → `done` (or `blocked`) | Yes, when done. |
+| **Decision** | Immutable record of why a choice was made. | `accepted` / `superseded` | Never archived. Permanent record. |
+
+### Revised relationship graph
+
+```
+decision ──relates_to──▶ spec
+task ──modifies─────────▶ spec
+task ──blocked_by───────▶ task
+```
+
+Simpler. No plan tier. No `implements` field. No `targets` field.
 
 ---
 
@@ -151,24 +283,17 @@ Production is broken, immediate fix needed.
 - `tags` — categorization
 
 #### Spec
-- No `status` (always current, proven in v1)
+- No `status` (progression visible via checklists in body)
 - `updated` — last modification date
+- `sources` — source paths this spec governs (e.g., `["src/bsm/optimize/"]`). Enables source→spec discoverability via grep.
 - Consider: `supersedes` — for when a spec replaces another (rare but possible)
-
-#### Plan
-- `status`: `draft` → `active` → (archived when done/abandoned)
-  - v1 had `approved` — is this useful? In a solo-dev + AI context, "approved" = "human said go ahead". Maybe just `draft`/`active`/`blocked`.
-- `targets` — spec IDs this plan creates or modifies
-- `blocked_by` — IDs blocking this plan
-- Consider: `priority` — but priority is relative and changes constantly. Maybe not worth the maintenance cost.
 
 #### Task
 - `status`: `pending` → `active` → `done` (or `blocked`)
 - `type`: `implementation` | `investigation` | `bugfix` | `chore`
   - v1 didn't have this, but it emerged as a natural classification in bfc. Investigation tasks (t0007) behave differently from implementation tasks (t0004).
-  - Alternatively: infer type from relationships (has `implements` → implementation, has neither → chore). But investigation is hard to infer.
-- `implements` — plan IDs
-- `modifies` — spec IDs
+  - Alternatively: infer type from relationships (has `modifies` → implementation, has neither → chore). But investigation is hard to infer.
+- `modifies` — spec IDs this task updates
 - `blocked_by` — IDs blocking this task
 - Consider: `branch` — git branch name associated with this task. Enables branch↔task traceability.
 
@@ -176,33 +301,87 @@ Production is broken, immediate fix needed.
 - `status`: `accepted` | `superseded` | `deprecated`
   - Superseded by another decision, not modified in-place.
 - `supersedes` — ID of previous decision this replaces
-- `context` — what prompted this decision (could be body content instead)
-- `relates_to` — spec/plan IDs this decision affects
+- `relates_to` — spec IDs this decision affects
 
 ---
 
 ## Relationship and Precedence
 
-### Entity hierarchy
+Two constraints shape how cross-references work:
+
+1. **Change locality** — a single logical change should touch as few files as possible. Every cross-reference is a potential edit cascade: if A references B and B changes, does A need updating? Minimize this.
+2. **Discoverability without training** — an agent with zero worklog knowledge, upon viewing or editing any one file, should be able to tell which other files it needs to consult or co-edit. Cross-references must be self-explanatory from the frontmatter alone.
+
+### Reference direction and its consequences
+
+Cross-references can be **forward** (referrer → referent) or **reverse** (referent → referrer). The choice directly affects locality and discoverability:
+
+| Direction | Locality | Discoverability | Example |
+|-----------|----------|-----------------|---------|
+| Forward only (task → spec) | Good: changing the spec doesn't require updating tasks | One-way: task readers know which spec to consult, but spec readers don't know which tasks exist | `modifies = ["s0010"]` in task |
+| Bidirectional (task ↔ spec) | Bad: adding/removing a task requires editing the spec too | Full: both sides know about each other | spec lists its tasks AND task lists its spec |
+| Forward + computed reverse | Good: same as forward-only for edits | Full: reverse lookup via script/search | `modifies = ["s0010"]` + `find-refs.py s0010` |
+
+**v1 chose forward + computed reverse.** This is correct. Bidirectional references double the edit surface and create consistency bugs (spec says tasks A,B,C; task D says it modifies the spec but isn't listed).
+
+### The discoverability problem in practice
+
+Forward + computed reverse works for agents that know the worklog system. But the constraint says agents *without* worklog knowledge should also be able to navigate. Three navigation scenarios:
+
+**Agent views a task file** → `modifies = ["s0010"]` is self-explanatory. Any agent seeing this will read `s0010`. Solved by forward reference.
+
+**Agent views a spec file** → no outgoing references to tasks. But does it need them? The spec IS the design authority. An agent reading a spec is learning design, not looking for tasks. If it needs to know "who's working on this," `grep -r s0010 worklog/task/` is trivial and requires no special knowledge.
+
+**Agent edits source code** → this is the hard case. How does the agent know a spec exists for the code it's touching? Options:
+- Source markers (`@worklog s0010`): failed in bfc — too high-friction to maintain.
+- Spec body lists relevant source paths: e.g., `sources = ["src/bsm/optimize/"]` in frontmatter. Requires maintenance but greppable from source side (`grep -r "src/bsm/optimize" worklog/spec/`).
+- Directory convention: all specs for code in `src/foo/` are in `worklog/spec/foo/`. Implicit, fragile, doesn't work for cross-cutting specs.
+- **Agent reads a worklog summary on session start**: the skill can inject a brief index. This is the most practical — it's a one-time token cost per session, not per file.
+
+Best approach is probably: **spec frontmatter lists source paths** (cheap, greppable) + **session onboarding summary** (comprehensive, one-time cost). Source markers are out.
+
+### Entity hierarchy (revised — no plan tier)
 
 ```
-decision ──relates_to──▶ spec, plan
-plan ──targets──────────▶ spec
-task ──implements───────▶ plan
-task ──modifies─────────▶ spec
-task ──blocked_by───────▶ task, plan
-plan ──blocked_by───────▶ task, plan
+decision ──relates_to──▶ spec         (forward: decision knows which spec it's about)
+task ──modifies─────────▶ spec         (forward: task knows which specs it touches)
+task ──blocked_by───────▶ task         (forward: blocked task knows its blocker)
+spec ──sources──────────▶ source paths (forward: spec knows which code implements it)
 ```
+
+Reverse lookups (which tasks modify a spec? which decisions relate to a spec?) computed by script or grep — never stored.
+
+### Change locality analysis
+
+| Change | Files edited |
+|--------|-------------|
+| New task | 1 file (the task). No spec or decision edits needed. |
+| Complete task | 1–2 files (task status → done; spec checklist items → checked). |
+| New spec | 1 file (the spec). No task or decision edits needed. |
+| Update spec design | 1 file (the spec). Tasks referencing it via `modifies` don't need editing — the ID hasn't changed. |
+| New decision | 1 file (the decision). Optionally 1 more if it supersedes a prior decision. |
+| Unblock a task | 1 file (remove ID from `blocked_by`). The blocker task doesn't need editing. |
+
+Worst case is 2 files for a task completion (task + spec). This is inherent — the task's work changes both the code and the spec. No cross-reference overhead.
+
+### Discoverability summary
+
+| Agent is viewing... | How it finds related files |
+|--------------------|--------------------------|
+| Task | `modifies` field → read those specs |
+| Spec | `sources` field → know which code it governs. Reverse: `grep -r <spec-id> worklog/task/` for tasks. |
+| Decision | `relates_to` field → read those specs |
+| Source code | `grep -r <path> worklog/spec/` to find governing spec. Or check session onboarding summary. |
+
+No field requires worklog-specific knowledge to interpret. An agent seeing `modifies = ["s0010"]` will naturally look for a file containing `s0010` in its name.
 
 ### Precedence (conflict resolution)
 
-When entities conflict, which is authoritative?
-
-1. **Spec vs. source code**: Spec wins. Code diverging from spec is a bug. (Already established in v1.)
-2. **Spec vs. test**: Spec wins. Tests must be derived from specs.
-3. **Spec vs. plan**: Spec describes *current* state; plan describes *intended future*. No conflict possible — they describe different time horizons.
-4. **Decision vs. spec**: Decision explains *why*; spec describes *what*. Complementary. If a decision says "we chose X" but spec describes Y, the spec was updated without a decision record — the fix is adding a new decision, not changing the old one.
-5. **Task vs. plan**: Plan is authoritative for scope; task may discover that plan needs adjustment. Tasks should flag plan deviations, not silently diverge.
+1. **Spec vs. source code**: Spec wins. Code diverging from spec is a bug.
+2. **Spec vs. test**: Spec wins. Tests derived from specs.
+3. **Spec (checked ✅) vs. spec (unchecked)**: Checked = current reality. Unchecked = intended design to build next.
+4. **Decision vs. spec**: Complementary. Decision = *why*; spec = *what*. Conflict means a spec change lacked a decision record.
+5. **Task vs. spec**: Spec is authoritative for design. If a task discovers the design is wrong, update the spec (with user approval for significant changes).
 
 ---
 
@@ -218,8 +397,7 @@ The worklog assumes git. This has several implications:
 - **Task completion**: git log shows what commits were made while a task was active. If task IDs are in commit messages, `git log --grep=t0004` reconstructs the full implementation.
 
 #### 2. Branching strategy
-- **Task branches**: one branch per task is natural. Branch name includes task ID (e.g., `t0004-known-counter-opts`).
-- **Plan branches**: for multi-task plans, a feature branch that task branches merge into. But this adds complexity — maybe only for large plans.
+- **Task branches**: one branch per task. Branch name includes task ID (e.g., `t0004-known-counter-opts`).
 - **Spec branches**: specs change on the branch where the modifying task lives. They merge with the task.
 
 #### 3. Commit conventions
@@ -240,10 +418,10 @@ The worklog assumes git. This has several implications:
 
 #### 6. What git does NOT provide (worklog must fill)
 - **Intent**: why was this change made? → decision records, task descriptions
-- **Status**: what's the current state of work? → task/plan status fields
+- **Status**: what's the current state of work? → task status fields, spec checklists
 - **Relationships**: how do components relate? → cross-references in frontmatter
 - **Design authority**: what SHOULD the code do? → specs
-- **Future work**: what's planned but not started? → plans, pending tasks
+- **Future work**: what's planned but not started? → unchecked spec items, pending tasks
 
 ---
 
@@ -287,7 +465,6 @@ The best mistake tracking is making the mistake impossible. `validate.py` as a h
 |-------|-----------------|-----------|
 | **Git log** | Code changes, timestamps, authorship | `git log`, `git blame`, `git log --grep=tNNNN` |
 | **Task body** | Intent, approach, findings, dead ends | Read task file (or archived task) |
-| **Plan body** | Scope, strategy, task breakdown | Read plan file |
 | **Decision records** | Why X over Y, what was rejected | Read decision file; `find-refs.py` for related decisions |
 | **Spec history** | How design evolved | `git log spec/sNNNN-*.md` |
 | **Archive** | Completed/abandoned work | `archive/` directory; `git log --follow` for full history |

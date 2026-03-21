@@ -13,200 +13,97 @@ Brainstorm for a plugin that enforces software development methodology on AI age
 
 ## Motivation
 
-### Goals of Software Architecture
+### Software Architecture Principles
 
-These observations are general to software engineering, not specific to AI agents.
+General to software engineering, not AI-specific.
 
 - Small and large projects **require different methodologies**.
-  - LEGO house vs. mile-high skyscraper.
-- Software development stages:
-  1. Requirements
-  2. Architecture Design
-  3. Detail Design
-  4. Implementation
-  5. QA / Testing
-- Two classes of lifecycle models:
-  - Sequential (Waterfall)
-  - Iterative (Agile, XP, ...)
-  - Iterative is usually superior for software.
-  - Fixed requirements are ideal but rare in practice.
-    - Requirements change frequently.
-    - Premature design decisions become costly under change.
-    - True requirements are often discovered through implementation.
-- Bug fix cost is lowest when caught at the earliest stage.
+- Development stages: Requirements → Architecture → Detail Design → Implementation → QA.
+- Iterative lifecycle (Agile) usually superior. Fixed requirements are ideal but rare — true requirements are often discovered through implementation.
+- Bug fix cost lowest when caught earliest.
 
-These observations imply the following architectural principles:
+**Requirements** — explicit, capturing *intent* (*what/why*, not *how*). Avoid programming-specific framing unless the domain is programming itself.
 
-Requirements must be explicit and capture *intent*:
-
-- Focus on *what* and *why*, not *how*.
-- Prefer "XX is problematic" over "YY needs to be improved/implemented for XX".
-- Avoid programming-specific framing.
-  - Exception: the problem domain itself is programming-related.
-
-Architecture should *localize the impact of changing requirements*:
-
+**Architecture** — localize impact of changing requirements:
 - Record reasons behind decisions.
-- A requirement change should touch as few components as possible.
-- Define *building blocks* with:
-  - Clearly defined responsibilities.
-  - Minimal dependencies on other blocks.
-  - Explicitly declared allowed and forbidden inter-block dependencies.
-- Clearly specify *business constraints* and their architectural effects.
-- UI layer (CLI/GUI/webpage/...) should be easily replaceable.
-- Specify required *robustness* level — this also prevents over-engineering robustness.
-- Specify anticipated requirement changes and strategies for handling them.
-- Be *simple*.
-  - Feel "natural and easy".
-  - Largely independent from (but still aware of) execution environment and programming language.
-  - Exclude unnecessary features.
-- Explicitly specify *dangers*.
+- Minimize components touched per requirement change.
+- Building blocks: clear responsibilities, minimal dependencies, explicitly declared allowed/forbidden inter-block dependencies.
+- Specify business constraints, robustness level, anticipated changes, and dangers.
+- Be simple. Exclude unnecessary features.
 
-Detail design should derive from and be consistent with the architecture:
+**Detail design** — derive from architecture:
+- Prefer "simple and obvious" over "clever".
+- Loose coupling. High fan-in, low fan-out.
 
-- Minimal complexity.
-  - Prefer "simple and obvious" over "clever".
-  - Actively remove features outside the project's scope.
-- Ease of maintenance.
-- Loose coupling.
-- Extensibility and reusability.
-- Components: high fan-in (used by many), low fan-out (depends on few).
+### Idealistic AI Agent Workflow
 
-### "Idealistic" AI Agent Workflow
+With infinite context and perfect retention, an agent would: receive all files + full history, write code, remember feedback, resume perfectly across sessions. This would obsolete `AGENTS.md`/`CLAUDE.md`, design docs, task tracking, and context management.
 
-Assume an AI agent with *infinite context window* and *perfect context retention*.
+### Consequences of Imperfect Context
 
-1. Human describes what they want in natural language.
-2. Agent receives:
-    - Every file in the project.
-    - Knowledge base: project docs, dependency docs, relevant articles.
-    - Full history: every prior decision and mistake.
-3. Agent writes code. Remembers everything.
-4. Human reviews and gives feedback. Agent remembers.
-5. Next session: agent resumes exactly where it left off.
-6. Agent knows precisely what's done, what's pending, what failed, what was decided and why.
+Real agents have finite context and no cross-session memory. This causes:
 
-This would make the following obsolete:
+- **Loss of continuity**: re-onboard each session, no learning from failures. `CLAUDE.md`/`AGENTS.md` [are ineffective](./resource/context-file-effectiveness.md).
+- **DRY violations**: re-implementing existing features, especially undocumented ones.
+- **Stale related artifacts**: failing to update code, docs, and specs together.
 
-- `AGENTS.md` / `CLAUDE.md` for preventing repeated mistakes.
-- Design documentation: context already contains all necessary information.
-- Task tracking (e.g. [beads](https://github.com/steveyegge/beads)).
-- Context management.
-
-### Direct Consequences of Imperfectness
-
-A real AI agent has neither infinite context nor perfect retention. Token economy constrains context construction, causing:
-
-- Loss of continuity.
-  - Must re-onboard each session.
-  - No learning from failures.
-  - Existing mitigations (`CLAUDE.md`, `AGENTS.md`) [are ineffective](./resource/context-file-effectiveness.md).
-- DRY violations.
-  - Re-implementing existing features — especially those too trivial to have been documented, so the agent never discovers them.
-- Failing to update related code and documentation.
-
-### Problems under Idealistic Workflow
-
-Issues that persist even with perfect context:
+### Problems Even with Perfect Context
 
 - Implementation leaking into tests.
-- Strategic judgment failures:
-  - No abort/continue calibration.
-  - Blindness to tech debt (future cost-of-change).
-  - Append-only bias instead of occasional refactoring.
+- Strategic judgment failures: no abort/continue calibration, blindness to tech debt, append-only bias.
 
 ## Goals
 
-**Meta-goal:** make AI agents usable and **reliable** for large, real-world projects, even under minimal human supervision.
+**Meta-goal:** make AI agents **reliable** for large projects under minimal human supervision.
 
-**Goal:** provide and enforce domain- and language-agnostic software development methodology for AI agents.
+**Goal:** enforce domain/language-agnostic development methodology for AI agents.
 
-**Empirical stance:** methods must be validated through real-world usage before being considered effective. TDD is assumed as a baseline; other methods require empirical justification.
+**Empirical stance:** methods validated through real-world usage. TDD assumed as baseline; other methods require empirical justification.
 
-**Non-goal (for now):** performance of knowledge base operations. Linear scan over specs/plans/tasks is acceptable. Correctness of methodology comes first.
+**Non-goal (for now):** performance of knowledge base operations. Linear scan acceptable. Correctness first.
 
 ## Design Sketch
 
-- **Assumes the host project uses `git`** for version control.
-  - Worklog entities are version-tracked alongside source code.
-  - Git history provides authorship, change timeline, and diff context — the worklog should leverage this rather than duplicate it.
-  - Implications: archival, spec evolution, and decision audit trails can lean on `git log`/`git blame` instead of custom metadata.
-- **SKILL.md is the comprehensive reference.** The plugin's `SKILL.md` should contain full instructions for how to use the worklog — entity schemas, lifecycle rules, validation, all commands.
-  - Project-repo files (`AGENTS.md`, spec headers, script help text, etc.) contain only concise reminders that point agents toward the skill and nudge correct usage — not full documentation.
-  - Rationale: agents don't re-read reference docs on every action. Short in-repo prompts act as activation triggers; the skill provides depth on demand.
-- **Intuitive by default.** Worklog conventions should be unsurprising enough that an agent can largely infer correct behavior from the file structure, frontmatter keys, and naming conventions alone.
-  - Minimizes token economy impact — agents spend fewer tokens reading instructions and more on actual work.
-  - Consistent with [context-file-effectiveness.md](./resource/context-file-effectiveness.md): over-specifying context files costs >20% more tokens for negligible accuracy gain.
-- Information (TBD) stored as Markdown with TOML frontmatter.
-  - In-repo Python scripts for managing data (as in worklog v1). Must `.gitignore`.
-  - Consider <https://github.com/steveyegge/beads>; prefer simplicity for now.
+- **Assumes `git`.** Entities version-tracked with source. Lean on `git log`/`git blame` for history, authorship, diffs — don't duplicate in metadata.
+- **SKILL.md is the comprehensive reference.** Full instructions: entity schemas, lifecycle, validation, commands.
+  - In-repo files (`AGENTS.md`, spec headers, etc.) contain only concise reminders pointing agents to the skill — not full documentation. Short triggers, not reference material.
+- **Intuitive by default.** Conventions inferable from file structure, frontmatter keys, and naming alone.
+  - Minimizes token economy impact ([context-file-effectiveness.md](./resource/context-file-effectiveness.md): over-specified context costs >20% more tokens for negligible gain).
+- **Concise files.** All worklog content (specs, tasks, decisions, brainstorm docs) must avoid padding phrases, needless reiteration, and filler. Say it once, say it precisely.
+- Markdown with TOML frontmatter. Python scripts for management (version-tracked; `.gitignore` for `.pyc`/`__pycache__/`).
 
 Scratch directory structure for `/worklog/`:
 
-- `/worklog/spec/**/s0000-spec-name.md`
-  - **Authoritative architectural specification** of a component.
-    - All tests MUST be derived from specs, and MUST be written BEFORE spec is implemented.
-    - If specs contradict with docs/tests/impls, spec takes priority.
-      - If a clear mistake is suspected, agents MUST ask user and MUST NOT silently fix specs.
-  - Source components (file/class/function/...) tagged with `@worklog s0000` comments.
-    - Bikeshedding: exact comment form.
-  - Important: nested folders or frontmatter for categorization?
-  - Bikeshedding: include `s0000-` prefix in filename?
-- `/worklog/task/t0000-task-name.md`
-  - A unit of work to be implemented.
-  - Bikeshedding: where to put completed tasks?
-  - Bikeshedding: `task`, `job`, or `work`?
-- `/worklog/script/`
-  - Python scripts for bookkeeping. Version-tracked. `.gitignore` for Python artifacts (`.pyc`, `__pycache__/`).
-  - Validation: frontmatter schema enforcement, dangling cross-references, stale `blocked_by`, missing required fields.
-  - Summarization: condensed worklog state for onboarding / context budget.
-  - Search: reverse-lookup references (which tasks modify a spec, which specs a task touches).
-  - Marker generation: infer and maintain `@worklog` source code markers from spec-to-source mappings.
+- `/worklog/spec/**/s0000-spec-name.md` — **Authoritative architectural specification.**
+  - Tests MUST derive from specs, written BEFORE implementation.
+  - Spec takes priority over docs/tests/impls. If mistake suspected, agents MUST ask user.
+  - Bikeshedding: nested folders vs. frontmatter for categorization? Filename prefix?
+- `/worklog/task/t0000-task-name.md` — Unit of work.
+  - Bikeshedding: archive location? Naming (`task`/`job`/`work`)?
+- `/worklog/script/` — Bookkeeping scripts.
+  - Validation (schema, dangling refs, stale `blocked_by`).
+  - Summarization (onboarding / context budget).
+  - Reverse-lookup search.
 
 TODO:
 
 - Onboarding
 - Decision Records
-- Relationships Between Specs
-  - Cross-cutting specs (e.g. logging conventions, error handling policy)
-- Specifying Dangers
-- Anticipated Changes
-- Test <-> Spec Traceability
-- Agent Workflow
-  - Task lifecycle (creation → implementation → completion)
-  - Enforcement mechanisms (hooks, workflow gates, self-validation, ...)
-  - Trigger-based rules vs. reference documents (agents don't re-read reference docs on every action; triggers fire at action time)
-- Spec Content Guidance
-  - What goes inside a spec? Observable behavior vs. implementation details.
-  - Over-specification resistance: agents default to API signatures and field names, not behavior.
-- Task Types
-  - Investigation/research tasks (bfc t0007: started as research, not implementation).
-  - Chore tasks (no spec relationship).
-  - Implementation tasks (spec-linked).
-- Task Sizing
-  - bfc evidence: successful tasks completable in a single session.
-  - The one large task that worked had an unusually detailed plan.
-- Context Budget
-  - How much of the worklog should an agent load per session?
-  - Avoid "document-directed exploration" trap (context-file-effectiveness.md).
+- Cross-cutting spec relationships (logging, error handling policy)
+- Specifying dangers and anticipated changes
+- Test ↔ spec traceability
+- Agent workflow: task lifecycle, enforcement (hooks/gates/validation), trigger-based rules vs. reference docs
+- Spec content guidance: observable behavior vs. implementation details; over-specification resistance
+- Task types: implementation, investigation (bfc t0007), chore
+- Task sizing: single-session completion (bfc evidence); large tasks need detailed specs
+- Context budget: how much worklog to load per session; avoid "document-directed exploration" trap
 
 Unanswered questions:
 
-- How to represent **incomplete specs**?
-  - Treating plans and specs as entirely separate seems inadequate.
-- How should specs evolve? (Versioning? Diff history? Or rely on git history alone?)
-- Can a task exist without a corresponding spec?
-  - Likely yes for "chore" tasks (e.g. fix typos throughout codebase).
-- Can a task create a spec?
-- What constitutes empirical validation of a method?
-  - Indicator (not metric): natural average LoC per file, average LoC and files edited per commit.
-  - Optimizing or prompting agents on these indicators is forbidden — optimizing a metric induces reward-hacking.
-- Is the plan tier intentionally removed or deferred?
-  - v1 had spec/plan/task; current sketch has spec/task only.
-  - The spec/plan boundary was problematic in practice (pitfalls.md, case-study-bfc.md).
-- Multi-agent coordination: in scope?
-  - Concurrent agents may conflict on spec/task modifications.
-  - Sub-agents lose parent context; no inter-agent communication channel.
-- Agent-agnosticism: methodology vs. implementation boundary?
-  - Methodology is domain- and language-agnostic; first implementation is a Claude Code skill.
-  - Should the methodology be portable across agents (Claude Code, Codex, Copilot)?
+- **Incomplete specs**: plans and specs as separate entities seems inadequate → see `expr-workflows.md` (spec-with-progression alternative).
+- **Spec evolution**: versioning? Diff history? Or rely on git?
+- **Specless tasks**: yes for chores. Can a task create a spec?
+- **Empirical validation**: indicators (LoC/file, LoC/commit) not metrics — optimizing them induces reward-hacking.
+- **Plan tier**: removed or deferred? v1's spec/plan boundary was problematic (pitfalls.md, case-study-bfc.md).
+- **Multi-agent coordination**: concurrent agents may conflict on spec/task modifications.
+- **Agent-agnosticism**: methodology is generic; first implementation is Claude Code skill. Portable to Codex/Copilot?
