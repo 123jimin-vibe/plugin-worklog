@@ -9,6 +9,7 @@ Brainstorm for a plugin that enforces software development methodology on AI age
 - `case-study-bfc.md` — observations from a project that used the previous worklog system.
 - `expr-spec-structure.md` — evaluation of spec representation approaches (in-source docgen, per-directory README, flat/hierarchical separate directory, wiki-style, ADRs, etc.), with simulations against bfc.
 - `expr-documentation.md` — documentation structure (TODO).
+- `expr-workflows.md` — typical project workflows, entity analysis, git utilization, mistake/history tracking.
 
 ## Motivation
 
@@ -126,6 +127,16 @@ Issues that persist even with perfect context:
 
 ## Design Sketch
 
+- **Assumes the host project uses `git`** for version control.
+  - Worklog entities are version-tracked alongside source code.
+  - Git history provides authorship, change timeline, and diff context — the worklog should leverage this rather than duplicate it.
+  - Implications: archival, spec evolution, and decision audit trails can lean on `git log`/`git blame` instead of custom metadata.
+- **SKILL.md is the comprehensive reference.** The plugin's `SKILL.md` should contain full instructions for how to use the worklog — entity schemas, lifecycle rules, validation, all commands.
+  - Project-repo files (`AGENTS.md`, spec headers, script help text, etc.) contain only concise reminders that point agents toward the skill and nudge correct usage — not full documentation.
+  - Rationale: agents don't re-read reference docs on every action. Short in-repo prompts act as activation triggers; the skill provides depth on demand.
+- **Intuitive by default.** Worklog conventions should be unsurprising enough that an agent can largely infer correct behavior from the file structure, frontmatter keys, and naming conventions alone.
+  - Minimizes token economy impact — agents spend fewer tokens reading instructions and more on actual work.
+  - Consistent with [context-file-effectiveness.md](./resource/context-file-effectiveness.md): over-specifying context files costs >20% more tokens for negligible accuracy gain.
 - Information (TBD) stored as Markdown with TOML frontmatter.
   - In-repo Python scripts for managing data (as in worklog v1). Must `.gitignore`.
   - Consider <https://github.com/steveyegge/beads>; prefer simplicity for now.
