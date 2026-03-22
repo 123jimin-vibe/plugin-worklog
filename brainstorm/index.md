@@ -94,6 +94,41 @@ See [`expr-workflows.md`](./expr-workflows.md) for full catalog with happy paths
 | Chore | task | Rarely touches specs. |
 | Hotfix | task → decision (post-mortem) | Compressed process. Post-mortem mandatory. |
 
+### Spec–Code Drift Detection via Git
+
+**Problem:** someone edits code without using worklog. Spec and code desync silently.
+
+**Rejected: `sync_ref` (commit SHA in spec frontmatter).** The spec can never reference its own commit — writing the SHA creates a new commit, so the stored value is always stale. Self-referential by construction.
+
+**Core insight:** git already tracks when the spec file was last modified. The spec's position in `git log` *is* the watermark — no metadata needed.
+
+**Primary mechanism:**
+
+```bash
+spec_last_touched=$(git log -1 --format=%H -- worklog/spec/s0003.md)
+git diff "$spec_last_touched"..HEAD -- <paths from spec frontmatter>
+```
+
+Non-empty output = code moved after spec was last touched = potential drift. The spec doesn't store anything — git is the storage.
+
+**File mapping** (spec → which source paths it governs):
+
+| Approach | Friction | Accuracy | Notes |
+|----------|----------|----------|-------|
+| `paths` globs in spec frontmatter | Low (set once) | High for localized specs, poor for cross-cutting | Stable, no self-reference problem |
+| Derived from task/commit history | Zero | Improves over time | Cold-start problem; build reverse index from completed tasks' commits |
+| AI inference at check time | Zero | Handles cross-cutting well | Expensive; read spec + read diff, judge relevance |
+
+Hybrid recommended: explicit `paths` where obvious, AI inference as fallback for cross-cutting specs.
+
+**Supporting mechanisms:**
+
+- **Post-commit hook:** flag when files in a spec's domain change without the spec file also appearing in the changeset. Non-blocking; appends to drift log.
+- **CI gate (optional):** fail if spec-domain files changed but spec wasn't touched.
+- **`git notes`:** annotate non-worklog users' commits with spec IDs after the fact, without rewriting history.
+- **`git log -S"pattern"` (pickaxe):** find commits that added/removed identifiers relevant to a spec's described behavior.
+- **`git blame` drift scoring:** for files in a spec's domain, measure what proportion of lines were authored after the spec was last touched. Prioritize review of highest-churn specs.
+
 ### TODO
 
 - Cross-cutting specs (logging, error handling policy).
