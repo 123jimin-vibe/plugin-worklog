@@ -59,11 +59,10 @@ New capability designed and built from scratch.
 - Task is harder than expected. Agent escalates to user for re-scoping.
 
 **Forbidden:**
-- Implementation without a spec (even a minimal one).
+- Implementation not covered by any spec.
 - Implementation before tests.
 - Spec modified without user approval when the change alters observable behavior.
 - Tests written to match implementation rather than spec.
-- Reimplementing functionality that already exists in the codebase or dependencies.
 
 ## 2. Bug Fix
 
@@ -78,20 +77,22 @@ Something doesn't work as specified, or as reasonably expected when no spec exis
 6. Spec updated if a gap was revealed.
 
 **Common Incidents:**
-- Root cause is in a different component than the symptom. Fix touches unexpected files.
-- Bug reveals a spec gap — the spec didn't cover this case. Spec amended.
-- Fix is straightforward but the test setup is complex.
+- Root cause is in a different component than the symptom. Fix scope expands; affected spec(s) updated.
+- Bug reveals a spec gap. Spec amended to cover the missing case.
+- Bug discovered during an unrelated task. Filed separately — the current task does not route around it.
+- Bug is a symptom of a more general problem. Fix addresses the general case, not just the observed failure.
 
 **Rare but Allowed:**
-- Bug is a known limitation, not worth fixing now. Documented and deferred.
-- Fix requires a design change significant enough to warrant a new spec or spec revision.
-- Bug is in a dependency. Workaround implemented with a tracking note.
+- Bug is a known limitation, not worth fixing now. Documented, deferred, and tracked.
+- Fix requires a design change large enough to warrant a spec revision or new spec.
+- Bug is in a dependency the project cannot modify. Workaround implemented with a tracking note for when the dependency is fixed.
+- Pre-existing bug surfaced by new code. Triaged independently — may be fixed now, deferred, or escalated.
 
 **Forbidden:**
-- Routing around the bug instead of fixing it (distorting implementation to avoid triggering the defect).
-- Closing the bug because a workaround exists without documenting the underlying issue.
-- Fixing the specific failing case without evaluating whether the bug is a symptom of a general problem.
-- Writing the regression test after the fix (test must fail before the fix to prove it captures the bug).
+- Distorting implementation to avoid triggering a bug instead of fixing or reporting it.
+- Fixing only the observed failing case without evaluating whether it's an instance of a general problem.
+- Writing the regression test after the fix (test must fail before fix to prove it captures the bug).
+- Closing a bug without documenting the underlying issue, even if a workaround exists.
 
 ## 3. Refactoring
 
