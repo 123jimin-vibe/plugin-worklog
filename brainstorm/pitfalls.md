@@ -63,6 +63,27 @@ This file documents pitfalls for AI agents:
 - **No Self-Awareness for Orchestration**
   - Agents lack awareness of their role, scope, and dependencies relative to other agents.
 
+### Requirement Extraction
+
+- **Implicit Generality Not Surfaced**
+  - Specs often implicitly require a feature to work across a dimension (e.g. arbitrary N) without stating it explicitly.
+  - Agents implement for the degenerate case (N=1) without recognizing the generality requirement.
+  - Whether an implementation can be dimension-specific is case-by-case — agents should ask the user to clarify scope rather than assuming the simplest case.
+  - Generalizes beyond numeric dimensions to quality attributes: security, scalability, reliability, etc. The appropriate level is project-dependent — a failsafe multi-instance service is overkill for a toy project, but reliability may be a core requirement elsewhere. Agents should not assume either extreme.
+- **Overfitting Fixes to Observed Failures**
+  - When a fix is needed, agents patch the specific failing case (e.g. N=2) rather than generalizing.
+  - The fix moves the cliff edge instead of removing it (N=3 will break next).
+  - Root cause: agents treat the failing test case as the requirement instead of recognizing it as one instance of a general property.
+
+### Bug Triage
+
+- **Test Failure = "Fix My Code", Not "Investigate the Failure"**
+  - When tests fail after implementation, agents assume their code is wrong and re-implement to make tests pass.
+  - They do not distinguish pre-existing bugs from bugs they introduced.
+  - They do not evaluate whether the failure reveals a genuine defect worth surfacing.
+  - Workaround-driven implementation: code shape is distorted by routing around latent bugs instead of being driven by requirements.
+  - Pre-existing bugs become harder to discover because the triggering code path is silently avoided.
+
 ### Safety and Security
 
 - **Quiet Antipatterns in Generated Code**
