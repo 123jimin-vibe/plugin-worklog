@@ -44,46 +44,67 @@ Real agents have finite context and no cross-session memory. This causes:
 
 ## Design Sketch
 
-- **Assumes `git`.** Entities version-tracked with source. Lean on `git log`/`git blame` for history, authorship, diffs — don't duplicate in metadata.
-- **SKILL.md is the comprehensive reference.** Full instructions: entity schemas, lifecycle, validation, commands.
-  - In-repo files (`AGENTS.md`, spec headers, etc.) contain only concise reminders pointing agents to the skill — not full documentation. Short triggers, not reference material.
-- **Intuitive by default.** Conventions inferable from file structure, frontmatter keys, and naming alone.
-  - Minimizes token economy impact ([context-file-effectiveness.md](./resource/context-file-effectiveness.md): over-specified context costs >20% more tokens for negligible gain).
-- **Concise files.** All worklog content (specs, tasks, decisions, brainstorm docs) must avoid padding phrases, needless reiteration, and filler. Say it once, say it precisely.
-- Markdown with TOML frontmatter. Python scripts for management (version-tracked; `.gitignore` for `.pyc`/`__pycache__/`).
+### Constraints
 
-Scratch directory structure for `/worklog/`:
+- **Assumes `git`.** History, authorship, diffs via `git log`/`git blame` — don't duplicate in metadata.
+- **SKILL.md is the comprehensive reference.** In-repo files contain only concise triggers pointing to the skill.
+- **Intuitive by default.** Conventions inferable from file structure, frontmatter keys, naming. Minimizes token cost ([context-file-effectiveness.md](./resource/context-file-effectiveness.md)).
+- **Concise files.** No padding, no reiteration. Say it once, precisely.
+- Markdown with TOML frontmatter. Python scripts for management.
 
-- `/worklog/spec/**/s0000-spec-name.md` — **Authoritative architectural specification.**
-  - Tests MUST derive from specs, written BEFORE implementation.
-  - Spec takes priority over docs/tests/impls. If mistake suspected, agents MUST ask user.
-  - Bikeshedding: nested folders vs. frontmatter for categorization? Filename prefix?
-- `/worklog/task/t0000-task-name.md` — Unit of work.
-  - Bikeshedding: archive location? Naming (`task`/`job`/`work`)?
-- `/worklog/script/` — Bookkeeping scripts.
-  - Validation (schema, dangling refs, stale `blocked_by`).
-  - Summarization (onboarding / context budget).
-  - Reverse-lookup search.
+### Entities
 
-TODO:
+| Entity | Purpose | Location | Lifecycle |
+|--------|---------|----------|-----------|
+| **Spec** | Authoritative design reference (observable behavior, constraints, dangers, anticipated changes). Includes planned (unchecked) and implemented (checked) sections. | `/worklog/spec/**/s0000-name.md` | Created → updated in-place. Never archived. |
+| **Task** | Atomic unit of work. | `/worklog/task/t0000-name.md` | `pending` → `active` → `done` (or `blocked`). Archived when done. |
+| **Decision** | Immutable record of *why* a choice was made. | `/worklog/decision/d0000-name.md` | `accepted` → possibly `superseded`. Never archived. |
+| **Script** | Bookkeeping automation (validation, summarization, reverse-lookup). | `/worklog/script/` | — |
 
-- Onboarding
-- Decision Records
-- Cross-cutting spec relationships (logging, error handling policy)
-- Specifying dangers and anticipated changes
-- Test ↔ spec traceability
-- Agent workflow: task lifecycle, enforcement (hooks/gates/validation), trigger-based rules vs. reference docs
-- Spec content guidance: observable behavior vs. implementation details; over-specification resistance
-- Task types: implementation, investigation (bfc t0007), chore
-- Task sizing: single-session completion (bfc evidence); large tasks need detailed specs
-- Context budget: how much worklog to load per session; avoid "document-directed exploration" trap
+### Relationships
 
-Unanswered questions:
+```
+task ──modifies──────▶ spec       (which specs this task changes)
+task ──blocked_by────▶ task       (ordering dependency)
+decision ──relates_to──▶ spec     (which spec this decision is about)
+decision ──supersedes──▶ decision (replaces a prior decision)
+spec ──sources─────────▶ paths    (which source files this spec governs)
+```
 
-- **Incomplete specs**: plans and specs as separate entities seems inadequate → see `expr-workflows.md` (spec-with-progression alternative).
-- **Spec evolution**: versioning? Diff history? Or rely on git?
+All references are forward-only. Reverse lookups computed by script or grep — never stored.
+
+### Precedence
+
+1. Spec over source code (divergence = bug).
+2. Spec over tests (tests derive from spec).
+3. If spec suspected wrong → ask user.
+
+### Supported Workflows
+
+See [`expr-workflows.md`](./expr-workflows.md) for full catalog with happy paths, incidents, and forbidden cases.
+
+| Workflow | Entities involved | Notes |
+|----------|-------------------|-------|
+| Greenfield feature | spec → task(s) → decision(s) | Tests before implementation. Spec includes planned sections. |
+| Bug fix | task → spec (if gap revealed) | Regression test must fail before fix. |
+| Refactoring | task → spec (if boundaries change) | No behavioral change. Existing tests as safety net. |
+| Investigation | task → decision / spec / nothing | Output is knowledge, not code. |
+| Chore | task | Rarely touches specs. |
+| Hotfix | task → decision (post-mortem) | Compressed process. Post-mortem mandatory. |
+
+### TODO
+
+- Onboarding: what context to load per session; avoid document-directed exploration.
+- Cross-cutting specs (logging, error handling policy).
+- Test ↔ spec traceability.
+- Enforcement mechanism: hooks/gates/validation vs. reference docs.
+- Task types (`implementation`, `investigation`, `bugfix`, `chore`) — explicit field vs. inferred from relationships.
+- Task sizing: single-session completion (bfc evidence); large tasks need detailed specs.
+
+### Unanswered Questions
+
+- **Spec evolution**: rely on git, or additional versioning?
 - **Specless tasks**: yes for chores. Can a task create a spec?
 - **Empirical validation**: indicators (LoC/file, LoC/commit) not metrics — optimizing them induces reward-hacking.
-- **Plan tier**: removed or deferred? v1's spec/plan boundary was problematic (pitfalls.md, case-study-bfc.md).
 - **Multi-agent coordination**: concurrent agents may conflict on spec/task modifications.
 - **Agent-agnosticism**: methodology is generic; first implementation is Claude Code skill. Portable to Codex/Copilot?
