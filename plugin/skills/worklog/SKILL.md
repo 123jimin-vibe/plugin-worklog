@@ -24,7 +24,7 @@ Living design reference. Describes observable behavior, constraints, anticipated
 id = "s0001"
 title = "User Authentication"
 tags = ["auth"]
-paths = ["src/auth/**", "src/middleware/session.ts"]
+paths = ["src/auth/**", "src/middleware/session*"]
 +++
 ```
 
@@ -135,7 +135,7 @@ Detect source files that changed after the governing spec was last touched:
 
 ```bash
 spec_commit=$(git log -1 --format=%H -- worklog/spec/s0001-auth.md)
-git diff "$spec_commit"..HEAD -- src/auth/** src/middleware/session.ts
+git diff "$spec_commit"..HEAD -- src/auth/** src/middleware/session*
 ```
 
 Non-empty diff = potential drift. `paths` in spec frontmatter provides the file mapping; git history provides the watermark. Nothing stored in the spec.

@@ -27,3 +27,9 @@ Raw observations from using the current worklog methodology (v2) on [`../plugin-
 
 - Even when explicitly instructed to spawn a subagent to write tests "to prevent context pollution", the subagent read the implementation before writing tests — defeating the purpose of black-box test authoring from specs.
 - Parent agent over-specifies when spawning subagents: the prompt enumerated every function, every case, and every expected behavior in plain text. This front-loads the implementation knowledge into the subagent's context anyway, making the "isolation" cosmetic. The subagent then *still* read the source file on top of that.
+
+### 2026-03-23 — Brainstorming a new feature
+
+When instructed to "brainstorm a new feature (a new function, `render_table`, in `/lib`)":
+- Spec is too narrow — a new spec is generated that covers `render_table` only, rather than extending the existing spec for `/lib` or creating a broader spec for the module's formatting capabilities. Single-function specs fragment the design surface and lose context about how the function relates to its neighbors.
+- Spec is not marked as WIP — created as if it were an accepted design, with no TODO markers or other indication that it came from a brainstorm and hasn't been approved. Violates the approval rule (discussion ≠ approval).
