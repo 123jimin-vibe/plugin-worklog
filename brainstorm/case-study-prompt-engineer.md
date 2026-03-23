@@ -33,3 +33,12 @@ Raw observations from using the current worklog methodology (v2) on [`../plugin-
 When instructed to "brainstorm a new feature (a new function, `render_table`, in `/lib`)":
 - Spec is too narrow — a new spec is generated that covers `render_table` only, rather than extending the existing spec for `/lib` or creating a broader spec for the module's formatting capabilities. Single-function specs fragment the design surface and lose context about how the function relates to its neighbors.
 - Spec is not marked as WIP — created as if it were an accepted design, with no TODO markers or other indication that it came from a brainstorm and hasn't been approved. Violates the approval rule (discussion ≠ approval).
+
+### 2026-03-23 — Verbose tests
+
+Tests tend to be too verbose and lengthy. Agents fail to exploit the fact that many parts of the codebase — especially utilities — are already well unit-tested. This means agents can lean on other code to simplify tests:
+- **Test only the unit under test.** If a function produces structured data that is later rendered by another function, test the structured data — don't re-test the rendering. E.g., a token counter that builds table data and passes it to `render_table`: unit tests should assert on the table data structure, not the final string output, because `render_table` has its own tests.
+- **Use other functions to simplify test setup.** Well-tested helpers can be called in test fixtures or assertions without re-validating them inline.
+- **Omit downstream coverage.** If function A calls function B, and B is extensively covered, A's tests don't need to exercise B's edge cases — only that A calls B correctly.
+
+Integration tests may still need to verify end-to-end string output, but unit tests should stay focused on the boundary of the unit.
