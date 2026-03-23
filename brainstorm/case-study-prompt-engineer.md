@@ -22,3 +22,8 @@ Raw observations from using the current worklog methodology (v2) on [`../plugin-
 - s0002 script path mismatch: spec says `token-count.py`, actual file and SKILL.md say `count.py`.
 - SKILL.md presents stub script as functional.
 - `paths` in spec frontmatter tends toward enumerating specific files rather than glob patterns. e.g. s0003 lists 4 individual files instead of `plugin/scripts/**` or similar. Brittle — adding a file requires updating the spec.
+
+### 2026-03-23 — Subagent test-writing
+
+- Even when explicitly instructed to spawn a subagent to write tests "to prevent context pollution", the subagent read the implementation before writing tests — defeating the purpose of black-box test authoring from specs.
+- Parent agent over-specifies when spawning subagents: the prompt enumerated every function, every case, and every expected behavior in plain text. This front-loads the implementation knowledge into the subagent's context anyway, making the "isolation" cosmetic. The subagent then *still* read the source file on top of that.

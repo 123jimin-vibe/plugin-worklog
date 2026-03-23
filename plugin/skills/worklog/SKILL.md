@@ -32,7 +32,7 @@ paths = ["src/auth/**", "src/middleware/session.ts"]
 
 No status field — specs are always current. No dates — git tracks history. Body uses TODO markers for unfinished items; tasks mark them done.
 
-**Not implementation details.** No API signatures, no field names, no file layout. Describe *what the system does and why*, not *how the code is structured*.
+**Not implementation details.** Describe *what the system does and why*, not *how the code is structured*. `paths` values must be glob patterns (`src/auth/**`), not individual files (`src/auth/login.ts`). See also Forbidden.
 
 ### Task
 
@@ -49,7 +49,7 @@ blocked_by = ["t0003"]
 +++
 ```
 
-Statuses: `pending` → `active` → `done` | `blocked`. Move to `worklog/archive/task/` when done.
+Statuses: `pending` → `active` → `done` | `blocked`. Move to `worklog/archive/task/` when done. If a task delivers stubs rather than complete implementations, the governing spec must retain TODO markers for the real implementation — stubs must never be presented as complete.
 
 **TODO:** task type field (`implementation`, `investigation`, `bugfix`, `chore`, `hotfix`) — explicit field vs. inferred from relationships/body.
 
@@ -89,8 +89,10 @@ All forward-only. Reverse lookups via grep — never stored.
 
 ## Rules
 
-- **Tests before implementation.** Tests derive from spec, not code. When feasible, a separate agent writes tests to prevent implementation leaking into test design. **TODO:** should tests be written before task creation (pre-task gate) or as the first step within a task? The former enforces spec→test→code more strictly; the latter is more practical when test shape isn't clear upfront.
+- **Tests before implementation.** Tests derive from spec, not code. **TODO:** should tests be written before task creation (pre-task gate) or as the first step within a task? The former enforces spec→test→code more strictly; the latter is more practical when test shape isn't clear upfront.
+- **Test isolation.** When a separate agent writes tests, it receives the **spec** as its sole input — not function names, signatures, internal structure, or behavioral enumerations derived from reading the code. The parent agent must not compensate for spec gaps by front-loading implementation knowledge into the prompt. The test agent must not read source files under the spec's `paths`. If the spec is insufficient to write tests from, that is a spec deficiency — surface it to the user instead of reading the implementation.
 - **Survey before building.** Check in-repo code and dependencies before implementing anything. Reimplementing existing functionality is forbidden.
+- **Approval means explicit confirmation.** Discussion, questions, and brainstorming do not constitute approval. To modify a spec's observable behavior, the user must explicitly confirm the proposed change. When in doubt, ask.
 - **Surface ambiguity.** When scope is unclear (N items, concurrency, security level), ask the user — don't assume degenerate or maximal case.
 - **Escalate when stuck.** Surface difficulty to the user. No spiraling into rewrites, no bailing silently, no effort-vs-value judgment without user input.
 - **Record decisions.** Non-trivial choices get a decision record. For small projects, inline in the task body is acceptable.
@@ -107,6 +109,8 @@ All forward-only. Reverse lookups via grep — never stored.
 - Regression test written after the fix (must fail before fix to prove it captures the bug).
 - Distorting code to route around a bug instead of fixing or reporting it.
 - Fixing only the observed failure without evaluating whether it's a general problem.
+- Implementation details in specs: API signatures, function names, field names, file/directory layouts, version numbers, or concrete file paths in prose. These drift immediately and create false authority. (`paths` frontmatter uses globs for drift detection — that is the only place file references belong.)
+- Test agent reading source files or receiving implementation details (function names, signatures, internal structure) from the parent agent. Tests must be derivable from the spec alone.
 
 **TODO:** enforcement mechanism. Rules above are instructions only — no hooks or gates enforce them yet. v1 lesson: validation that requires deliberate invocation gets skipped.
 
@@ -121,7 +125,7 @@ All forward-only. Reverse lookups via grep — never stored.
 | **Chore** | task | Rarely touches specs |
 | **Hotfix** | task → decision | Compressed process; post-mortem mandatory |
 
-Ceremony scales with project size. Small projects: spec + single task is sufficient.
+Ceremony scales with project size. Small projects (<10 specs): spec + single task is sufficient. Skip decision records for tooling, config, and dependency choices — note them inline in the task body. Reserve decision records for choices that affect observable behavior or constrain future work.
 
 **TODO:** when does detailed design (module boundaries, internal interfaces) happen? Must be after spec but before tests — tests need to know what to import. But locking design too early over-constrains implementation.
 
