@@ -7,24 +7,20 @@ paths = ["plugin/**"]
 
 # Worklog Methodology
 
-A spec-driven development methodology that makes AI agents reliable for large projects under minimal human supervision.
-
-## Core Premise
-
-AI agents suffer from finite context, no cross-session memory, and poor strategic judgment. The worklog externalizes project state into flat files so agents can reorient from written artifacts rather than relying on session continuity.
+Spec-driven development methodology for AI agents. Externalizes project state into flat files so agents reorient from written artifacts rather than session continuity.
 
 ## Entities
 
-Four entity types, each in its own directory under `worklog/`:
+Four types under `worklog/`:
 
-- **Spec** — living design reference. Describes observable behavior, constraints, anticipated changes, dangers. Always current; no status field. TOML frontmatter with `paths` globs for drift detection.
-- **Task** — atomic unit of work. Statuses: pending → active → done | blocked. Archived when done. References which specs it modifies.
-- **Decision** — immutable record of why a choice was made. Never edited after acceptance; superseded by new decisions. Never archived.
-- **Script** — Python automation for validation, drift detection, ID assignment.
+- **Spec** — living design reference. Observable behavior, constraints, anticipated changes, dangers. No status field. TOML frontmatter with `paths` globs for drift detection.
+- **Task** — atomic unit of work. Statuses: pending → active → done | blocked. Archived when done.
+- **Decision** — immutable record of why. Superseded by new decisions, never edited or archived.
+- **Script** — Python automation (validation, drift detection, ID assignment).
 
 ## Relationships
 
-All forward-only. Reverse lookups via grep.
+Forward-only. Reverse lookups via grep.
 
 - task → spec (modifies)
 - task → task (blocked_by)
@@ -43,7 +39,7 @@ All forward-only. Reverse lookups via grep.
 - Tests before implementation, derived from spec not code.
 - Test isolation: test agent receives spec only, not implementation details.
 - Survey before building.
-- Approval means explicit confirmation; discussion ≠ approval.
+- Explicit approval required; discussion ≠ approval.
 - Surface ambiguity; escalate when stuck.
 - Record non-trivial decisions.
 - No antipatterns (injection, unbounded allocations, N+1, bare catch, insecure defaults).
@@ -55,24 +51,24 @@ Six workflows scaling ceremony with project size: greenfield, bug fix, refactor,
 
 ## Drift Detection
 
-Uses git history as watermark — compares spec's last-touched commit against source file changes under the spec's `paths` globs. No metadata stored in the spec itself.
+Git history as watermark — compares spec's last-touched commit against source changes under `paths` globs.
 
 ## Delivery
 
-Packaged as a Claude Code skill plugin. A `plugin.json` manifest declares name, description, and version. SKILL.md is the single authoritative file — the methodology is defined entirely within it.
+Claude Code skill plugin. `plugin.json` manifest + SKILL.md as single authoritative file.
 
 ## Anticipated Changes
 
-- Enforcement mechanism (hooks/gates) beyond instruction-only rules.
-- Scripts for validation, drift reporting, and ID assignment.
-- Task type field (implementation, investigation, bugfix, chore, hotfix).
+- Enforcement mechanism (hooks/gates).
+- Scripts (validation, drift, ID assignment).
+- Task type field.
 - Test ↔ spec traceability.
 - Spec-by-ID cross-referencing (replacing fragile relative paths).
-- Convention for specs that delegate behavioral details to external reference docs.
-- Additional skills or scripts bundled alongside the core skill.
+- Convention for specs delegating behavioral details to reference docs.
+- Additional bundled skills or scripts.
 
 ## Dangers
 
 - Without enforcement, agents bypass the methodology (v1 lesson: manual validation gets skipped).
-- Specs that describe implementation details instead of observable behavior drift immediately and create false authority.
-- Test agents that read source code or receive implementation knowledge from the parent agent produce implementation-coupled tests.
+- Implementation details in specs drift immediately and create false authority.
+- Test agents receiving implementation knowledge produce implementation-coupled tests.
