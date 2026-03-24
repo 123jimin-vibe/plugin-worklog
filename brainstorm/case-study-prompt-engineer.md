@@ -42,3 +42,39 @@ Tests tend to be too verbose and lengthy. Agents fail to exploit the fact that m
 - **Omit downstream coverage.** If function A calls function B, and B is extensively covered, A's tests don't need to exercise B's edge cases — only that A calls B correctly.
 
 Integration tests may still need to verify end-to-end string output, but unit tests should stay focused on the boundary of the unit.
+
+### 2026-03-24 — Spec directory reorganization breaks cross-references
+
+Reorganizing the spec directory requires updating all cross-referencing links throughout the project. Specs, decisions, tickets, and SKILL.md can all reference each other by relative path — moving or renaming files silently breaks those links. There is no automated check or tooling to detect stale references after a reorganization.
+
+### 2026-03-24 — Decision supersession is one-directional
+
+There is a `supersedes` field on decisions, but given a decision, there is no way to know whether it *has been* superseded. The `supersedes` field only points backward (new → old); there is no forward pointer (old → new). A reader looking at an older decision has no indication that it is stale unless they happen to find the newer one. This makes it easy to act on outdated decisions.
+
+### 2026-03-24 — Test coverage gaps from agent-written tests
+
+Findings from an agent implementing and testing a feature end-to-end. These are project-agnostic lessons for worklog-driven test authoring:
+
+1. **Reference docs are spec surface too.** Tests were written against the primary spec and config reference but not against a secondary reference doc that introduced a new usage pattern for an existing feature. The pattern was valid per the spec's generic wording but the test suite only exercised the variant shown in the primary reference. *Rule: When a spec delegates to reference docs, tests must cover behaviors described in all referenced documents, not just the primary one.*
+
+2. **Test all variants of a polymorphic input.** A feature accepted two input shapes (file path arrays and inline string arrays) through the same mechanism. Tests covered one shape exhaustively and the other not at all. The implementation handled only the tested shape. *Rule: When a spec says a field accepts multiple types or shapes, each shape needs at least one test.*
+
+3. **Unit-testing a function in isolation doesn't test the pipeline.** Variable substitution was tested as a pure function (dict in, string out) but never as part of the config-loading pipeline that produces that dict from files. The unit tests passed while the integration path could silently break. *Rule: For multi-step pipelines, at least one test should exercise the full path, not just individual stages.*
+
+4. **Testing parse is not testing behavior.** Several tests verified that a config key existed after parsing without verifying the behavior it controls. Parsing tests give false confidence — the feature can be completely broken while the test stays green. *Rule: Tests should assert on observable outcomes, not intermediate representations.*
+
+5. **One provider tested is not all providers tested.** When code dispatches across multiple providers/backends, testing one doesn't cover the others. Each provider had a distinct code path but only one was tested. *Rule: If the spec enumerates N providers/backends, test at least the happy path for each.*
+
+### 2026-03-24 — Worklog structural friction (agent-reported)
+
+Additional friction points from the same agent session, focused on worklog methodology rather than test quality:
+
+1. **Reference docs define spec-level behavior but live outside the worklog.** A reference doc in the plugin source tree introduced a new behavioral variant (prompt arrays as sweep dimensions) that the spec body didn't fully enumerate. The worklog's `paths` globs captured it as a governed file, but there's no distinction between "file this spec governs" and "file that extends this spec's behavioral surface." Drift detection wouldn't flag a reference doc introducing behavior the spec never mentioned.
+
+2. **Spec cross-references are fragile relative paths.** (Echoes the reorganization observation above.) Forward references in spec bodies are brittle `../infra/s0003-python-environment.md`-style paths. Every structural change is a link-repair chore. Proposed alternative: reference specs by ID only (e.g., `[s0003]`) and let tooling resolve the path.
+
+3. **No spec-to-test traceability.** Tests existed, covered some behaviors, missed others, and there was no way to know without manually auditing specs against test files. A `tests` field in spec frontmatter (or a convention like test docstrings citing spec IDs) would make gaps greppable. The worklog already acknowledges this as a TODO.
+
+4. **`paths` conflates ownership with relevance.** Two specs both claimed `plugin/lib/**` — one for environment setup, one for library behavior. The worklog doesn't distinguish "this spec owns this path" from "this spec touches this path." The overlap looks like a bug but is structurally valid. Drift detection can't know which spec to flag.
+
+5. **No way to mark a spec as incomplete relative to its references.** A spec said "arrays in `[[prompts]]` are sweep dimensions" generically, but only showed the file variant. The inline-string variant was only in a reference doc. There's no worklog convention for saying "this spec delegates details to X, and X is authoritative." The gap was invisible until runtime.
