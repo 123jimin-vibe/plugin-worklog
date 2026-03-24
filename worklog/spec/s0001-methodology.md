@@ -7,15 +7,15 @@ paths = ["plugin/**"]
 
 # Worklog Methodology
 
-Spec-driven development methodology for AI agents. Externalizes project state into flat files so agents reorient from written artifacts rather than session continuity.
+Spec-driven development methodology for AI agents. Stores project state in flat files so agents can pick up where they left off without relying on session memory.
 
 ## Entities
 
 Four types under `worklog/`:
 
-- **Spec** — living design reference. Observable behavior, constraints, anticipated changes, dangers. No status field. TOML frontmatter with `paths` globs for drift detection.
+- **Spec** — kept-up-to-date design reference. Observable behavior, constraints, anticipated changes, dangers. No status field. TOML frontmatter with `paths` globs for drift detection.
 - **Task** — atomic unit of work. Statuses: pending → active → done | blocked. Archived when done.
-- **Decision** — immutable record of why. Superseded by new decisions, never edited or archived.
+- **Decision** — permanent record of why a choice was made. Replaced by new decisions, never edited or archived.
 - **Script** — Python automation (validation, drift detection, ID assignment).
 
 ## Relationships
@@ -40,18 +40,18 @@ Forward-only. Reverse lookups via grep.
 - Test isolation: test agent receives spec only, not implementation details.
 - Survey before building.
 - Explicit approval required; discussion ≠ approval.
-- Surface ambiguity; escalate when stuck.
+- Ask about unclear requirements; escalate when stuck.
 - Record non-trivial decisions.
 - No antipatterns (injection, unbounded allocations, N+1, bare catch, insecure defaults).
 - Session resume from worklog state, not prior context.
 
 ## Workflows
 
-Six workflows scaling ceremony with project size: greenfield, bug fix, refactor, investigation, chore, hotfix.
+Six supported workflows (s0004–s0009): greenfield, bug fix, refactor, investigation, chore, hotfix. Small projects need less process; large projects need more.
 
 ## Drift Detection
 
-Git history as watermark — compares spec's last-touched commit against source changes under `paths` globs.
+Compares when the spec was last touched (via git log) against changes to source files under its `paths` globs. If source changed after the spec, the spec may be stale.
 
 ## Delivery
 

@@ -7,7 +7,7 @@ paths = ["brainstorm/**"]
 
 # Design Research & Case Studies
 
-Design rationale, empirical observations, and prior-art research informing the methodology. Evidence base behind s0001 — not part of the deliverable.
+Design rationale, observations, and prior-art research informing the methodology. Background research for s0001 — not part of the deliverable.
 
 ## Contents
 
@@ -18,7 +18,7 @@ Design rationale, empirical observations, and prior-art research informing the m
 
 ## Relationship to Methodology
 
-Findings flow into SKILL.md via iterative revision. Append-friendly — new observations added over time, existing entries updated when refined.
+Findings flow into SKILL.md via revision. New observations are added over time; existing entries updated when refined.
 
 ## Anticipated Changes
 
