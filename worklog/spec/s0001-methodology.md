@@ -11,11 +11,11 @@ Spec-driven development methodology for AI agents. Stores project state in flat 
 
 ## Entities
 
-Four types under `worklog/`:
+Four types under `worklog/`. Entity specs in `worklog/spec/entity/`:
 
-- **Spec** — kept-up-to-date design reference. Observable behavior, constraints, anticipated changes, dangers. No status field. TOML frontmatter with `paths` globs for drift detection.
-- **Task** — atomic unit of work. Statuses: pending → active → done | blocked. Archived when done.
-- **Decision** — permanent record of why a choice was made. Replaced by new decisions, never edited or archived.
+- **Spec** (s0011) — kept-up-to-date design reference. No status field.
+- **Task** (s0012) — atomic unit of work. Statuses: pending → active → done | blocked.
+- **Decision** (s0013) — permanent record of why a choice was made. Immutable, superseded only.
 - **Script** — Python automation (validation, drift detection, ID assignment).
 
 ## Relationships
