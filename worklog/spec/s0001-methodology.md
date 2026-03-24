@@ -47,7 +47,16 @@ Forward-only. Reverse lookups via grep.
 
 ## Workflows
 
-Six supported workflows (s0004–s0009): greenfield, bug fix, refactor, investigation, chore, hotfix. Small projects need less process; large projects need more.
+Six supported workflows (s0004–s0009): greenfield, bug fix, refactor, investigation, chore, hotfix. Small projects need less process; large projects need more. Workflow specs are not implemented directly — other specs are shaped by them (e.g., a greenfield feature spec follows s0004's flow and forbidden list).
+
+Each workflow spec defines:
+
+1. **Flow** — happy, common, and rare paths merged into a flowchart. Each step names which entity type is created, updated, or archived.
+2. **Forbidden** — actions never acceptable in this workflow.
+3. **Methodology evaluation** — whether current entities, relationships, and tooling support the workflow:
+   - Missing relationships or entity fields.
+   - Potential agent mistakes (informed by case study observations).
+   - Required tooling and hooks.
 
 ## Drift Detection
 

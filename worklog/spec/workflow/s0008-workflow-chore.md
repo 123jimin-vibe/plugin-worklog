@@ -6,10 +6,36 @@ tags = ["workflow"]
 
 # Workflow: Chore
 
-Maintenance work (dependencies, CI, tooling). Flow: task.
+Maintenance work: dependencies, CI, tooling, documentation.
 
-## Requirements
+## Flow
 
-- Rarely touches specs.
-- No regressions — CI green, existing tests pass.
-- May reveal stale specs as a side effect.
+1. Trigger: security advisory, deprecation, tooling need.
+2. Task (create) — assess breaking changes, migration effort.
+3. Execute change.
+4. Verify: CI green, existing tests pass.
+5. Spec (update) if stale reference found as side effect.
+6. Task (archive).
+
+Branches:
+- Dependency update introduces breaking changes → migration larger than expected.
+- Chore reveals outdated spec → spec (update).
+- Chore escalates into a feature → spec (create), switch to greenfield workflow.
+- Blocked by upstream issue → task (set `blocked_by` or document).
+
+## Forbidden
+
+- Behavioral changes introduced as part of a chore without going through spec/task lifecycle.
+
+## Methodology Evaluation
+
+Potential agent mistakes:
+- Introduces behavioral changes without spec lifecycle under "it's just a chore."
+- Doesn't check whether updated dependencies affect spec-governed behavior.
+
+Gaps:
+- No trigger/source tracking — tasks don't record why the chore was needed (security advisory, deprecation notice).
+- Chores may touch many specs tangentially but there's no way to express "checked N specs, found M stale."
+
+Tooling/hooks:
+- drift.py: identify specs that may be stale after dependency or tooling changes.
