@@ -26,6 +26,8 @@ TOML fenced with `+++`. Required fields:
 
 `paths` is used by drift detection. Optional — omit when spec governs no source files (e.g. methodology, workflow). Prefer broad globs (`src/auth/**`) over enumerating individual files. When a source file is governed by a spec, annotate it with a `@worklog` comment (e.g. `// @worklog s0001`) to create a reverse link.
 
+<!-- TODO: `@worklog` markers saw low adoption in bfc (1 of ~40 files). Needs enforcement to be viable: (1) automated injection via post-commit hook or script; (2) a `which-spec <file>` query tool for discoverability without source modification; (3) validation script flagging governed files missing markers. -->
+
 ## Required Sections
 
 1. Top-level heading matching `title`.

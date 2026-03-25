@@ -38,7 +38,7 @@ any status → cancelled → (deleted or kept with decision)
 - `active` — work in progress.
 - `blocked` — waiting on another task (`blocked_by`). Returns to `active` when unblocked.
 - `done` — complete. Task is moved to `archive/`.
-- `cancelled` — removed from active work because requirements changed. Accompanied by a decision record. File is deleted (if no useful findings) or kept in place with the decision reference.
+- `cancelled` — work abandoned (requirements changed, cost exceeds benefit, feature unnecessary, approach wrong). Accompanied by a decision record. Cancelled tasks may be archived if they contain useful findings; otherwise deleted.
 
 ## Body
 
@@ -67,7 +67,7 @@ Inbound `blocked_by` is not stored on the blocking task. Reverse lookup via grep
 | Create  | New unit of work identified. |
 | Update  | Re-scope, change status, set/clear `blocked_by`, add findings. |
 | Archive | Status reaches `done`. File moves to `archive/`. |
-| Cancel  | Requirements changed. Accompanied by a decision record. |
+| Cancel  | Work abandoned for any reason. Accompanied by a decision record. |
 
 ## Precedence
 
@@ -78,7 +78,6 @@ Task scope is subordinate to the governing spec. When findings or implementation
 
 ## Forbidden Actions
 
-- Archive without reaching `done` status.
 - Archive a hotfix task without a linked decision record (post-mortem).
 - Cancel without a decision record explaining why.
 - Modify `modifies` to point at a nonexistent spec.
