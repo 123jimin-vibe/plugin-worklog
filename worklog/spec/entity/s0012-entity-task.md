@@ -21,28 +21,24 @@ TOML fenced with `+++`. Required fields:
 |--------------|------------|----------------------------------------------------------|
 | `id`         | string     | Unique identifier, format `tNNNN`.                       |
 | `title`      | string     | Human-readable name.                                     |
+| `tags`       | string[]   | Classification (e.g. `bugfix`, `greenfield`).            |
 | `status`     | string     | One of: `pending`, `active`, `done`, `blocked`.          |
-| `modifies`   | string[]   | Spec IDs this task changes behavior under.               |
-
-Optional fields:
-
-| Field        | Type       | Description                                              |
-|--------------|------------|----------------------------------------------------------|
-| `blocked_by` | string[]   | Task IDs that must complete before this task can proceed. |
+| `modifies`   | string[]   | Spec IDs this task changes behavior under. May be empty for chore tasks that touch no spec (e.g. CI config, dependency updates). |
+| `blocked_by` | string[]   | Task IDs that must complete before this task can proceed. Optional — omit when not blocked. |
 
 ## Status Lifecycle
 
 ```
-pending → active → done
-              ↘ blocked → active → done
+pending → active → done → (archived)
+              ↘ blocked → active
+any status → cancelled → (deleted or kept with decision)
 ```
 
 - `pending` — created, not yet started.
 - `active` — work in progress.
 - `blocked` — waiting on another task (`blocked_by`). Returns to `active` when unblocked.
 - `done` — complete. Task is moved to `archive/`.
-
-A task may also be **cancelled** — removed from active work when requirements change. Cancellation is recorded via a decision.
+- `cancelled` — removed from active work because requirements changed. Accompanied by a decision record. File is deleted (if no useful findings) or kept in place with the decision reference.
 
 ## Body
 
@@ -51,6 +47,8 @@ Free-form markdown below the frontmatter. Used for:
 - Scope description.
 - Findings (investigation workflow).
 - Notes accumulated during work.
+
+Unapproved or planned items must be marked `TODO`. Do not present speculative scope as decided.
 
 ## Relationships
 
@@ -71,12 +69,21 @@ Inbound `blocked_by` is not stored on the blocking task. Reverse lookup via grep
 | Archive | Status reaches `done`. File moves to `archive/`. |
 | Cancel  | Requirements changed. Accompanied by a decision record. |
 
+## Precedence
+
+Task scope is subordinate to the governing spec. When findings or implementation reveal a conflict:
+
+1. Spec is authoritative — task scope adjusts to match, not the reverse.
+2. Spec suspected wrong — ask user, never silently override. Record the resolution via a decision if the spec changes.
+
 ## Forbidden Actions
 
 - Archive without reaching `done` status.
 - Archive a hotfix task without a linked decision record (post-mortem).
+- Cancel without a decision record explaining why.
 - Modify `modifies` to point at a nonexistent spec.
-- Work on a task without a covering spec in `modifies`.
+- Work on a task that changes spec-governed behavior without a covering spec in `modifies`.
+- Present unapproved or speculative scope as decided. Discussion ≠ approval — items from brainstorming or unconfirmed requirements must carry a `TODO` marker.
 
 ## Anticipated Changes
 
@@ -87,6 +94,6 @@ Inbound `blocked_by` is not stored on the blocking task. Reverse lookup via grep
 
 ## Dangers
 
-- Tasks created without `modifies` escape spec governance entirely.
+- Tasks with empty `modifies` that actually change spec-governed behavior escape governance silently. Empty `modifies` is valid for chores — dangerous when misused for behavioral work.
 - Archiving without verifying the spec is still consistent with the completed work.
 - Hotfix tasks look identical to normal tasks — no urgency signal for tooling or agents.
