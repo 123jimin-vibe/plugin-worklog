@@ -29,11 +29,12 @@ TOML fenced with `+++`. Required fields:
 ## Required Sections
 
 1. Top-level heading matching `title`.
-2. Body describing observable behavior and constraints.
-3. **Anticipated Changes** — known future work or likely evolution.
-4. **Dangers** — risks, pitfalls, or failure modes the agent must watch for.
+2. Body describing observable behavior — inputs, outputs, observable effects, ordering guarantees. Describe what the system does from a consumer's perspective, not how it is implemented.
+3. **Constraints** — invariants, limits, and rules that must always or never hold. Distinct from behavior: behavior says what the system does; constraints say what it must not violate.
+4. **Anticipated Changes** — known future work or likely evolution.
+5. **Dangers** — risks, pitfalls, or failure modes the agent must watch for.
 
-Sections beyond these are discretionary and topic-dependent. Unapproved or planned items must be marked `TODO`. Do not present speculative content as decided.
+Sections beyond these are discretionary and topic-dependent. Unapproved or planned items must be marked `TODO` — this applies to individual items within any section, not just entire sections.
 
 ## Relationships
 
@@ -61,6 +62,7 @@ Structural updates (`paths` after a file move, section reorganization, wording c
 - Delete without a decision record explaining why.
 - Archive. Specs have no status lifecycle.
 - Modify observable behavior without user approval.
+- Present unapproved or speculative content as decided. Discussion ≠ approval — items from brainstorming or unconfirmed requirements must carry a `TODO` marker until explicitly approved.
 - Implementation details (API signatures, file paths, version numbers, directory layouts) in spec body.
 
 ## Precedence
