@@ -29,16 +29,14 @@ Branches:
 - Behavioral changes smuggled in as "refactoring."
 - Refactoring without test coverage to verify behavioral preservation.
 
-## Methodology Evaluation
+## Anticipated Changes
 
-Potential agent mistakes:
-- Introduces behavioral changes under the label "refactoring."
+- Mechanism to verify "no behavioral change" beyond existing test coverage.
+- Formal distinction between structural and behavioral spec changes.
+- TODO: Hook — flag spec edits during a refactor task for user review.
+
+## Dangers
+
+- Behavioral change disguised as structural — the boundary is ambiguous during refactoring.
 - Scope creep: adjacent changes that should be separate tasks.
-- Refactors areas with insufficient test coverage, risking silent breakage.
-
-Gaps:
-- No way to verify "no behavioral change" beyond existing tests, which may be incomplete.
-- No distinction between structural spec changes (allowed) and behavioral spec changes (forbidden in this workflow).
-
-Tooling/hooks:
-- Hook: flag spec edits during a refactor task for user review (structural vs. smuggled behavioral change).
+- Refactoring areas with insufficient test coverage risks silent breakage.

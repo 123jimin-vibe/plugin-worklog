@@ -28,15 +28,13 @@ Branches:
 - Hotfix without a post-mortem decision record.
 - Hotfix used as precedent to bypass process for non-emergencies.
 
-## Methodology Evaluation
+## Anticipated Changes
 
-Potential agent mistakes:
-- Skips the post-mortem decision record because the fix is already deployed.
-- Uses hotfix precedent to cut corners on subsequent non-urgent work.
+- Urgency marker on tasks to distinguish hotfix from normal tasks.
+- Formal bounds on which process steps can be skipped during hotfix.
+- TODO: Hook — hotfix tasks require a linked decision record before archiving.
 
-Gaps:
-- No urgency marker on tasks — a hotfix task looks identical to a normal task in the worklog.
-- The "bypass normal process" exception isn't formally bounded — which steps can be skipped?
+## Dangers
 
-Tooling/hooks:
-- Hook: hotfix tasks require a linked decision record before archiving.
+- Post-mortem decision record skipped because the fix is already deployed.
+- Hotfix precedent used to cut corners on subsequent non-urgent work.

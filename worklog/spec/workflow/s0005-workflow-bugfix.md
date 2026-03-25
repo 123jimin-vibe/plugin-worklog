@@ -32,18 +32,16 @@ Branches:
 - Regression test written after the fix (must fail before fix to prove it catches the bug).
 - Closing without documenting the underlying issue.
 
-## Methodology Evaluation
+## Anticipated Changes
 
-Potential agent mistakes:
-- Fixes the symptom without identifying root cause.
-- Writes regression test after the fix, so it never proves it catches the bug.
-- Doesn't file a separate task when a bug is found during unrelated work.
+- Task field for external bug report or issue tracker reference (`triggered_by`).
+- Regression test traceability back to the spec it validates.
+- Enforcement of test-before-fix ordering.
+- TODO: validate.py — bugfix tasks reference a spec via `modifies`.
+- TODO: Hook — warn if task is archived without a linked regression test.
 
-Gaps:
-- No relationship from task to external bug report or issue tracker. Tasks have `modifies` (spec) and `blocked_by` (task) but no `triggered_by` or external reference field.
-- Regression test has no traceability back to the spec it validates.
-- No enforcement of test-before-fix ordering.
+## Dangers
 
-Tooling/hooks:
-- validate.py: bugfix tasks reference a spec via `modifies`.
-- Hook: warn if task is archived without a linked regression test.
+- Symptom fixed without identifying root cause.
+- Regression test written after the fix — never proves it catches the bug.
+- Bug found during unrelated work not filed as separate task.

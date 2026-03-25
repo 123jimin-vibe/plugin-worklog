@@ -53,10 +53,8 @@ Each workflow spec defines:
 
 1. **Flow** — happy, common, and rare paths merged into a flowchart. Each step names which entity type is created, updated, or archived.
 2. **Forbidden** — actions never acceptable in this workflow.
-3. **Methodology evaluation** — whether current entities, relationships, and tooling support the workflow:
-   - Missing relationships or entity fields.
-   - Potential agent mistakes (informed by case study observations).
-   - Required tooling and hooks.
+3. **Anticipated Changes** — gaps in entity support, missing relationships, planned tooling.
+4. **Dangers** — agent mistakes observed or anticipated for this workflow.
 
 ## Drift Detection
 

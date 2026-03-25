@@ -27,15 +27,13 @@ Branches:
 
 - Behavioral changes introduced as part of a chore without going through spec/task lifecycle.
 
-## Methodology Evaluation
+## Anticipated Changes
 
-Potential agent mistakes:
-- Introduces behavioral changes without spec lifecycle under "it's just a chore."
-- Doesn't check whether updated dependencies affect spec-governed behavior.
+- Trigger/source tracking on tasks (security advisory, deprecation notice).
+- Way to express "checked N specs, found M stale" after broad changes.
+- TODO: drift.py — identify specs that may be stale after dependency or tooling changes.
 
-Gaps:
-- No trigger/source tracking — tasks don't record why the chore was needed (security advisory, deprecation notice).
-- Chores may touch many specs tangentially but there's no way to express "checked N specs, found M stale."
+## Dangers
 
-Tooling/hooks:
-- drift.py: identify specs that may be stale after dependency or tooling changes.
+- Behavioral changes introduced under "it's just a chore" without spec lifecycle.
+- Updated dependencies affecting spec-governed behavior go unchecked.

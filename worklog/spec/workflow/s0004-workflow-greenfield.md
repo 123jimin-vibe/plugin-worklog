@@ -33,19 +33,17 @@ Branches:
 - Tests written from implementation rather than spec.
 - Test agent receiving implementation details from parent agent.
 
-## Methodology Evaluation
+## Anticipated Changes
 
-Potential agent mistakes:
-- Creates too-narrow specs (one per function) instead of extending existing spec.
-- Treats discussion as approval; creates spec without explicit confirmation.
-- Over-specifies subagent test prompts, leaking implementation knowledge.
-- Skips survey step, reimplements existing functionality.
+- Spec-to-test traceability to verify coverage without manual audit.
+- `paths` distinction between governance and behavioral extension for drift detection.
+- Enforcement that spec exists before implementation starts.
+- TODO: validate.py — tasks have valid `modifies` refs; specs have required sections.
+- TODO: Hook — warn on implementation without a covering spec.
 
-Gaps:
-- No spec-to-test traceability. Can't verify test coverage against spec without manual audit.
-- `paths` doesn't distinguish governance from behavioral extension. Drift detection misses reference docs that introduce untested behavior.
-- No enforcement that spec exists before implementation starts.
+## Dangers
 
-Tooling/hooks:
-- validate.py: tasks have valid `modifies` refs; specs have required sections.
-- Hook: warn on implementation without a covering spec.
+- Agent creates too-narrow specs (one per function) instead of extending existing spec.
+- Discussion treated as approval; spec created without explicit confirmation.
+- Subagent test prompts over-specified, leaking implementation knowledge.
+- Survey step skipped, existing functionality reimplemented.

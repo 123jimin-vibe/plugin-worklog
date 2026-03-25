@@ -31,16 +31,13 @@ Branches:
 - Investigation code merged without a spec and proper task lifecycle.
 - Findings not documented (knowledge lost at session end).
 
-## Methodology Evaluation
+## Anticipated Changes
 
-Potential agent mistakes:
-- Merges prototype code without going through spec/task lifecycle.
-- Doesn't document findings, losing knowledge at session boundary.
-- Doesn't create follow-up tasks for discovered work.
+- Relationship from follow-up task back to the investigation that spawned it (originated-from link).
+- Convention for investigation output format beyond free-form task body.
 
-Gaps:
-- No relationship from follow-up task back to the investigation that spawned it. The follow-up has `modifies` (spec) but no "originated from investigation" link.
-- No convention for investigation output format beyond "findings in task body."
+## Dangers
 
-Tooling/hooks:
-- None critical. Investigations are lightweight by design.
+- Prototype code merged without spec/task lifecycle.
+- Findings not documented, losing knowledge at session boundary.
+- Follow-up tasks not created for discovered work.

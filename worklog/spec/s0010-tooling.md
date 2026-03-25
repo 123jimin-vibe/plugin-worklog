@@ -16,3 +16,8 @@ No tools implemented yet.
 - validate: Dangling refs, invalid statuses, missing required fields.
 - drift: Spec-code drift report for specs with `paths`.
 - search: Query entities by tag, status, or relationship.
+
+## Dangers
+
+- Tools that silently pass on invalid input create false confidence in worklog integrity.
+- Drift detection that produces too many false positives gets ignored.
