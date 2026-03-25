@@ -33,7 +33,7 @@ TOML fenced with `+++`. Required fields:
 1. Top-level heading matching `title`.
 2. Body describing observable behavior — inputs, outputs, observable effects, ordering guarantees. Describe what the system does from a consumer's perspective, not how it is implemented.
 3. **Constraints** — invariants, limits, and rules that must always or never hold. Distinct from behavior: behavior says what the system does; constraints say what it must not violate.
-4. **Anticipated Changes** — known future work or likely evolution.
+4. **Anticipated Changes** — known future work or likely evolution. These are informational, not actionable — an anticipated change must be explicitly promoted to a `TODO` (or task) before work begins. Do not treat anticipated changes as implicit work items.
 5. **Dangers** — risks, pitfalls, or failure modes the agent must watch for.
 
 Sections beyond these are discretionary and topic-dependent. Unapproved or planned items must be marked `TODO` — this applies to individual items within any section, not just entire sections.

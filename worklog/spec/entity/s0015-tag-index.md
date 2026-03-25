@@ -1,7 +1,7 @@
 +++
 id = "s0015"
 title = "Tag Index"
-tags = ["methodology"]
+tags = ["entity", "methodology"]
 +++
 
 # Tag Index
