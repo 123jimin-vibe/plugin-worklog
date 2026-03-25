@@ -1,8 +1,7 @@
 +++
 id = "s0013"
 title = "Entity: Decision"
-tags = ["entity"]
-paths = ["worklog/decision/**"]
+tags = ["entity", "methodology"]
 +++
 
 # Entity: Decision

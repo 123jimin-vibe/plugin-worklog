@@ -1,8 +1,7 @@
 +++
 id = "s0012"
 title = "Entity: Task"
-tags = ["entity"]
-paths = ["worklog/task/**"]
+tags = ["entity", "methodology"]
 +++
 
 # Entity: Task

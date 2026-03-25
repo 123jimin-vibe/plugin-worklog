@@ -1,7 +1,7 @@
 +++
 id = "s0005"
 title = "Workflow: Bug Fix"
-tags = ["workflow"]
+tags = ["workflow", "methodology"]
 +++
 
 # Workflow: Bug Fix

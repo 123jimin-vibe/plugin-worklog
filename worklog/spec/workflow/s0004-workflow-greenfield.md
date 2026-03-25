@@ -1,7 +1,7 @@
 +++
 id = "s0004"
 title = "Workflow: Greenfield"
-tags = ["workflow"]
+tags = ["workflow", "methodology"]
 +++
 
 # Workflow: Greenfield

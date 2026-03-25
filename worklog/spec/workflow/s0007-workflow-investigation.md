@@ -1,7 +1,7 @@
 +++
 id = "s0007"
 title = "Workflow: Investigation"
-tags = ["workflow"]
+tags = ["workflow", "methodology"]
 +++
 
 # Workflow: Investigation

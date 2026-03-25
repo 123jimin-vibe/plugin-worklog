@@ -1,7 +1,7 @@
 +++
 id = "s0006"
 title = "Workflow: Refactor"
-tags = ["workflow"]
+tags = ["workflow", "methodology"]
 +++
 
 # Workflow: Refactor

@@ -1,8 +1,8 @@
 +++
 id = "s0001"
 title = "Worklog Methodology"
-tags = ["core"]
-paths = ["plugin/**"]
+tags = ["methodology"]
+paths = ["plugin/skills/worklog/SKILL.md"]
 +++
 
 # Worklog Methodology
@@ -11,12 +11,13 @@ Spec-driven development methodology for AI agents. Stores project state in flat 
 
 ## Entities
 
-Four types under `worklog/`. Entity specs in `worklog/spec/entity/`:
+Three entity types in `worklog/`. Entity specs in `worklog/spec/entity/`:
 
 - **Spec** (s0011) — kept-up-to-date design reference. No status field.
 - **Task** (s0012) — atomic unit of work. Statuses: pending → active → done | blocked.
 - **Decision** (s0013) — permanent record of why a choice was made. Immutable, superseded only.
-- **Script** — Python automation (validation, drift detection, ID assignment).
+
+Scripts (s0010) are Python automation bundled with the plugin, separate from entity files.
 
 ## Relationships
 

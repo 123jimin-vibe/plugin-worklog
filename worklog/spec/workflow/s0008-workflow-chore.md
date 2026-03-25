@@ -1,7 +1,7 @@
 +++
 id = "s0008"
 title = "Workflow: Chore"
-tags = ["workflow"]
+tags = ["workflow", "methodology"]
 +++
 
 # Workflow: Chore

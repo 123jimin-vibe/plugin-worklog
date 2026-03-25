@@ -2,11 +2,12 @@
 id = "s0010"
 title = "Tooling"
 tags = ["tooling"]
+paths = ["plugin/skills/worklog/script/**"]
 +++
 
 # Tooling
 
-Scripts that automate worklog operations. Each tool gets its own spec when introduced.
+Scripts that automate worklog operations, bundled with the plugin at `plugin/skills/worklog/script/`. Python. Accept `-w PATH` for worklog root (default: `./worklog`). Each tool gets its own spec when introduced.
 
 No tools implemented yet.
 
