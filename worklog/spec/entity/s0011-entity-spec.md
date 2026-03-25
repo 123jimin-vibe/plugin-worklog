@@ -23,6 +23,7 @@ TOML fenced with `+++`. Required fields:
 | `title` | string     | Human-readable name.                                |
 | `tags`  | string[]   | Classification (e.g. `core`, `workflow`, `entity`). |
 | `paths` | string[]   | Glob patterns for governed source files (see below). |
+| `parent`| string     | ID of the parent spec (e.g. `"s0003"`). Optional.    |
 
 `paths` is used by drift detection. Optional — omit when spec governs no source files (e.g. methodology, workflow). Prefer broad globs (`src/auth/**`) over enumerating individual files. When a source file is governed by a spec, annotate it with a `@worklog` comment (e.g. `// @worklog s0001`) to create a reverse link.
 
@@ -39,6 +40,7 @@ Sections beyond these are discretionary and topic-dependent. Unapproved or plann
 
 | Direction | Relationship         | Target        |
 |-----------|----------------------|---------------|
+| Outbound  | `parent`             | Spec (parent)  |
 | Outbound  | `paths`              | Source files   |
 | Inbound   | `task.modifies`      | Task           |
 | Inbound   | `decision.relates_to`| Decision       |
@@ -84,5 +86,5 @@ Compares the spec's last-touched date (via git log) against changes to files mat
 - Specs without `paths` escape drift detection silently.
 - Append-only growth — agents add content but never prune obsolete material. Specs grow monotonically and eventually contradict themselves.
 - Overlapping `paths` across specs creates ambiguous drift signals — unclear which spec is stale when a shared file changes.
-- A spec update can silently contradict another spec. Check related specs (via shared `tags` or overlapping `paths`) when making non-trivial updates.
+- A spec update can silently contradict another spec. Check related specs (via `parent`, shared `tags`, or overlapping `paths`) when making non-trivial updates. Parent–child contradictions must be resolved immediately.
 - Reference docs cited by a spec become part of its behavioral surface but escape drift detection.
