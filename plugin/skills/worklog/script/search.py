@@ -4,6 +4,7 @@
 import argparse
 import pathlib
 
+from lib.constants import normalize_id
 from lib.discover import discover_entities
 
 
@@ -31,9 +32,11 @@ def _apply_filters(entities, args):
     if args.status:
         filters.append(lambda e: e.fields.get("status") == args.status)
     if args.modifies:
-        filters.append(lambda e: args.modifies in e.fields.get("modifies", []))
+        norm = normalize_id(args.modifies)
+        filters.append(lambda e: norm in e.fields.get("modifies", []))
     if args.relates_to:
-        filters.append(lambda e: args.relates_to in e.fields.get("relates_to", []))
+        norm = normalize_id(args.relates_to)
+        filters.append(lambda e: norm in e.fields.get("relates_to", []))
 
     for e in entities:
         if all(f(e) for f in filters):

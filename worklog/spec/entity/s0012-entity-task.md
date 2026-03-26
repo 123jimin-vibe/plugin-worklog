@@ -19,10 +19,10 @@ TOML fenced with `+++`. Required fields:
 
 | Field        | Type       | Description                                              |
 |--------------|------------|----------------------------------------------------------|
-| `id`         | string     | Unique identifier, format `tNNNN`.                       |
+| `id`         | string     | Unique identifier, format `t` + digits (e.g. `t0001`).  |
 | `title`      | string     | Human-readable name.                                     |
 | `tags`       | string[]   | Classification (e.g. `bugfix`, `greenfield`).            |
-| `status`     | string     | One of: `pending`, `active`, `done`, `blocked`.          |
+| `status`     | string     | One of: `pending`, `active`, `done`, `blocked`, `cancelled`. |
 | `modifies`   | string[]   | Spec IDs this task changes behavior under. May be empty for chore tasks that touch no spec. |
 | `blocked_by` | string[]   | Task IDs that must complete first. Optional — omit when not blocked. |
 

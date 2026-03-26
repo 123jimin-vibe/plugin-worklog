@@ -18,7 +18,7 @@ TOML fenced with `+++`. Required fields:
 
 | Field   | Type       | Description                                         |
 |---------|------------|-----------------------------------------------------|
-| `id`    | string     | Unique identifier, format `sNNNN`.                  |
+| `id`    | string     | Unique identifier, format `s` + digits (e.g. `s0001`). |
 | `title` | string     | Human-readable name.                                |
 | `tags`  | string[]   | Classification (e.g. `core`, `workflow`, `entity`). |
 | `paths` | string[]   | Glob patterns for governed source files (see below). |

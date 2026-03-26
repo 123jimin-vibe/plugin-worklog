@@ -18,7 +18,7 @@ TOML fenced with `+++`. Required fields:
 
 | Field        | Type       | Description                                           |
 |--------------|------------|-------------------------------------------------------|
-| `id`         | string     | Unique identifier, format `dNNNN`.                    |
+| `id`         | string     | Unique identifier, format `d` + digits (e.g. `d0001`). |
 | `title`      | string     | Human-readable name.                                  |
 | `relates_to` | string[]   | Spec IDs this decision concerns.                      |
 

@@ -11,11 +11,11 @@ Scripts that automate worklog operations, bundled with the plugin at `plugin/ski
 
 ## Shared library
 
-`lib/parse.py` — frontmatter parsing. `parse_frontmatter(path)` extracts TOML between `+++` fences and returns an `Entity` object with `id`, `title`, `type` (inferred from ID prefix), `tags`, `path`, and `fields` (remaining frontmatter).
+`lib/constants.py` — shared constants. Entity type mappings (`ID_PREFIX_TO_TYPE`, `TYPE_TO_PREFIX`, `TYPE_TO_BUCKET`), directory lists (`ENTITY_DIRS`, `ARCHIVE_DIRS`), task-specific statuses (`TASK_STATUSES`), required fields per entity type (`REQUIRED_FIELDS`), ID pattern and helpers (`ID_PATTERN`, `parse_id`, `normalize_id`). ID format is prefix letter + one or more digits (e.g. `s0001`). `normalize_id` converts shorthand like `s1` to canonical `s0001` form.
 
-`lib/discover.py` — entity discovery and tag loading. `discover_entities(worklog_root)` walks entity directories and returns an `EntityStore` with `entities` (iterable) and `errors` (list of parse failures). `load_tags(worklog_root)` parses `tags.csv` and returns a list of `Tag` objects with `name` and `description`.
+`lib/parse.py` — frontmatter parsing. `parse_frontmatter(path)` extracts TOML between `+++` fences and returns an `Entity` object with `id`, `title`, `type` (inferred from ID prefix), `tags`, `path`, `archived`, and `fields` (remaining frontmatter).
 
-Callers should depend on iteration over `store.entities`, not on random indexing — the backing store may change.
+`lib/discover.py` — entity discovery and tag loading. `discover_entities(worklog_root)` walks entity directories and returns an `EntityStore` with `specs`, `tasks`, `decisions` (separate lists), `entities` (chained iterable of all), and `errors` (list of parse failures). Entities from archive directories have `archived=True`. `load_tags(worklog_root)` parses `tags.csv` and returns a list of `Tag` objects with `name` and `description`.
 
 ## Scripts
 
@@ -25,7 +25,7 @@ TODO: next-id — next available ID for a given entity type.
 
 TODO: drift — spec-code drift report for specs with `paths`.
 
-TODO: search — query entities by tag, status, or relationship. Prints `(none)` when no matches.
+TODO: search — query entities by tag, status, or relationship. ID arguments are normalized (e.g. `s1` matches `s0001`). Prints `(none)` when no matches.
 
 TODO: list — list entities with optional grouping and sorting. Prints `(none)` when no matches.
 

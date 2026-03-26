@@ -83,9 +83,9 @@ Check all entities for structural correctness.
   - Spec: `id`, `title`, `tags`. Optional: `paths`, `parent`.
   - Task: `id`, `title`, `tags`, `status`, `modifies`. Optional: `blocked_by`.
   - Decision: `id`, `title`, `relates_to`. Optional: `tags`, `supersedes`.
-- ID format matches prefix (`sNNNN`, `tNNNN`, `dNNNN`).
+- ID format matches prefix + digits (`s` + digits, `t` + digits, `d` + digits).
 - Filename starts with ID (`{id}-*.md`).
-- Status values valid: `pending`, `active`, `done`, `blocked`, `cancelled`.
+- Task status values valid: `pending`, `active`, `done`, `blocked`, `cancelled`.
 - Dangling refs: `modifies` → spec exists, `blocked_by` → task exists, `relates_to` → spec exists, `supersedes` → decision exists.
 - Tags in frontmatter exist in `tags.csv` index (per s0015).
 - No duplicate IDs across files.
@@ -95,7 +95,7 @@ Check all entities for structural correctness.
 
 ### next_id.py
 
-Print the next available 4-digit ID for a given entity type.
+Print the next available ID for a given entity type (4-digit zero-padded by convention).
 
 **Flags and args:**
 
