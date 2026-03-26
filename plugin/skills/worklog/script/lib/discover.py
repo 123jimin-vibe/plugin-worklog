@@ -1,8 +1,6 @@
 # @worklog s0010
 """Entity discovery and tag loading for worklog."""
 
-from __future__ import annotations
-
 import pathlib
 import re
 from dataclasses import dataclass, field

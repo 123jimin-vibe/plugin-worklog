@@ -1,8 +1,6 @@
 # @worklog s0010
 """Frontmatter parsing for worklog entities."""
 
-from __future__ import annotations
-
 import pathlib
 from dataclasses import dataclass, field
 
