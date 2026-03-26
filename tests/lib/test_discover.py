@@ -262,6 +262,7 @@ class TestDiscoverExtendedIds(unittest.TestCase):
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
         make_worklog(self.worklog)
+
     def tearDown(self):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
