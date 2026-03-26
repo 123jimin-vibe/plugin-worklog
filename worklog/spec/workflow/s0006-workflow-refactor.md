@@ -28,6 +28,11 @@ Branches:
 - Behavioral changes smuggled in as "refactoring."
 - Refactoring without test coverage to verify behavioral preservation.
 
+## Anticipated Changes
+
+- Mechanism to verify "no behavioral change" beyond existing test coverage.
+- Formal distinction between structural and behavioral spec changes.
+
 ## Dangers
 
 - Behavioral change disguised as structural — the boundary is ambiguous during refactoring.

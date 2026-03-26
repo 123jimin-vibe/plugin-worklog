@@ -27,6 +27,10 @@ Branches:
 
 - Behavioral changes introduced as part of a chore without going through spec/task lifecycle.
 
+## Anticipated Changes
+
+- Way to express "checked N specs, found M stale" after broad changes.
+
 ## Dangers
 
 - Behavioral changes introduced under "it's just a chore" without spec lifecycle.

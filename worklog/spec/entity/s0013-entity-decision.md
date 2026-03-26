@@ -46,6 +46,8 @@ Free-form markdown. Should cover:
 
 Only action allowed. Decisions are immutable after creation — a decision that needs correction is superseded by a new decision.
 
+Create when: non-trivial choice made, design flaw discovered, requirement changed, cost/benefit abandonment. Not every small choice needs a record — reserve for choices that affect observable behavior or constrain future work.
+
 ## Required Creation
 
 A decision record is required (not discretionary) when:
@@ -69,4 +71,5 @@ A decision record is required (not discretionary) when:
 ## Dangers
 
 - Skipping decision records for hotfixes because the fix is already deployed — the post-mortem is the point.
+- Editing a decision instead of superseding it destroys the historical record.
 - Decisions without `relates_to` become orphaned.

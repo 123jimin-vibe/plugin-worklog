@@ -56,6 +56,16 @@ Free-form markdown below frontmatter. Used for scope description, findings (inve
 
 When scope changes mid-flight: update body and `modifies`, get user confirmation if scope expanded. If the task has grown too large, split it.
 
+Task scope is subordinate to the governing spec. When findings conflict with the spec, adjust task scope — not the spec. If the spec is suspected wrong, ask the user. Record the resolution via a decision if the spec changes.
+
+## Archiving
+
+When status reaches `done`: move file to `archive/`, verify the governing spec is still consistent with the completed work.
+
+## Cancelling
+
+When work is abandoned (requirements changed, cost exceeds benefit, feature unnecessary, approach wrong): create a decision record, set status to `cancelled`. Cancelled tasks may be archived if they contain useful findings; otherwise deleted.
+
 ## Forbidden
 
 - Archive a hotfix task without a linked decision record (post-mortem).
@@ -68,6 +78,7 @@ When scope changes mid-flight: update body and `modifies`, get user confirmation
 
 - `type` field (greenfield, bugfix, refactor, investigation, chore, hotfix) for workflow classification.
 - `triggered_by` field for external references (issue tracker, security advisory).
+- Urgency marker to distinguish hotfix tasks from normal tasks.
 - Originated-from link back to investigation tasks that spawned follow-up work.
 
 ## Dangers
@@ -75,3 +86,4 @@ When scope changes mid-flight: update body and `modifies`, get user confirmation
 - Tasks with empty `modifies` that actually change spec-governed behavior escape governance silently.
 - Archiving without verifying the spec is still consistent with the completed work.
 - Hotfix tasks look identical to normal tasks — no urgency signal.
+- Not marking a completed task as done — task lingers in active directory, cluttering the working set and signaling false state.

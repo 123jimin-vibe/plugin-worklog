@@ -28,6 +28,10 @@ Branches:
 - Hotfix without a post-mortem decision record.
 - Hotfix used as precedent to bypass process for non-emergencies.
 
+## Anticipated Changes
+
+- Formal bounds on which process steps can be skipped during hotfix.
+
 ## Dangers
 
 - Post-mortem decision record skipped because the fix is already deployed.

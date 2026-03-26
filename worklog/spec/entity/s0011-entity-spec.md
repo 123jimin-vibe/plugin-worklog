@@ -53,6 +53,10 @@ Triggers: implementation reveals adjustments, drift detected, component boundari
 
 Trivial edits (typos, wording) do not require a task.
 
+## Deletion
+
+When: spec is superseded by a newer spec, or the governed feature was removed. Requires a decision record.
+
 ## Forbidden
 
 - Delete without a decision record explaining why.
@@ -64,6 +68,7 @@ Trivial edits (typos, wording) do not require a task.
 
 - Spec-by-ID cross-referencing to replace fragile relative paths.
 - Convention for specs delegating behavioral details to reference docs.
+- Distinguishing governance paths from behavioral-extension paths in `paths`.
 
 ## Dangers
 
@@ -71,4 +76,5 @@ Trivial edits (typos, wording) do not require a task.
 - Specs without `paths` escape drift detection silently.
 - Append-only growth — agents add content but never prune obsolete material.
 - Overlapping `paths` across specs creates ambiguous drift signals.
-- A spec update can silently contradict another spec. Check related specs (via `parent`, shared `tags`, or overlapping `paths`) when making non-trivial updates.
+- A spec update can silently contradict another spec. Check related specs (via `parent`, shared `tags`, or overlapping `paths`) when making non-trivial updates. Parent–child contradictions must be resolved immediately.
+- Reference docs cited by a spec become part of its behavioral surface but escape drift detection.

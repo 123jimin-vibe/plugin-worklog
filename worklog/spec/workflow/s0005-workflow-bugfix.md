@@ -29,6 +29,12 @@ Branches:
 
 - Distorting code to route around a bug instead of fixing it.
 - Regression test written after the fix (must fail before fix to prove it catches the bug).
+- Closing without documenting the underlying issue.
+
+## Anticipated Changes
+
+- Regression test traceability back to the spec it validates.
+- Enforcement of test-before-fix ordering.
 
 ## Dangers
 

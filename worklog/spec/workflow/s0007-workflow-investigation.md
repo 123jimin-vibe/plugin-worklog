@@ -31,6 +31,10 @@ Branches:
 - Investigation code merged without a spec and proper task lifecycle.
 - Findings not documented (knowledge lost at session end).
 
+## Anticipated Changes
+
+- Convention for investigation output format beyond free-form task body.
+
 ## Dangers
 
 - Prototype code merged without spec/task lifecycle.

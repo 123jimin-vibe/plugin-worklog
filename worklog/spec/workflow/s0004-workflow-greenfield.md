@@ -31,6 +31,11 @@ Branches:
 - Spec's observable behavior modified without user approval.
 - Test agent receiving implementation details from parent agent.
 
+## Anticipated Changes
+
+- Spec-to-test traceability to verify coverage without manual audit.
+- Enforcement that spec exists before implementation starts.
+
 ## Dangers
 
 - Agent creates too-narrow specs (one per function) instead of extending existing spec.
