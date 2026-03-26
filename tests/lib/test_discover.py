@@ -252,6 +252,45 @@ class TestDiscoverArchivedFlag(unittest.TestCase):
 
 
 # ===================================================================
+# Extended IDs (non-4-digit)
+# ===================================================================
+
+@unittest.skipUnless(_module_available, _missing_reason)
+class TestDiscoverExtendedIds(unittest.TestCase):
+    """Entities with non-4-digit IDs are discovered normally."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_mixed_id_lengths_discovered(self):
+        write_entity(self.worklog, "s1", {
+            "id": "s1", "title": "Short spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "s0002", {
+            "id": "s0002", "title": "Normal spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t00001", {
+            "id": "t00001", "title": "Long task", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"],
+        })
+        store = discover_entities(self.worklog)
+        ids = {e.id for e in store.entities}
+        self.assertEqual(ids, {"s1", "s0002", "t00001"})
+
+    def test_extended_id_in_correct_bucket(self):
+        write_entity(self.worklog, "d42", {
+            "id": "d42", "title": "Answer",
+            "relates_to": ["s0001"],
+        })
+        store = discover_entities(self.worklog)
+        decision_ids = {e.id for e in store.decisions}
+        self.assertIn("d42", decision_ids)
+
+
+# ===================================================================
 # load_tags — returns Tag-like objects
 # ===================================================================
 

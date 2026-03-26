@@ -429,6 +429,84 @@ class TestValidateArchivedRefValid(unittest.TestCase):
 
 
 # ===================================================================
+# Extended IDs (non-4-digit)
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestValidateExtendedIds(unittest.TestCase):
+    """Non-4-digit IDs that match the ID pattern pass validation."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_clean_worklog_with_extended_ids(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s1", {
+            "id": "s1", "title": "Short spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t00001", {
+            "id": "t00001", "title": "Long task", "tags": ["misc"],
+            "status": "pending", "modifies": ["s1"],
+        })
+        write_entity(self.worklog, "d42", {
+            "id": "d42", "title": "Answer",
+            "relates_to": ["s1"],
+        })
+        result = _run_validate(self.worklog)
+        self.assertEqual(result.returncode, 0,
+                         f"Expected exit 0, got {result.returncode}.\n"
+                         f"stdout: {result.stdout}\nstderr: {result.stderr}")
+
+
+# ===================================================================
+# Archived entity validation
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestValidateArchivedEntityErrors(unittest.TestCase):
+    """Archived entities are themselves validated — bad data is still flagged."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_archived_task_invalid_status(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0004", {
+            "id": "t0004", "title": "Bad archived", "tags": ["misc"],
+            "status": "wip", "modifies": ["s0001"],
+        }, subdir="archive/task")
+
+        result = _run_validate(self.worklog)
+        self.assertNotEqual(result.returncode, 0)
+        output = result.stdout + result.stderr
+        self.assertIn("wip", output)
+        self.assertIn("t0004", output)
+
+    def test_archived_task_dangling_modifies(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "t0004", {
+            "id": "t0004", "title": "Dangling archived", "tags": ["misc"],
+            "status": "done", "modifies": ["s9999"],
+        }, subdir="archive/task")
+
+        result = _run_validate(self.worklog)
+        self.assertNotEqual(result.returncode, 0)
+        output = result.stdout + result.stderr
+        self.assertIn("s9999", output)
+
+
+# ===================================================================
 # Multiple errors — all reported
 # ===================================================================
 

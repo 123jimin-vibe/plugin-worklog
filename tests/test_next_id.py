@@ -124,6 +124,46 @@ class TestNextIdIncludesArchive(unittest.TestCase):
 
 
 # ===================================================================
+# Extended IDs (non-4-digit)
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestNextIdExtendedIds(unittest.TestCase):
+    """next_id correctly accounts for non-4-digit IDs when computing max."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_short_id_counted(self):
+        write_entity(self.worklog, "s1", {
+            "id": "s1", "title": "Short", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "s0003", {
+            "id": "s0003", "title": "Normal", "tags": ["misc"],
+        })
+        result = _run_next_id(self.worklog, "spec")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("s0004", result.stdout.strip())
+
+    def test_long_id_counted(self):
+        write_entity(self.worklog, "t00001", {
+            "id": "t00001", "title": "Long", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"],
+        })
+        write_entity(self.worklog, "t0010", {
+            "id": "t0010", "title": "Normal", "tags": ["misc"],
+            "status": "active", "modifies": ["s0001"],
+        })
+        result = _run_next_id(self.worklog, "task")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("t0011", result.stdout.strip())
+
+
+# ===================================================================
 # Invalid arguments
 # ===================================================================
 

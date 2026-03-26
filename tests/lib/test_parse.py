@@ -214,5 +214,58 @@ class TestEntityTypeInference(unittest.TestCase):
             pass  # raising is also acceptable
 
 
+# ===================================================================
+# Extended IDs (non-4-digit)
+# ===================================================================
+
+@unittest.skipUnless(_module_available, _missing_reason)
+class TestParseFrontmatterExtendedIds(unittest.TestCase):
+    """IDs with non-standard digit counts are parsed correctly."""
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_short_id_s1(self):
+        path = _write_file(self.tmpdir, "s1-short.md", (
+            '+++\n'
+            'id = "s1"\n'
+            'title = "Short"\n'
+            'tags = ["misc"]\n'
+            '+++\n'
+        ))
+        result = parse_frontmatter(path)
+        self.assertEqual(result.id, "s1")
+        self.assertEqual(result.type, "spec")
+
+    def test_long_id_t00001(self):
+        path = _write_file(self.tmpdir, "t00001-long.md", (
+            '+++\n'
+            'id = "t00001"\n'
+            'title = "Long"\n'
+            'tags = ["misc"]\n'
+            'status = "pending"\n'
+            'modifies = ["s0001"]\n'
+            '+++\n'
+        ))
+        result = parse_frontmatter(path)
+        self.assertEqual(result.id, "t00001")
+        self.assertEqual(result.type, "task")
+
+    def test_two_digit_id_d42(self):
+        path = _write_file(self.tmpdir, "d42-answer.md", (
+            '+++\n'
+            'id = "d42"\n'
+            'title = "Answer"\n'
+            'relates_to = ["s0001"]\n'
+            '+++\n'
+        ))
+        result = parse_frontmatter(path)
+        self.assertEqual(result.id, "d42")
+        self.assertEqual(result.type, "decision")
+
+
 if __name__ == "__main__":
     unittest.main()

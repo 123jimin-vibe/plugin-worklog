@@ -2,7 +2,7 @@
 id = "t0003"
 title = "Implement plugin scripts"
 tags = ["tooling"]
-status = "pending"
+status = "active"
 modifies = ["s0010"]
 +++
 

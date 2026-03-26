@@ -186,6 +186,88 @@ class TestSearchByRelatesTo(unittest.TestCase):
 
 
 # ===================================================================
+# Extended ID normalization
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestSearchModifiesExtendedId(unittest.TestCase):
+    """--modifies with a short ID normalizes to match canonical form."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Auth", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Login", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"],
+        })
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_modifies_short_id_s1(self):
+        result = _run_search(self.worklog, "--modifies", "s1")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("t0001", result.stdout)
+
+    def test_relates_to_short_id(self):
+        write_entity(self.worklog, "d0001", {
+            "id": "d0001", "title": "Use JWT",
+            "relates_to": ["s0001"],
+        })
+        result = _run_search(self.worklog, "--relates-to", "s1")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("d0001", result.stdout)
+
+
+# ===================================================================
+# Archived entities in search
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestSearchIncludesArchived(unittest.TestCase):
+    """Archived entities appear in search results."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Active task", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"],
+        })
+        write_entity(self.worklog, "t0004", {
+            "id": "t0004", "title": "Archived task", "tags": ["misc"],
+            "status": "done", "modifies": ["s0001"],
+        }, subdir="archive/task")
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_archived_task_in_tag_search(self):
+        result = _run_search(self.worklog, "--tag", "misc")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("t0004", result.stdout)
+        self.assertIn("t0001", result.stdout)
+
+    def test_archived_task_in_status_search(self):
+        result = _run_search(self.worklog, "--status", "done")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("t0004", result.stdout)
+
+    def test_archived_task_in_modifies_search(self):
+        result = _run_search(self.worklog, "--modifies", "s0001")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("t0004", result.stdout)
+
+
+# ===================================================================
 # Combined filters (AND logic)
 # ===================================================================
 
