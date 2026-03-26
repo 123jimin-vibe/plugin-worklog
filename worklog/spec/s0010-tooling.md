@@ -7,7 +7,7 @@ paths = ["plugin/skills/worklog/script/**"]
 
 # Tooling
 
-Scripts that automate worklog operations, bundled with the plugin at `plugin/skills/worklog/script/`. Python. Accept `-w PATH` for worklog root (default: `./worklog`). Each tool gets its own spec when introduced.
+Scripts that automate worklog operations, bundled with the plugin at `plugin/skills/worklog/script/`. Python. Accept `-w PATH` for worklog root (default: `./worklog`). Shared logic (parsing, discovery) lives under `lib/`. Each tool gets its own spec when introduced.
 
 No tools implemented yet.
 
@@ -17,6 +17,7 @@ No tools implemented yet.
 - validate: Dangling refs, invalid statuses, missing required fields.
 - drift: Spec-code drift report for specs with `paths`.
 - search: Query entities by tag, status, or relationship.
+- list: List entities with optional grouping and sorting.
 
 ## Dangers
 
