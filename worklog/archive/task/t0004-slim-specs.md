@@ -2,7 +2,7 @@
 id = "t0004"
 title = "Slim specs and add missing operational detail"
 tags = ["methodology"]
-status = "pending"
+status = "done"
 modifies = ["s0004", "s0005", "s0006", "s0007", "s0008", "s0009", "s0011", "s0012", "s0013"]
 +++
 
