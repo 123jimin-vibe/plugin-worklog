@@ -53,7 +53,7 @@ def write_tags(root, tags):
     root = pathlib.Path(root)
     lines = ["tag,description"]
     for tag in tags:
-        lines.append(f"{tag},Test tag.")
+        lines.append(f'{tag},"Test tag."')
     path = root / "tags.csv"
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return str(path)

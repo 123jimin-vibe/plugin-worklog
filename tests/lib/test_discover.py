@@ -214,8 +214,8 @@ class TestLoadTagsDescription(unittest.TestCase):
         path = pathlib.Path(self.worklog) / "tags.csv"
         path.write_text(
             "tag,description\n"
-            "auth,Authentication and authorization.\n"
-            "tooling,Automation scripts and tools.\n",
+            'auth,"Authentication and authorization."\n'
+            'tooling,"Automation scripts and tools."\n',
             encoding="utf-8",
         )
         result = load_tags(self.worklog)
