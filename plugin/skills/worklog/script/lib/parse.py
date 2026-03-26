@@ -9,11 +9,7 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib  # type: ignore[no-redef]
 
-_ID_PREFIX_TO_TYPE = {
-    "s": "spec",
-    "t": "task",
-    "d": "decision",
-}
+from .constants import ID_PREFIX_TO_TYPE
 
 @dataclass
 class Entity:
@@ -62,7 +58,7 @@ def parse_frontmatter(path: str | pathlib.Path) -> Entity:
     tags = data.pop("tags", [])
 
     prefix = entity_id[0] if entity_id else ""
-    entity_type = _ID_PREFIX_TO_TYPE.get(prefix, "unknown")
+    entity_type = ID_PREFIX_TO_TYPE.get(prefix, "unknown")
 
     return Entity(
         id=entity_id,

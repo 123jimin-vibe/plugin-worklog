@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Iterable
 
+from .constants import ARCHIVE_DIRS, ENTITY_DIRS
 from .parse import Entity, parse_frontmatter
 
 
@@ -29,17 +30,6 @@ class EntityStore:
     errors: list[str] = field(default_factory=list)
 
 
-_ENTITY_DIRS = [
-    "spec",
-    "task",
-    "decision",
-]
-
-_ARCHIVE_DIRS = [
-    "archive/task",
-]
-
-
 def discover_entities(worklog_root: str | pathlib.Path) -> EntityStore:
     """Walk worklog directories and parse all entity files.
 
@@ -52,12 +42,12 @@ def discover_entities(worklog_root: str | pathlib.Path) -> EntityStore:
     errors: list[str] = []
 
     dirs_to_scan: list[tuple[pathlib.Path, bool]] = []
-    for d in _ENTITY_DIRS:
+    for d in ENTITY_DIRS:
         p = root / d
         if p.is_dir():
             recursive = d == "spec"
             dirs_to_scan.append((p, recursive))
-    for d in _ARCHIVE_DIRS:
+    for d in ARCHIVE_DIRS:
         p = root / d
         if p.is_dir():
             dirs_to_scan.append((p, False))
