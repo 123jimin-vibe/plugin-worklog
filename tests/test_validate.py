@@ -1,7 +1,6 @@
 # @worklog s0017
 """Tests for plugin/skills/worklog/script/validate.py — worklog validation."""
 
-import os
 import pathlib
 import shutil
 import subprocess
@@ -87,9 +86,8 @@ class TestValidateMalformedToml(unittest.TestCase):
 
     def test_missing_closing_fence(self):
         _populate_clean_worklog(self.worklog)
-        broken = os.path.join(self.worklog, "spec", "s0099-broken.md")
-        with open(broken, "w", encoding="utf-8") as f:
-            f.write('+++\nid = "s0099"\ntitle = "Broken"\n')
+        broken = pathlib.Path(self.worklog) / "spec" / "s0099-broken.md"
+        broken.write_text('+++\nid = "s0099"\ntitle = "Broken"\n', encoding="utf-8")
 
         result = _run_validate(self.worklog)
         self.assertNotEqual(result.returncode, 0)
@@ -147,9 +145,8 @@ class TestValidateBadIdFormat(unittest.TestCase):
 
     def test_non_numeric_id(self):
         write_tags(self.worklog, ["misc"])
-        path = os.path.join(self.worklog, "spec", "s00a1-bad.md")
-        with open(path, "w", encoding="utf-8") as f:
-            f.write('+++\nid = "s00a1"\ntitle = "Bad"\ntags = ["misc"]\n+++\n')
+        path = pathlib.Path(self.worklog) / "spec" / "s00a1-bad.md"
+        path.write_text('+++\nid = "s00a1"\ntitle = "Bad"\ntags = ["misc"]\n+++\n', encoding="utf-8")
 
         result = _run_validate(self.worklog)
         self.assertNotEqual(result.returncode, 0)
@@ -175,16 +172,16 @@ class TestValidateFilenameMismatch(unittest.TestCase):
     def test_id_filename_mismatch(self):
         write_tags(self.worklog, ["misc"])
         # File named t0002-foo.md but ID says t0003.
-        path = os.path.join(self.worklog, "task", "t0002-foo.md")
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(
+        path = pathlib.Path(self.worklog) / "task" / "t0002-foo.md"
+        path.write_text(
                 '+++\n'
                 'id = "t0003"\n'
                 'title = "Foo"\n'
                 'tags = ["misc"]\n'
                 'status = "pending"\n'
                 'modifies = ["s0001"]\n'
-                '+++\n'
+                '+++\n',
+                encoding="utf-8",
             )
         write_entity(self.worklog, "s0001", {
             "id": "s0001", "title": "Spec", "tags": ["misc"],
@@ -379,14 +376,14 @@ class TestValidateDuplicateIds(unittest.TestCase):
             "id": "s0001", "title": "First", "tags": ["misc"],
         })
         # Second file with same ID but different filename.
-        path = os.path.join(self.worklog, "spec", "s0001-duplicate.md")
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(
+        path = pathlib.Path(self.worklog) / "spec" / "s0001-duplicate.md"
+        path.write_text(
                 '+++\n'
                 'id = "s0001"\n'
                 'title = "Duplicate"\n'
                 'tags = ["misc"]\n'
-                '+++\n'
+                '+++\n',
+                encoding="utf-8",
             )
 
         result = _run_validate(self.worklog)

@@ -1,7 +1,6 @@
 # @worklog s0017
 """Tests for plugin/skills/worklog/script/drift.py — spec-code drift detection."""
 
-import os
 import pathlib
 import shutil
 import subprocess
@@ -31,14 +30,15 @@ def _git(cwd, *args):
 
 def _make_git_worklog(root):
     """Create a worklog inside a fresh git repo with an initial commit."""
-    _git(root, "init")
-    _git(root, "config", "user.email", "test@test.com")
-    _git(root, "config", "user.name", "Test")
+    root = pathlib.Path(root)
+    _git(str(root), "init")
+    _git(str(root), "config", "user.email", "test@test.com")
+    _git(str(root), "config", "user.name", "Test")
 
-    worklog = os.path.join(root, "worklog")
+    worklog = root / "worklog"
     for d in ["spec", "task", "decision", "archive/task"]:
-        os.makedirs(os.path.join(worklog, d), exist_ok=True)
-    return worklog
+        (worklog / d).mkdir(parents=True, exist_ok=True)
+    return str(worklog)
 
 
 def _write_spec_with_paths(worklog, spec_id, title, paths, tags=None):
@@ -46,7 +46,7 @@ def _write_spec_with_paths(worklog, spec_id, title, paths, tags=None):
     if tags is None:
         tags = ["misc"]
     filename = f"{spec_id}-{title.lower().replace(' ', '-')}.md"
-    filepath = os.path.join(worklog, "spec", filename)
+    filepath = pathlib.Path(worklog) / "spec" / filename
     lines = [
         "+++",
         f'id = "{spec_id}"',
@@ -55,9 +55,8 @@ def _write_spec_with_paths(worklog, spec_id, title, paths, tags=None):
         f"paths = {paths}",
         "+++",
     ]
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines) + "\n")
-    return filepath
+    filepath.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return str(filepath)
 
 
 def _write_spec_without_paths(worklog, spec_id, title, tags=None):
@@ -65,7 +64,7 @@ def _write_spec_without_paths(worklog, spec_id, title, tags=None):
     if tags is None:
         tags = ["misc"]
     filename = f"{spec_id}-{title.lower().replace(' ', '-')}.md"
-    filepath = os.path.join(worklog, "spec", filename)
+    filepath = pathlib.Path(worklog) / "spec" / filename
     lines = [
         "+++",
         f'id = "{spec_id}"',
@@ -73,9 +72,8 @@ def _write_spec_without_paths(worklog, spec_id, title, tags=None):
         f"tags = {tags}",
         "+++",
     ]
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines) + "\n")
-    return filepath
+    filepath.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return str(filepath)
 
 
 def _run_drift(worklog_root, *extra_args):
@@ -104,10 +102,9 @@ class TestDriftNone(unittest.TestCase):
         root = self.tmpdir
 
         # Create a source file and a spec that governs it.
-        src_dir = os.path.join(root, "src", "auth")
-        os.makedirs(src_dir, exist_ok=True)
-        with open(os.path.join(src_dir, "login.py"), "w") as f:
-            f.write("# login\n")
+        src_dir = pathlib.Path(root) / "src" / "auth"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        (src_dir / "login.py").write_text("# login\n")
 
         _write_spec_with_paths(worklog, "s0001", "Auth", '["src/auth/**"]')
 
@@ -139,11 +136,10 @@ class TestDriftPresent(unittest.TestCase):
         worklog = _make_git_worklog(self.tmpdir)
         root = self.tmpdir
 
-        src_dir = os.path.join(root, "src", "auth")
-        os.makedirs(src_dir, exist_ok=True)
-        src_file = os.path.join(src_dir, "login.py")
-        with open(src_file, "w") as f:
-            f.write("# login v1\n")
+        src_dir = pathlib.Path(root) / "src" / "auth"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        src_file = src_dir / "login.py"
+        src_file.write_text("# login v1\n")
 
         _write_spec_with_paths(worklog, "s0001", "Auth", '["src/auth/**"]')
 
@@ -151,8 +147,7 @@ class TestDriftPresent(unittest.TestCase):
         _git(root, "commit", "-m", "initial")
 
         # Now change the source file without touching the spec.
-        with open(src_file, "w") as f:
-            f.write("# login v2 — changed\n")
+        src_file.write_text("# login v2 — changed\n")
         _git(root, "add", "-A")
         _git(root, "commit", "-m", "change source")
 
@@ -209,9 +204,8 @@ class TestDriftSpecNeverCommitted(unittest.TestCase):
         root = self.tmpdir
 
         # Initial commit with nothing.
-        placeholder = os.path.join(root, ".gitkeep")
-        with open(placeholder, "w") as f:
-            f.write("")
+        placeholder = pathlib.Path(root) / ".gitkeep"
+        placeholder.write_text("")
         _git(root, "add", "-A")
         _git(root, "commit", "-m", "initial")
 
@@ -244,11 +238,10 @@ class TestDriftGlobPatterns(unittest.TestCase):
         root = self.tmpdir
 
         # Create nested source files.
-        deep_dir = os.path.join(root, "src", "auth", "providers")
-        os.makedirs(deep_dir, exist_ok=True)
-        deep_file = os.path.join(deep_dir, "oauth.py")
-        with open(deep_file, "w") as f:
-            f.write("# oauth v1\n")
+        deep_dir = pathlib.Path(root) / "src" / "auth" / "providers"
+        deep_dir.mkdir(parents=True, exist_ok=True)
+        deep_file = deep_dir / "oauth.py"
+        deep_file.write_text("# oauth v1\n")
 
         _write_spec_with_paths(worklog, "s0001", "Auth", '["src/auth/**"]')
 
@@ -256,8 +249,7 @@ class TestDriftGlobPatterns(unittest.TestCase):
         _git(root, "commit", "-m", "initial")
 
         # Change deeply nested file.
-        with open(deep_file, "w") as f:
-            f.write("# oauth v2\n")
+        deep_file.write_text("# oauth v2\n")
         _git(root, "add", "-A")
         _git(root, "commit", "-m", "change deep file")
 

@@ -1,7 +1,11 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/lib/discover.py — entity discovery."""
+"""Tests for plugin/skills/worklog/script/lib/discover.py — entity discovery.
 
-import os
+Tests verify attributes via duck typing (e.g. store.entities, tag.name),
+not concrete class identity.
+"""
+
+import pathlib
 import shutil
 import sys
 import tempfile
@@ -21,10 +25,8 @@ if _module_available:
     load_tags = _mod.load_tags
 
 
-
-
 # ===================================================================
-# discover_entities
+# discover_entities — returns EntityStore-like object
 # ===================================================================
 
 @unittest.skipUnless(_module_available, _missing_reason)
@@ -49,8 +51,8 @@ class TestDiscoverStandardLayout(unittest.TestCase):
         write_entity(self.worklog, "d0001", {
             "id": "d0001", "title": "Use JWT", "relates_to": ["s0001"],
         })
-        result = discover_entities(self.worklog)
-        ids = {e["id"] for e in result}
+        store = discover_entities(self.worklog)
+        ids = {e.id for e in store.entities}
         self.assertEqual(ids, {"s0001", "t0001", "d0001"})
 
 
@@ -76,8 +78,8 @@ class TestDiscoverRecursiveSpecDirs(unittest.TestCase):
             "id": "s0004", "title": "Greenfield", "tags": ["workflow"],
         }, subdir="spec/workflow")
 
-        result = discover_entities(self.worklog)
-        ids = {e["id"] for e in result}
+        store = discover_entities(self.worklog)
+        ids = {e.id for e in store.entities}
         self.assertIn("s0001", ids)
         self.assertIn("s0011", ids)
         self.assertIn("s0004", ids)
@@ -104,14 +106,14 @@ class TestDiscoverArchive(unittest.TestCase):
             "status": "done", "modifies": ["s0001"],
         }, subdir="archive/task")
 
-        result = discover_entities(self.worklog)
-        ids = {e["id"] for e in result}
+        store = discover_entities(self.worklog)
+        ids = {e.id for e in store.entities}
         self.assertIn("t0004", ids)
 
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestDiscoverEmptyWorklog(unittest.TestCase):
-    """Empty worklog returns an empty list."""
+    """Empty worklog returns an empty entities list."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
@@ -121,8 +123,8 @@ class TestDiscoverEmptyWorklog(unittest.TestCase):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
     def test_empty(self):
-        result = discover_entities(self.worklog)
-        self.assertEqual(result, [])
+        store = discover_entities(self.worklog)
+        self.assertEqual(len(store.entities), 0)
 
 
 @unittest.skipUnless(_module_available, _missing_reason)
@@ -137,22 +139,21 @@ class TestDiscoverSkipsNonEntities(unittest.TestCase):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
     def test_readme_skipped(self):
-        readme = os.path.join(self.worklog, "spec", "README.md")
-        with open(readme, "w", encoding="utf-8") as f:
-            f.write("# Specs\nThis is not an entity.\n")
+        readme = pathlib.Path(self.worklog) / "spec" / "README.md"
+        readme.write_text("# Specs\nThis is not an entity.\n", encoding="utf-8")
 
         write_entity(self.worklog, "s0001", {
             "id": "s0001", "title": "Real spec", "tags": ["misc"],
         })
 
-        result = discover_entities(self.worklog)
-        ids = {e["id"] for e in result}
+        store = discover_entities(self.worklog)
+        ids = {e.id for e in store.entities}
         self.assertEqual(ids, {"s0001"})
 
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestDiscoverMixedValidInvalid(unittest.TestCase):
-    """Valid entities are returned even when broken files exist."""
+    """Valid entities in store.entities, broken files in store.errors."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
@@ -161,27 +162,27 @@ class TestDiscoverMixedValidInvalid(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
-    def test_valid_returned_broken_skipped(self):
+    def test_valid_returned_broken_in_errors(self):
         write_entity(self.worklog, "s0001", {
             "id": "s0001", "title": "Good spec", "tags": ["misc"],
         })
         # Write a broken file (no closing fence).
-        broken = os.path.join(self.worklog, "spec", "s0002-broken.md")
-        with open(broken, "w", encoding="utf-8") as f:
-            f.write('+++\nid = "s0002"\ntitle = "Broken"\n# no closing fence\n')
+        broken = pathlib.Path(self.worklog) / "spec" / "s0002-broken.md"
+        broken.write_text('+++\nid = "s0002"\ntitle = "Broken"\n# no closing fence\n', encoding="utf-8")
 
-        result = discover_entities(self.worklog)
-        ids = {e["id"] for e in result}
+        store = discover_entities(self.worklog)
+        ids = {e.id for e in store.entities}
         self.assertIn("s0001", ids)
+        self.assertGreater(len(store.errors), 0)
 
 
 # ===================================================================
-# load_tags
+# load_tags — returns Tag-like objects
 # ===================================================================
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestLoadTagsHappyPath(unittest.TestCase):
-    """Standard tags.md is parsed into a set of tag strings."""
+    """Standard tags.md is parsed into Tag objects with names and descriptions."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
@@ -190,15 +191,44 @@ class TestLoadTagsHappyPath(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
-    def test_returns_tag_set(self):
+    def test_returns_tags_with_names(self):
         write_tags(self.worklog, ["auth", "tooling", "quality"])
         result = load_tags(self.worklog)
-        self.assertEqual(result, {"auth", "tooling", "quality"})
+        names = {t.name for t in result}
+        self.assertEqual(names, {"auth", "tooling", "quality"})
+
+
+@unittest.skipUnless(_module_available, _missing_reason)
+class TestLoadTagsDescription(unittest.TestCase):
+    """Tag descriptions are captured from tags.md."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_description_present(self):
+        # Write tags.md with explicit descriptions.
+        path = pathlib.Path(self.worklog) / "tags.md"
+        path.write_text(
+            "# Tags\n\n"
+            "| Tag | Description |\n"
+            "|-----|-------------|\n"
+            "| `auth` | Authentication and authorization. |\n"
+            "| `tooling` | Automation scripts and tools. |\n",
+            encoding="utf-8",
+        )
+        result = load_tags(self.worklog)
+        by_name = {t.name: t for t in result}
+        self.assertIn("auth", by_name)
+        self.assertIn("Authentication", by_name["auth"].description)
 
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestLoadTagsEmpty(unittest.TestCase):
-    """tags.md with no data rows returns an empty set."""
+    """tags.md with no data rows returns an empty list."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
@@ -208,17 +238,15 @@ class TestLoadTagsEmpty(unittest.TestCase):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
     def test_empty_table(self):
-        # Write tags.md with header but no rows.
-        path = os.path.join(self.worklog, "tags.md")
-        with open(path, "w", encoding="utf-8") as f:
-            f.write("# Tags\n\n| Tag | Description |\n|-----|-------------|\n")
+        path = pathlib.Path(self.worklog) / "tags.md"
+        path.write_text("# Tags\n\n| Tag | Description |\n|-----|-------------|\n", encoding="utf-8")
         result = load_tags(self.worklog)
-        self.assertEqual(result, set())
+        self.assertEqual(len(result), 0)
 
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestLoadTagsMissing(unittest.TestCase):
-    """Missing tags.md raises or returns empty set."""
+    """Missing tags.md raises or returns empty list."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
@@ -228,10 +256,9 @@ class TestLoadTagsMissing(unittest.TestCase):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
     def test_missing_file(self):
-        # Accept either an exception or an empty set.
         try:
             result = load_tags(self.worklog)
-            self.assertEqual(result, set())
+            self.assertEqual(len(result), 0)
         except (FileNotFoundError, OSError):
             pass  # raising is also acceptable
 

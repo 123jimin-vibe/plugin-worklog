@@ -1,7 +1,6 @@
 # @worklog s0017
 """Tests for plugin/skills/worklog/script/search.py — entity querying."""
 
-import os
 import pathlib
 import shutil
 import subprocess
@@ -233,6 +232,36 @@ class TestSearchNoMatches(unittest.TestCase):
         output = result.stdout.strip()
         for eid in ["s0001", "s0010", "t0001", "t0002", "t0003", "d0001", "d0002"]:
             self.assertNotIn(eid, output)
+
+
+# ===================================================================
+# No filters
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestSearchNoFilters(unittest.TestCase):
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+        _populate(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_no_filters(self):
+        """No filters: either returns all entities or exits with usage error."""
+        result = _run_search(self.worklog)
+        if result.returncode == 0:
+            # Returned all entities.
+            output = result.stdout
+            for eid in ["s0001", "s0010", "t0001", "t0002", "t0003", "d0001", "d0002"]:
+                self.assertIn(eid, output)
+        else:
+            # Usage error is also acceptable.
+            output = result.stdout + result.stderr
+            self.assertTrue(len(output.strip()) > 0,
+                            "Non-zero exit should produce a message")
 
 
 if __name__ == "__main__":

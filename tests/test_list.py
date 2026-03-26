@@ -1,7 +1,6 @@
 # @worklog s0017
 """Tests for plugin/skills/worklog/script/list.py — entity listing."""
 
-import os
 import pathlib
 import shutil
 import subprocess

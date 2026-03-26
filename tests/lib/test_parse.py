@@ -1,7 +1,11 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/lib/parse.py — frontmatter parsing."""
+"""Tests for plugin/skills/worklog/script/lib/parse.py — frontmatter parsing.
 
-import os
+Tests verify attributes via duck typing (e.g. result.id, result.type),
+not concrete class identity.
+"""
+
+import pathlib
 import shutil
 import sys
 import tempfile
@@ -25,10 +29,9 @@ if _module_available:
 
 def _write_file(directory, filename, content):
     """Write a file into *directory* and return its path."""
-    path = os.path.join(directory, filename)
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
-    return path
+    path = pathlib.Path(directory) / filename
+    path.write_text(content, encoding="utf-8")
+    return str(path)
 
 
 # ===================================================================
@@ -37,7 +40,7 @@ def _write_file(directory, filename, content):
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestParseFrontmatterValid(unittest.TestCase):
-    """Valid frontmatter between +++ fences is parsed correctly."""
+    """Valid frontmatter between +++ fences returns an Entity-like object."""
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
@@ -57,11 +60,11 @@ class TestParseFrontmatterValid(unittest.TestCase):
             'Body text here.\n'
         ))
         result = parse_frontmatter(path)
-        self.assertEqual(result["id"], "s0001")
-        self.assertEqual(result["title"], "Auth")
-        self.assertEqual(result["tags"], ["auth"])
+        self.assertEqual(result.id, "s0001")
+        self.assertEqual(result.title, "Auth")
+        self.assertEqual(result.tags, ["auth"])
 
-    def test_multiline_array(self):
+    def test_extra_fields_in_fields_dict(self):
         path = _write_file(self.tmpdir, "t0001-work.md", (
             '+++\n'
             'id = "t0001"\n'
@@ -72,14 +75,24 @@ class TestParseFrontmatterValid(unittest.TestCase):
             '+++\n'
         ))
         result = parse_frontmatter(path)
-        self.assertEqual(result["tags"], ["tooling", "quality"])
-        self.assertEqual(result["modifies"], ["s0001", "s0002"])
+        self.assertEqual(result.tags, ["tooling", "quality"])
+        self.assertEqual(result.fields["modifies"], ["s0001", "s0002"])
+        self.assertEqual(result.fields["status"], "pending")
 
-    def test_empty_frontmatter(self):
-        path = _write_file(self.tmpdir, "empty.md", '+++\n+++\n')
+    def test_multiline_toml_array(self):
+        path = _write_file(self.tmpdir, "s0005-multi.md", (
+            '+++\n'
+            'id = "s0005"\n'
+            'title = "Multi"\n'
+            'tags = [\n'
+            '    "tooling",\n'
+            '    "quality",\n'
+            ']\n'
+            '+++\n'
+        ))
         result = parse_frontmatter(path)
-        self.assertIsInstance(result, dict)
-        self.assertEqual(len(result), 0)
+        self.assertIsInstance(result.tags, list)
+        self.assertEqual(result.tags, ["tooling", "quality"])
 
     def test_content_after_frontmatter_ignored(self):
         path = _write_file(self.tmpdir, "s0002-stuff.md", (
@@ -94,7 +107,18 @@ class TestParseFrontmatterValid(unittest.TestCase):
             'id = "WRONG"\n'
         ))
         result = parse_frontmatter(path)
-        self.assertEqual(result["id"], "s0002")
+        self.assertEqual(result.id, "s0002")
+
+    def test_path_stored(self):
+        path = _write_file(self.tmpdir, "s0003-paths.md", (
+            '+++\n'
+            'id = "s0003"\n'
+            'title = "Paths"\n'
+            'tags = ["misc"]\n'
+            '+++\n'
+        ))
+        result = parse_frontmatter(path)
+        self.assertEqual(str(result.path), path)
 
 
 # ===================================================================
@@ -129,6 +153,12 @@ class TestParseFrontmatterInvalid(unittest.TestCase):
         with self.assertRaises(Exception):
             parse_frontmatter(path)
 
+    def test_empty_frontmatter_raises(self):
+        """Empty frontmatter has no id — should raise."""
+        path = _write_file(self.tmpdir, "empty.md", '+++\n+++\n')
+        with self.assertRaises(Exception):
+            parse_frontmatter(path)
+
 
 # ===================================================================
 # Entity type inference from ID prefix
@@ -156,15 +186,15 @@ class TestEntityTypeInference(unittest.TestCase):
 
     def test_spec_prefix(self):
         result = self._parse_with_id("s0001")
-        self.assertEqual(result.get("_type", result.get("type")), "spec")
+        self.assertEqual(result.type, "spec")
 
     def test_task_prefix(self):
         result = self._parse_with_id("t0001")
-        self.assertEqual(result.get("_type", result.get("type")), "task")
+        self.assertEqual(result.type, "task")
 
     def test_decision_prefix(self):
         result = self._parse_with_id("d0001")
-        self.assertEqual(result.get("_type", result.get("type")), "decision")
+        self.assertEqual(result.type, "decision")
 
     def test_unknown_prefix(self):
         """Unknown ID prefix raises or returns an indicator."""
@@ -172,13 +202,13 @@ class TestEntityTypeInference(unittest.TestCase):
             '+++\n'
             'id = "x0001"\n'
             'title = "Unknown"\n'
+            'tags = ["test"]\n'
             '+++\n'
         ))
         # Accept either an exception or a sentinel value.
         try:
             result = parse_frontmatter(path)
-            entity_type = result.get("_type", result.get("type"))
-            self.assertNotIn(entity_type, ("spec", "task", "decision"),
+            self.assertNotIn(result.type, ("spec", "task", "decision"),
                              "Unknown prefix should not resolve to a known type")
         except Exception:
             pass  # raising is also acceptable

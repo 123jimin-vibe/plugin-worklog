@@ -1,7 +1,6 @@
 # @worklog s0017
 """Tests for plugin/skills/worklog/script/next_id.py — next available ID."""
 
-import os
 import pathlib
 import shutil
 import subprocess
