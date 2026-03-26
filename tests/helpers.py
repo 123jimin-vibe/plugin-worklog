@@ -49,15 +49,11 @@ def write_entity(root, entity_id, fields, body="", subdir=None):
 
 
 def write_tags(root, tags):
-    """Write a tags.md file with the given tag names and return its path."""
+    """Write a tags.csv file with the given tag names and return its path."""
     root = pathlib.Path(root)
-    lines = [
-        "# Tags", "",
-        "| Tag | Description |",
-        "|-----|-------------|",
-    ]
+    lines = ["tag,description"]
     for tag in tags:
-        lines.append(f"| `{tag}` | Test tag. |")
-    path = root / "tags.md"
+        lines.append(f"{tag},Test tag.")
+    path = root / "tags.csv"
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return str(path)

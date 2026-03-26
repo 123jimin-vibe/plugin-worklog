@@ -13,7 +13,7 @@ Scripts that automate worklog operations, bundled with the plugin at `plugin/ski
 
 `lib/parse.py` — frontmatter parsing. `parse_frontmatter(path)` extracts TOML between `+++` fences and returns an `Entity` object with `id`, `title`, `type` (inferred from ID prefix), `tags`, `path`, and `fields` (remaining frontmatter).
 
-`lib/discover.py` — entity discovery and tag loading. `discover_entities(worklog_root)` walks entity directories and returns an `EntityStore` with `entities` (iterable) and `errors` (list of parse failures). `load_tags(worklog_root)` parses `tags.md` and returns a list of `Tag` objects with `name` and `description`.
+`lib/discover.py` — entity discovery and tag loading. `discover_entities(worklog_root)` walks entity directories and returns an `EntityStore` with `entities` (iterable) and `errors` (list of parse failures). `load_tags(worklog_root)` parses `tags.csv` and returns a list of `Tag` objects with `name` and `description`.
 
 Callers should depend on iteration over `store.entities`, not on random indexing — the backing store may change.
 

@@ -1,8 +1,9 @@
 # @worklog s0010
 """Entity discovery and tag loading for worklog."""
 
+import csv
+import io
 import pathlib
-import re
 from dataclasses import dataclass, field
 from typing import Iterable
 
@@ -12,7 +13,7 @@ from .parse import Entity, parse_frontmatter
 
 @dataclass
 class Tag:
-    """A tag parsed from tags.md."""
+    """A tag parsed from tags.csv."""
 
     name: str
     description: str
@@ -68,31 +69,26 @@ def discover_entities(worklog_root: str | pathlib.Path) -> EntityStore:
     return EntityStore(entities=entities, errors=errors)
 
 
-_TAG_ROW_PATTERN = re.compile(
-    r"^\|\s*`([^`]+)`\s*\|\s*(.*?)\s*\|$"
-)
-
-
 def load_tags(worklog_root: str | pathlib.Path) -> list[Tag]:
-    """Parse tags.md and return a list of Tag objects.
+    """Parse tags.csv and return a list of Tag objects.
 
-    Each row in the markdown table produces a Tag with name and
-    description.  The header and separator rows are skipped.
+    Expects a CSV file with a header row containing at least ``tag``
+    and ``description`` columns.
     """
     root = pathlib.Path(worklog_root)
-    tags_path = root / "tags.md"
+    tags_path = root / "tags.csv"
 
     if not tags_path.exists():
         return []
 
     text = tags_path.read_text(encoding="utf-8")
+    reader = csv.DictReader(io.StringIO(text))
     tags: list[Tag] = []
 
-    for line in text.splitlines():
-        m = _TAG_ROW_PATTERN.match(line)
-        if m:
-            name = m.group(1).strip()
-            description = m.group(2).strip()
+    for row in reader:
+        name = row.get("tag", "").strip()
+        description = row.get("description", "").strip()
+        if name:
             tags.append(Tag(name=name, description=description))
 
     return tags

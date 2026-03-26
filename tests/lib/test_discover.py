@@ -182,7 +182,7 @@ class TestDiscoverMixedValidInvalid(unittest.TestCase):
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestLoadTagsHappyPath(unittest.TestCase):
-    """Standard tags.md is parsed into Tag objects with names and descriptions."""
+    """Standard tags.csv is parsed into Tag objects with names and descriptions."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
@@ -200,7 +200,7 @@ class TestLoadTagsHappyPath(unittest.TestCase):
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestLoadTagsDescription(unittest.TestCase):
-    """Tag descriptions are captured from tags.md."""
+    """Tag descriptions are captured from tags.csv."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
@@ -210,14 +210,12 @@ class TestLoadTagsDescription(unittest.TestCase):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
     def test_description_present(self):
-        # Write tags.md with explicit descriptions.
-        path = pathlib.Path(self.worklog) / "tags.md"
+        # Write tags.csv with explicit descriptions.
+        path = pathlib.Path(self.worklog) / "tags.csv"
         path.write_text(
-            "# Tags\n\n"
-            "| Tag | Description |\n"
-            "|-----|-------------|\n"
-            "| `auth` | Authentication and authorization. |\n"
-            "| `tooling` | Automation scripts and tools. |\n",
+            "tag,description\n"
+            "auth,Authentication and authorization.\n"
+            "tooling,Automation scripts and tools.\n",
             encoding="utf-8",
         )
         result = load_tags(self.worklog)
@@ -228,7 +226,7 @@ class TestLoadTagsDescription(unittest.TestCase):
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestLoadTagsEmpty(unittest.TestCase):
-    """tags.md with no data rows returns an empty list."""
+    """tags.csv with no data rows returns an empty list."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
@@ -238,15 +236,15 @@ class TestLoadTagsEmpty(unittest.TestCase):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
     def test_empty_table(self):
-        path = pathlib.Path(self.worklog) / "tags.md"
-        path.write_text("# Tags\n\n| Tag | Description |\n|-----|-------------|\n", encoding="utf-8")
+        path = pathlib.Path(self.worklog) / "tags.csv"
+        path.write_text("tag,description\n", encoding="utf-8")
         result = load_tags(self.worklog)
         self.assertEqual(len(result), 0)
 
 
 @unittest.skipUnless(_module_available, _missing_reason)
 class TestLoadTagsMissing(unittest.TestCase):
-    """Missing tags.md raises or returns empty list."""
+    """Missing tags.csv raises or returns empty list."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()

@@ -51,7 +51,7 @@ Dataclass:
 @dataclass
 class Tag:
     name: str
-    description: str    # from tags.md; empty string if absent
+    description: str    # from tags.csv; empty string if absent
 ```
 
 Protocol — `discover_entities` returns a list today but the interface should not assume a flat-file walk is the only backend. Future implementations may read from SQLite, a bead store, or a cached index. Callers should depend on the minimal interface: `store.entities` is iterable (not necessarily indexable), each element exposes the documented attributes. Code that needs random access should collect into its own list.
@@ -64,7 +64,7 @@ class EntityStore:
 ```
 
 - `discover_entities(worklog_root) → EntityStore` — walk `spec/` (recursive), `task/`, `decision/`, `archive/task/`, parse each file, and return an `EntityStore`. Parse errors are collected in `errors` rather than aborting.
-- `load_tags(worklog_root) → list[Tag]` — parse `tags.md` and return a list of `Tag` objects with names and descriptions. Standalone; not bundled into `EntityStore`.
+- `load_tags(worklog_root) → list[Tag]` — parse `tags.csv` and return a list of `Tag` objects with names and descriptions. Standalone; not bundled into `EntityStore`.
 
 ### validate.py
 
@@ -87,7 +87,7 @@ Check all entities for structural correctness.
 - Filename starts with ID (`{id}-*.md`).
 - Status values valid: `pending`, `active`, `done`, `blocked`, `cancelled`.
 - Dangling refs: `modifies` → spec exists, `blocked_by` → task exists, `relates_to` → spec exists, `supersedes` → decision exists.
-- Tags in frontmatter exist in `tags.md` index (per s0015).
+- Tags in frontmatter exist in `tags.csv` index (per s0015).
 - No duplicate IDs across files.
 - Scans both active directories and `archive/task/`.
 
@@ -169,7 +169,7 @@ When `--group-by tag`, multi-tagged entities appear under each tag. Tasks includ
 
 Build a temporary fixture worklog — a small directory tree with known-good and known-bad entities — and run each script against it, checking exit codes and output. No mocking; scripts operate on real files and (for drift) a real git repo.
 
-Fixture contents: a valid spec, task, and decision (happy-path baseline); a task in `archive/task/` (verifies archive scanning); a `tags.md` with a known tag set; deliberately broken entities for error-path tests (one per validation rule).
+Fixture contents: a valid spec, task, and decision (happy-path baseline); a task in `archive/task/` (verifies archive scanning); a `tags.csv` with a known tag set; deliberately broken entities for error-path tests (one per validation rule).
 
 Testing approach defined in s0017. Tests verify attributes and behavior via duck typing (e.g. `result.id`, `result.type`), not concrete class identity.
 
@@ -200,10 +200,10 @@ Testing approach defined in s0017. Tests verify attributes and behavior via duck
 | Empty worklog | No entity files | `store.entities` is empty |
 | Non-entity files | README.md in `spec/` | Skipped, not in `store.entities` |
 | Mixed valid/invalid | Some parseable, some broken | Valid in `store.entities`, broken in `store.errors` |
-| load_tags happy path | Standard `tags.md` with table | Returns `Tag` objects with names and descriptions |
+| load_tags happy path | Standard `tags.csv` with table | Returns `Tag` objects with names and descriptions |
 | load_tags description | Tag row with description text | `tag.description` contains the text |
-| load_tags empty | `tags.md` with no rows | Returns empty list |
-| load_tags missing | No `tags.md` file | Raises or returns empty list |
+| load_tags empty | `tags.csv` with no rows | Returns empty list |
+| load_tags missing | No `tags.csv` file | Raises or returns empty list |
 
 ### validate.py
 
@@ -219,7 +219,7 @@ Testing approach defined in s0017. Tests verify attributes and behavior via duck
 | Dangling `blocked_by` | Task blocked by `t9999` | Reports dangling ref |
 | Dangling `relates_to` | Decision relates to `s9999` | Reports dangling ref |
 | Dangling `supersedes` | Decision supersedes `d9999` | Reports dangling ref |
-| Unknown tag | Tag not in `tags.md` | Reports unknown tag |
+| Unknown tag | Tag not in `tags.csv` | Reports unknown tag |
 | Duplicate IDs | Two files with same ID | Reports duplicate |
 | Archived entity refs | Active task blocked_by archived task | No error (ref is valid) |
 | Multiple errors | Several broken entities | All errors reported, not just first |

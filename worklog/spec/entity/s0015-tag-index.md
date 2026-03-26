@@ -6,7 +6,7 @@ tags = ["entity", "methodology"]
 
 # Tag Index
 
-A reference file listing all tags used across specs with descriptions. Lives at `worklog/tags.md`.
+A reference file listing all tags used across specs with descriptions. Lives at `worklog/tags.csv`.
 
 ## Purpose
 
@@ -14,11 +14,11 @@ Tags classify specs for cross-cutting queries (e.g., "all specs that define the 
 
 ## Format
 
-Markdown table with columns: tag name and description. Sorted alphabetically. Reverse lookup (which specs use a tag) is done via grep, consistent with the forward-only relationship model.
+CSV with header row. Columns: `tag`, `description`. Sorted alphabetically by tag. Reverse lookup (which specs use a tag) is done via grep, consistent with the forward-only relationship model.
 
 ## Maintenance
 
-Update `tags.md` when adding, renaming, or removing tags from spec frontmatter. Prefer reusing an existing tag over creating a new one.
+Update `tags.csv` when adding, renaming, or removing tags from spec frontmatter. Prefer reusing an existing tag over creating a new one.
 
 ## Anticipated Changes
 
