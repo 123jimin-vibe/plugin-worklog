@@ -31,63 +31,44 @@ TOML fenced with `+++`. Required fields:
 ## Required Sections
 
 1. Top-level heading matching `title`.
-2. Body describing observable behavior — inputs, outputs, observable effects, ordering guarantees. Describe what the system does from a consumer's perspective, not how it is implemented.
-3. **Constraints** — invariants, limits, and rules that must always or never hold. Distinct from behavior: behavior says what the system does; constraints say what it must not violate.
-4. **Anticipated Changes** — known future work or likely evolution. These are informational, not actionable — an anticipated change must be explicitly promoted to a `TODO` (or task) before work begins. Do not treat anticipated changes as implicit work items.
-5. **Dangers** — risks, pitfalls, or failure modes the agent must watch for.
+2. Body describing observable behavior — inputs, outputs, observable effects, ordering guarantees. Written from a consumer's perspective, not implementation.
+3. **Constraints** — invariants, limits, and rules that must always or never hold.
+4. **Anticipated Changes** — known future work or likely evolution. Informational only — must be promoted to a `TODO` or task before work begins.
+5. **Dangers** — risks, pitfalls, or failure modes to watch for.
 
-Sections beyond these are discretionary and topic-dependent. Unapproved or planned items must be marked `TODO` — this applies to individual items within any section, not just entire sections.
+Sections beyond these are discretionary. Unapproved or planned items must be marked `TODO`.
 
-## Relationships
+## Creation
 
-| Direction | Relationship         | Target        |
-|-----------|----------------------|---------------|
-| Outbound  | `parent`             | Spec (parent)  |
-| Outbound  | `paths`              | Source files   |
-| Inbound   | `task.modifies`      | Task           |
-| Inbound   | `decision.relates_to`| Decision       |
+1. Survey existing specs for overlap — default to extending an existing spec rather than creating a new one.
+2. Draft: observable behavior, constraints, dangers. Mark uncertain items with `TODO`.
+3. User reviews. Revise until approved. Remove `TODO` from approved items.
 
-Inbound relationships are not stored on the spec. Reverse lookup via grep.
+## Updating
 
-## Allowed Actions
+Triggers: implementation reveals adjustments, drift detected, component boundaries changed, stale reference discovered.
 
-| Action | When |
-|--------|------|
-| Create | New area of behavior needs governing. Default to extending an existing spec; create only when the behavior is clearly independent. |
-| Update | Implementation reveals adjustments, gap found, component boundaries changed, stale reference discovered. Trivial edits (typos, wording) do not require a task. |
-| Delete | Spec is superseded by a newer spec, or the governed feature was removed. Requires a decision record. |
+- Structural updates (`paths`, section reorganization, wording clarity) are free.
+- Behavioral updates (changing what the system does) require user approval.
 
-Structural updates (`paths` after a file move, section reorganization, wording clarity) are freely allowed. Updates that change prescribed observable behavior require user approval.
+Trivial edits (typos, wording) do not require a task.
 
-## Forbidden Actions
+## Forbidden
 
 - Delete without a decision record explaining why.
 - Archive. Specs have no status lifecycle.
-- Modify observable behavior without user approval.
-- Present unapproved or speculative content as decided. Discussion ≠ approval — items from brainstorming or unconfirmed requirements must carry a `TODO` marker until explicitly approved.
-- Implementation details (API signatures, file paths, version numbers, directory layouts) in spec body.
-
-## Precedence
-
-1. Spec over source code — divergence is a bug in code.
-2. Spec over tests — tests derive from spec.
-3. Spec suspected wrong — ask user, never silently override.
-
-## Drift Detection
-
-Compares the spec's last-touched date (via git log) against changes to files matching its `paths` globs. If source changed after spec, the spec may be stale.
+- Present unapproved or speculative content as decided. Discussion ≠ approval.
+- Implementation details (API signatures, file paths, version numbers, directory layouts) in spec body. (`paths` frontmatter uses globs for drift detection — the only place file references belong.)
 
 ## Anticipated Changes
 
 - Spec-by-ID cross-referencing to replace fragile relative paths.
 - Convention for specs delegating behavioral details to reference docs.
-- Distinguishing governance paths from behavioral-extension paths in `paths`.
 
 ## Dangers
 
 - Over-granular specs (one per function) fragment governance — prefer extending an existing spec.
 - Specs without `paths` escape drift detection silently.
-- Append-only growth — agents add content but never prune obsolete material. Specs grow monotonically and eventually contradict themselves.
-- Overlapping `paths` across specs creates ambiguous drift signals — unclear which spec is stale when a shared file changes.
-- A spec update can silently contradict another spec. Check related specs (via `parent`, shared `tags`, or overlapping `paths`) when making non-trivial updates. Parent–child contradictions must be resolved immediately.
-- Reference docs cited by a spec become part of its behavioral surface but escape drift detection.
+- Append-only growth — agents add content but never prune obsolete material.
+- Overlapping `paths` across specs creates ambiguous drift signals.
+- A spec update can silently contradict another spec. Check related specs (via `parent`, shared `tags`, or overlapping `paths`) when making non-trivial updates.

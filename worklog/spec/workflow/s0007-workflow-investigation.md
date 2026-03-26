@@ -10,34 +10,28 @@ Research producing knowledge, not code.
 
 ## Flow
 
-1. Question or hypothesis stated.
-2. Task (create) — defines what's being investigated.
-3. Research: benchmarks, prototypes, reading.
-4. Findings documented in task body.
-5. Outcome determines next step:
-   - New work needed → task (create) or spec (create/update).
-   - Design choice clarified → decision (create).
-   - No action needed → nothing.
-6. Task (archive).
+1. **State question or hypothesis** — what are you trying to find out?
+2. **Create task** — what's being investigated, what would count as an answer.
+3. **Research** — read code, benchmark, prototype, survey dependencies.
+4. **Document findings** in task body as they emerge — don't wait until the end.
+5. **Determine outcome**:
+   - New work needed → create task or spec.
+   - Design choice clarified → create decision.
+   - No action needed → document why.
+6. **Archive task**.
 
 Branches:
-- Real problem is elsewhere → scope pivots, task body updated.
-- Findings inconclusive → documented as-is, may be revisited.
-- Prototype worth keeping → promoted to greenfield workflow with spec (create).
-- Critical issue found → escalates to hotfix workflow.
+- Real problem is elsewhere → scope pivots, update task body.
+- Findings inconclusive → document as-is, may be revisited.
+- Prototype worth keeping → promote to greenfield workflow with new spec.
+- Critical issue found → escalate to hotfix workflow.
 
 ## Forbidden
 
 - Investigation code merged without a spec and proper task lifecycle.
 - Findings not documented (knowledge lost at session end).
 
-## Anticipated Changes
-
-- Relationship from follow-up task back to the investigation that spawned it (originated-from link).
-- Convention for investigation output format beyond free-form task body.
-
 ## Dangers
 
 - Prototype code merged without spec/task lifecycle.
-- Findings not documented, losing knowledge at session boundary.
 - Follow-up tasks not created for discovered work.

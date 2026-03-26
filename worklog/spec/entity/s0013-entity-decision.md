@@ -6,7 +6,7 @@ tags = ["entity", "methodology"]
 
 # Entity: Decision
 
-Permanent record of why a choice was made. Decisions are append-only — they are never edited or archived, only superseded by a new decision.
+Permanent record of why a choice was made. Decisions are never edited or archived, only superseded by a new decision.
 
 ## Location
 
@@ -30,45 +30,36 @@ Optional fields:
 
 ## Body
 
-Free-form markdown below the frontmatter. Should answer:
+Free-form markdown. Should cover:
 
 - **Context** — what situation prompted the decision.
 - **Choice** — what was decided.
 - **Rationale** — why this option over alternatives.
 - **Consequences** — expected impact, trade-offs accepted.
 
-## Relationships
+## Creation
 
-| Direction | Relationship  | Target   |
-|-----------|---------------|----------|
-| Outbound  | `relates_to`  | Spec     |
-| Outbound  | `supersedes`  | Decision |
-| Inbound   | `supersedes`  | Decision |
+1. Identify the choice being made and why it matters.
+2. Write context and options considered.
+3. Record the decision and its consequences.
+4. Link to affected specs via `relates_to`.
 
-Inbound `supersedes` is not stored on the superseded decision. Reverse lookup via grep.
+Only action allowed. Decisions are immutable after creation — a decision that needs correction is superseded by a new decision.
 
-## Allowed Actions
+## Required Creation
 
-| Action | When |
-|--------|------|
-| Create | Non-trivial choice made, design flaw discovered, post-mortem required, requirement changed, cost/benefit abandonment. |
-
-This is the only allowed action. Decisions are immutable after creation.
-
-## Forbidden Actions
-
-- Edit. A decision that needs correction is superseded by a new decision, never modified in place.
-- Archive. Decisions are permanent records with no lifecycle.
-- Delete. Historical record must be preserved.
-
-## Mandatory Creation
-
-A decision record is **required** (not discretionary) in these cases:
+A decision record is required (not discretionary) when:
 
 - Hotfix deployed (post-mortem: root cause, what went wrong).
 - Hotfix bypasses normal review (documents why).
 - Task cancelled due to requirement change.
 - Refactor abandoned because cost exceeds benefit.
+
+## Forbidden
+
+- Edit after creation. Supersede instead.
+- Archive or delete. Decisions are permanent records.
+- Omit `relates_to` — unlinked decisions float free of spec governance and become hard to discover.
 
 ## Anticipated Changes
 
@@ -78,5 +69,4 @@ A decision record is **required** (not discretionary) in these cases:
 ## Dangers
 
 - Skipping decision records for hotfixes because the fix is already deployed — the post-mortem is the point.
-- Editing a decision instead of superseding it destroys the historical record.
-- Decisions without `relates_to` float free of spec governance and become hard to discover.
+- Decisions without `relates_to` become orphaned.
