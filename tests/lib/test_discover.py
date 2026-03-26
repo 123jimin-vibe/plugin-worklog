@@ -124,7 +124,7 @@ class TestDiscoverEmptyWorklog(unittest.TestCase):
 
     def test_empty(self):
         store = discover_entities(self.worklog)
-        self.assertEqual(len(store.entities), 0)
+        self.assertEqual(list(store.entities), [])
 
 
 @unittest.skipUnless(_module_available, _missing_reason)
@@ -174,6 +174,81 @@ class TestDiscoverMixedValidInvalid(unittest.TestCase):
         ids = {e.id for e in store.entities}
         self.assertIn("s0001", ids)
         self.assertGreater(len(store.errors), 0)
+
+
+# ===================================================================
+# Separate buckets — store.specs, store.tasks, store.decisions
+# ===================================================================
+
+@unittest.skipUnless(_module_available, _missing_reason)
+class TestDiscoverSeparateBuckets(unittest.TestCase):
+    """Entities are sorted into specs, tasks, and decisions lists."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_specs_bucket(self):
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Auth", "tags": ["auth"],
+        })
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Add login", "tags": ["auth"],
+            "status": "pending", "modifies": ["s0001"],
+        })
+        store = discover_entities(self.worklog)
+        spec_ids = {e.id for e in store.specs}
+        task_ids = {e.id for e in store.tasks}
+        self.assertEqual(spec_ids, {"s0001"})
+        self.assertEqual(task_ids, {"t0001"})
+        self.assertEqual(list(store.decisions), [])
+
+    def test_decisions_bucket(self):
+        write_entity(self.worklog, "d0001", {
+            "id": "d0001", "title": "Use JWT", "relates_to": ["s0001"],
+        })
+        store = discover_entities(self.worklog)
+        decision_ids = {e.id for e in store.decisions}
+        self.assertEqual(decision_ids, {"d0001"})
+        self.assertEqual(list(store.specs), [])
+        self.assertEqual(list(store.tasks), [])
+
+
+# ===================================================================
+# Archived flag — entity.archived
+# ===================================================================
+
+@unittest.skipUnless(_module_available, _missing_reason)
+class TestDiscoverArchivedFlag(unittest.TestCase):
+    """Entities from archive dirs have archived=True, others False."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_active_entity_not_archived(self):
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Active", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"],
+        })
+        store = discover_entities(self.worklog)
+        task = next(e for e in store.tasks if e.id == "t0001")
+        self.assertFalse(task.archived)
+
+    def test_archived_entity_flagged(self):
+        write_entity(self.worklog, "t0004", {
+            "id": "t0004", "title": "Done", "tags": ["misc"],
+            "status": "done", "modifies": ["s0001"],
+        }, subdir="archive/task")
+        store = discover_entities(self.worklog)
+        task = next(e for e in store.tasks if e.id == "t0004")
+        self.assertTrue(task.archived)
 
 
 # ===================================================================

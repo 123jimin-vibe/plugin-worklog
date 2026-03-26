@@ -3,9 +3,9 @@
 
 import csv
 import io
+import itertools
 import pathlib
 from dataclasses import dataclass, field
-from typing import Iterable
 
 from .constants import ARCHIVE_DIRS, ENTITY_DIRS
 from .parse import Entity, parse_frontmatter
@@ -21,14 +21,17 @@ class Tag:
 
 @dataclass
 class EntityStore:
-    """Result of discovering entities in a worklog directory.
+    """Result of discovering entities in a worklog directory."""
 
-    ``entities`` is iterable but not necessarily indexable — callers
-    that need random access should collect into their own list.
-    """
-
-    entities: Iterable[Entity] = field(default_factory=list)
+    specs: list[Entity] = field(default_factory=list)
+    tasks: list[Entity] = field(default_factory=list)
+    decisions: list[Entity] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+
+    @property
+    def entities(self):
+        """All entities across types."""
+        return itertools.chain(self.specs, self.tasks, self.decisions)
 
 
 def discover_entities(worklog_root: str | pathlib.Path) -> EntityStore:
@@ -39,21 +42,26 @@ def discover_entities(worklog_root: str | pathlib.Path) -> EntityStore:
     rather than aborting.
     """
     root = pathlib.Path(worklog_root)
-    entities: list[Entity] = []
-    errors: list[str] = []
+    store = EntityStore()
 
-    dirs_to_scan: list[tuple[pathlib.Path, bool]] = []
+    _TYPE_TO_BUCKET = {
+        "spec": store.specs,
+        "task": store.tasks,
+        "decision": store.decisions,
+    }
+
+    dirs_to_scan: list[tuple[pathlib.Path, bool, bool]] = []
     for d in ENTITY_DIRS:
         p = root / d
         if p.is_dir():
             recursive = d == "spec"
-            dirs_to_scan.append((p, recursive))
+            dirs_to_scan.append((p, recursive, False))
     for d in ARCHIVE_DIRS:
         p = root / d
         if p.is_dir():
-            dirs_to_scan.append((p, False))
+            dirs_to_scan.append((p, False, True))
 
-    for directory, recursive in dirs_to_scan:
+    for directory, recursive, archived in dirs_to_scan:
         if recursive:
             md_files = sorted(directory.rglob("*.md"))
         else:
@@ -62,11 +70,14 @@ def discover_entities(worklog_root: str | pathlib.Path) -> EntityStore:
         for md_file in md_files:
             try:
                 entity = parse_frontmatter(md_file)
-                entities.append(entity)
+                entity.archived = archived
+                bucket = _TYPE_TO_BUCKET.get(entity.type)
+                if bucket is not None:
+                    bucket.append(entity)
             except Exception as exc:
-                errors.append(f"{md_file}: {exc}")
+                store.errors.append(f"{md_file}: {exc}")
 
-    return EntityStore(entities=entities, errors=errors)
+    return store
 
 
 def load_tags(worklog_root: str | pathlib.Path) -> list[Tag]:

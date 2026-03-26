@@ -20,6 +20,7 @@ class Entity:
     type: str
     tags: list[str]
     path: pathlib.Path
+    archived: bool = False
     fields: dict = field(default_factory=dict)
 
 
