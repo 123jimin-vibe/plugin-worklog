@@ -278,9 +278,7 @@ class TestListEmptyResult(unittest.TestCase):
     def test_no_decisions(self):
         result = _run_list(self.worklog, "--type", "decision")
         self.assertEqual(result.returncode, 0)
-        # Output should be empty or header-only.
-        output = result.stdout.strip()
-        self.assertNotIn("d0", output)
+        self.assertEqual(result.stdout.strip(), "(none)")
 
 
 if __name__ == "__main__":

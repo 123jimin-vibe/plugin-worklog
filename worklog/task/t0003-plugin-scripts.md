@@ -82,7 +82,7 @@ Check all entities for structural correctness.
 - Required fields present per entity type:
   - Spec: `id`, `title`, `tags`. Optional: `paths`, `parent`.
   - Task: `id`, `title`, `tags`, `status`, `modifies`. Optional: `blocked_by`.
-  - Decision: `id`, `title`, `relates_to`. Optional: `supersedes`.
+  - Decision: `id`, `title`, `relates_to`. Optional: `tags`, `supersedes`.
 - ID format matches prefix (`sNNNN`, `tNNNN`, `dNNNN`).
 - Filename starts with ID (`{id}-*.md`).
 - Status values valid: `pending`, `active`, `done`, `blocked`, `cancelled`.
@@ -143,9 +143,9 @@ Query entities by combinable filters (AND logic).
 | `--type` | string | *(none)* | Filter to entity type: `spec`, `task`, or `decision`. |
 | `--relates-to` | string | *(none)* | Filter to decisions related to a given spec ID. |
 
-Multiple filters are combined with AND. Prints matching entity IDs and titles to stdout.
+Multiple filters are combined with AND. Prints matching entity IDs and titles to stdout. When no entities match, prints `(none)` to stdout.
 
-**Exit:** 0 always (empty result is not an error).
+**Exit:** 0 always (empty result is not an error, non-zero reserved for bad args or missing worklog).
 
 ### list.py
 
@@ -161,9 +161,9 @@ List entities with optional filtering, grouping, and sorting. Default: one line 
 | `--sort` | string | `id` | Sort by `id` or `title`. |
 | `--archived` | flag | off | Include archived entities in output. |
 
-When `--group-by tag`, multi-tagged entities appear under each tag. Tasks include status in output.
+When `--group-by tag`, multi-tagged entities appear under each tag. Tasks include status in output. When no entities match, prints `(none)` to stdout.
 
-**Exit:** 0 always (empty result is not an error).
+**Exit:** 0 always (empty result is not an error, non-zero reserved for bad args or missing worklog).
 
 ## Test Plan
 
@@ -254,7 +254,7 @@ Testing approach defined in s0017. Tests verify attributes and behavior via duck
 | `--type spec` | All entity types | Only specs |
 | `--relates-to s0010` | Decisions | Only decisions relating to s0010 |
 | Combined filters | `--tag tooling --status pending` | AND logic applied |
-| No matches | `--tag nonexistent` | Empty output, exit 0 |
+| No matches | `--tag nonexistent` | Prints `(none)`, exit 0 |
 | No filters | No args | All entities (or usage error — design call needed) |
 
 ### list.py
@@ -268,7 +268,7 @@ Testing approach defined in s0017. Tests verify attributes and behavior via duck
 | Sort by title | `--sort title` | Alphabetical by title |
 | Excludes archive | Default | Archived entities absent |
 | Includes archive | `--archived` | Archived entities present, marked as archived |
-| Empty result | `--type decision` on worklog with no decisions | Empty output, exit 0 |
+| Empty result | `--type decision` on worklog with no decisions | Prints `(none)`, exit 0 |
 
 ## Dangers
 

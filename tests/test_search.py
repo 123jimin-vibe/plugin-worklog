@@ -228,10 +228,7 @@ class TestSearchNoMatches(unittest.TestCase):
     def test_nonexistent_tag(self):
         result = _run_search(self.worklog, "--tag", "nonexistent")
         self.assertEqual(result.returncode, 0)
-        # Output should be empty or contain no entity IDs.
-        output = result.stdout.strip()
-        for eid in ["s0001", "s0010", "t0001", "t0002", "t0003", "d0001", "d0002"]:
-            self.assertNotIn(eid, output)
+        self.assertEqual(result.stdout.strip(), "(none)")
 
 
 # ===================================================================

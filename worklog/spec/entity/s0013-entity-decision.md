@@ -26,6 +26,7 @@ Optional fields:
 
 | Field        | Type       | Description                                           |
 |--------------|------------|-------------------------------------------------------|
+| `tags`       | string[]   | Classification tags. Optional for decisions.          |
 | `supersedes` | string[]   | Decision IDs this decision replaces.                  |
 
 ## Body

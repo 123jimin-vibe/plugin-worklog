@@ -62,6 +62,7 @@ Immutable record of *why* a choice was made.
 id = "d0001"
 title = "No recursion in macros"
 status = "accepted"
+tags = ["methodology"]
 relates_to = ["s0007"]
 supersedes = []
 +++
