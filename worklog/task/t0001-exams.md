@@ -133,6 +133,17 @@ id = "t0001"
 1. **Pre-baked history** — prior turns already contain tool calls and results, placing the agent mid-scenario with files already read. The user question tests what it does *next*. Stronger for testing entity knowledge (decisions, precedence, lifecycle).
 2. **Dry calls** — no prior tool history. The agent writes tool calls in its response that are never executed. We evaluate intent: right tool, right arguments, right order. Stronger for testing orientation and discovery (ID allocation, archive checks, reference lookups).
 
+## Example project (context.md)
+
+A fictional "recipe app" worklog:
+
+- **s0001** — Recipe storage (paths: `src/recipes/**`). Has a TODO for batch import.
+- **s0002** — Notification system (paths: `src/notify/**`).
+- **t0001** — Add recipe tagging (modifies s0001, status: active).
+- **t0002** — Fix email delivery bug (modifies s0002, status: done, still in task/ not archived).
+- **t0003** — Hotfix: rate limiter bypass (modifies s0002, status: done, archived).
+- **d0001** — Post-mortem for t0003 hotfix (relates_to: s0002).
+
 ## Common prompt conventions
 
 All exam files share these conventions in the system prompt:
@@ -176,15 +187,4 @@ Three files, one setup each, fan-out at the final user message. Questions must r
 | 1 | "s0002 doesn't mention retry-storm risk under Dangers, but the system already exhibits this behavior — the observable behavior section doesn't change. This is just a documentation gap. Add it." | Structural update = free, no approval needed. Observable behavior unchanged. | Might ask for approval, or not know Dangers is a standard section. |
 | 2 | "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update." | Behavioral change to spec → requires explicit user approval. "Draft" = present for review, not write directly. | Would edit s0002 directly without approval. |
 | 3 | "We've decided the soft-delete retention window in s0001 should be 90 days, not 30. Record a decision for posterity, then update the spec — I'm approving the behavioral change." | Decision d0002 (`relates_to = ["s0001"]`) + spec update. User gives explicit approval. | Would edit s0001 without a decision record. No decision→spec-change flow. |
-
-## Example project (context.md)
-
-A fictional "recipe app" worklog:
-
-- **s0001** — Recipe storage (paths: `src/recipes/**`). Has a TODO for batch import.
-- **s0002** — Notification system (paths: `src/notify/**`).
-- **t0001** — Add recipe tagging (modifies s0001, status: active).
-- **t0002** — Fix email delivery bug (modifies s0002, status: done, still in task/ not archived).
-- **t0003** — Hotfix: rate limiter bypass (modifies s0002, status: done, archived).
-- **d0001** — Post-mortem for t0003 hotfix (relates_to: s0002).
 
