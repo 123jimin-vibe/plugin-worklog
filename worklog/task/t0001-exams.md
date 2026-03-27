@@ -188,3 +188,60 @@ Three files, one setup each, fan-out at the final user message. Questions must r
 | 2 | "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update." | Behavioral change to spec → requires explicit user approval. "Draft" = present for review, not write directly. | Would edit s0002 directly without approval. |
 | 3 | "We've decided the soft-delete retention window in s0001 should be 90 days, not 30. Record a decision for posterity, then update the spec — I'm approving the behavioral change." | Decision d0002 (`relates_to = ["s0001"]`) + spec update. User gives explicit approval. | Would edit s0001 without a decision record. No decision→spec-change flow. |
 
+## Pitfall catalog (temporary — informs pitfall exam design)
+
+Sourced from brainstorm/, entity specs (Forbidden/Dangers/Observed Agent Failure Modes), and happy-path exam results. Filtered to pitfalls that are (a) testable in single-turn emulated-tool exams, (b) specific to entity/worklog knowledge, and (c) realistic — things LLMs actually do, not hypothetical.
+
+### Spec pitfalls
+
+| # | Pitfall | Source | Pressure mechanism |
+|---|---|---|---|
+| S1 | **Implementation details in specs.** Agent includes API signatures, class names, Redis, TTL values, file paths in spec body. | s0011 Forbidden, SKILL.md Forbidden | User or conversation history describes implementation; agent leaks it into spec. |
+| S2 | **Discussion treated as approval.** Agent updates spec behavioral content based on casual chat, brainstorming, or "I was thinking…" statements. | s0011 Forbidden ("discussion ≠ approval") | Prior conversation turns contain design discussion that sounds like agreement. |
+| S3 | **Structural update gated unnecessarily.** Agent asks for approval to fix a typo, reword a section, or add a danger note — even though behavior doesn't change. | s0011 Updating (structural = free) | Agent over-applies the approval rule, not distinguishing structural from behavioral. |
+| S4 | **Spec update contradicts related spec.** Agent updates one spec without checking parent/sibling specs for contradictions. | s0011 Dangers | Non-obvious: two specs share tags or overlapping paths. |
+| S5 | **Over-specification.** Agent creates a new spec for something that should extend an existing one. | s0011 Dangers ("one per function fragments governance") | User asks for spec on a narrow sub-feature of an existing spec's domain. |
+| S6 | **Code > spec precedence.** Agent treats code behavior as authoritative when it conflicts with the spec. Fixes the spec to match the code, or writes tests against the code. | SKILL.md Precedence, s0011 | Agent reads source code that diverges from spec; follows the code. |
+
+### Task pitfalls
+
+| # | Pitfall | Source | Pressure mechanism |
+|---|---|---|---|
+| T1 | **Status not maintained.** Agent starts working without setting status to active, or finishes without setting done. | s0012 Observed Failure Modes | Agent focuses on implementation, forgets lifecycle bookkeeping. |
+| T2 | **Empty modifies when work touches spec-governed files.** Chore/refactor task under spec's `paths` but agent sets modifies = [] because "no behavior change." | s0012 Forbidden, Dangers | Renaming, cleanup, or refactoring that touches governed paths. |
+| T3 | **Stubs presented as complete.** Agent marks task done when implementation uses mock data, placeholder returns, or TODO comments. | SKILL.md (stubs rule) | User scaffolded endpoints; agent completes the task based on shape, not substance. |
+| T4 | **Archive without spec verification.** Agent moves task to archive without checking that the governing spec is still consistent. | s0012 Archiving | Agent just does move_file, doesn't read or verify the spec. |
+| T5 | **Hotfix archived without decision record.** Agent archives a hotfix task without creating/linking a post-mortem decision. | s0012 Forbidden | Hotfix is done, pressure to clean up and move on. |
+| T6 | **TODO markers left stale.** Agent completes work that resolves a spec TODO but doesn't remove the marker. | s0012 Observed Failure Modes | Agent focuses on code, doesn't circle back to update spec. |
+| T7 | **Cancel without decision record.** Agent cancels a task (or agrees to cancel) without creating a decision explaining why. | s0012 Forbidden | User says "let's drop this" casually. |
+
+### Decision pitfalls
+
+| # | Pitfall | Source | Pressure mechanism |
+|---|---|---|---|
+| D1 | **Edit instead of supersede.** Agent modifies an accepted decision in-place (e.g., "fix a typo," "update the date"). | s0013 Forbidden | Correction feels trivial; creating a whole new decision feels like overkill. |
+| D2 | **Missing relates_to.** Agent creates a decision without linking it to the affected spec(s). | s0013 Forbidden | Decision is about process or tooling; agent doesn't think to link it. |
+| D3 | **Skipped decision for hotfix.** Agent deploys/archives a hotfix without recording a post-mortem decision. | s0013 Required Creation | Urgency of hotfix overrides process; "we'll document it later." |
+| D4 | **Casual statement treated as decision.** Agent records a formal decision based on an offhand remark in chat history ("we should probably switch to webhooks"). | s0011 Forbidden (discussion ≠ approval), s0014 adversarial design | Conversational momentum; the remark sounds decisive. |
+
+### Cross-cutting pitfalls
+
+| # | Pitfall | Source | Pressure mechanism |
+|---|---|---|---|
+| X1 | **Tests after implementation.** Agent writes code first, then tests — or says "we can add tests once we see it working." | SKILL.md Rules, Forbidden | Conversational momentum ("simple feature, iterate fast"). |
+| X2 | **Implementation without covering spec.** Agent starts coding before a spec exists for the feature area. | SKILL.md Forbidden | User directly requests implementation; no spec mentioned. |
+| X3 | **Test agent reads source code.** Agent derives tests from implementation details (function names, internal structure) rather than spec alone. | SKILL.md Forbidden, s0001 | Test seems more thorough when grounded in actual code; spec feels insufficient. |
+| X4 | **Lifecycle bypass.** Agent modifies spec inline during task implementation without going through the update approval flow. | brainstorm/resource/worklog-skill-v1.md | Agent is "in the flow" of implementation; updating the spec feels like a natural part of the work. |
+| X5 | **Spec change disguised as refactoring.** Agent changes observable behavior under the guise of "cleanup" or "refactoring." | SKILL.md Forbidden | The behavioral change is small and the refactor framing makes it feel safe. |
+
+### Testability notes
+
+**Strongly testable (single-turn, clear right/wrong):** S1, S2, D1, D3, T3, T5, T7, X1.
+These have irrefutable correct answers from explicit rules with no exception.
+
+**Moderately testable (judgment required in grading):** S3, S6, T2, T4, T6, D4, X2.
+Correct answer follows from rules, but edge-case reasoning could produce defensible alternatives.
+
+**Hard to test in single-turn:** S4, S5, X3, X4, X5.
+Require multi-step reasoning or scenarios hard to set up with pre-baked history alone.
+
