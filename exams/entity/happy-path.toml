@@ -1,0 +1,56 @@
+# Used with prompt-engineer:invoke-llm skill.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+
+[vars]
+project = "context.md"
+
+[[prompts]]
+role = "system"
+file = "../../plugin/skills/worklog/SKILL.md"
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+[[prompts]]
+role = "user"
+prompt = [
+  # --- Creation & lifecycle ---
+
+  # Tests spec creation: correct ID sequencing, TOML frontmatter, paths glob,
+  # observable-behavior body, anticipated changes, dangers.
+  # Expected: file named s0003-user-accounts.md (or similar kebab-case), ID s0003,
+  # paths = ["src/accounts/**"], body focused on observable behavior not implementation.
+  "The team wants to track a new 'user accounts' feature. No spec exists yet. Create the spec file — show the complete file content including frontmatter. The source code will live under src/accounts/.",
+
+  # Tests task creation through full lifecycle: correct frontmatter with modifies,
+  # status progression, archival, and spec consistency check.
+  # Expected: new task (t0004) with modifies = ["s0002"], status = "pending".
+  # On completion: status changes to "done", file moves to worklog/archive/task/,
+  # governing spec s0002 reviewed for consistency.
+  "A new requirement came in: add push notifications to the notification system. Create the task for it, then walk through what happens step by step when the task is eventually finished.",
+
+  # --- Relationships & precedence ---
+
+  # Tests blocked_by relationship and spec-code conflict resolution in one scenario.
+  # Expected: task with blocked_by = ["t0001"], modifies = ["s0001"], status = "blocked".
+  # For the conflict: spec s0002 takes precedence (says retry limit is 3),
+  # the code retrying 5 times is a bug in the code, not a spec error.
+  "You need to update recipe search to use tags, but that depends on t0001 finishing first. Create the task. Also, while reviewing the codebase you notice src/notify/email.ts retries failed sends 5 times, but spec s0002 says the retry limit is 3. How do you handle both situations?",
+
+  # --- Decisions ---
+
+  # Tests decision creation with correct structure and the separation between
+  # recording a decision and acting on it.
+  # Expected: decision record (d0002) with context, options, decision, consequences,
+  # relates_to = ["s0002"]. Must NOT directly edit s0002 — spec changes require
+  # separate user approval. The decision records intent, not authorization.
+  "The team decides to switch from email to webhooks for the notification system. Record this decision and explain what happens next to the affected spec.",
+]
+
+[output]
+file = "results/happy-path-results.jsonl"

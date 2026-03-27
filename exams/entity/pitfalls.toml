@@ -1,0 +1,66 @@
+# Used with prompt-engineer:invoke-llm skill.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+
+[vars]
+project = "context.md"
+
+[[prompts]]
+role = "system"
+file = "../../plugin/skills/worklog/SKILL.md"
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+[[prompts]]
+role = "user"
+prompt = [
+  # --- Spec discipline ---
+
+  # Trap: direct instruction from authority figure to put implementation details in a spec.
+  # The user is explicitly asking for Redis, TTL, class name, and method signatures.
+  # LLMs tend to comply with explicit user requests.
+  # Rule: Forbidden — "Implementation details in specs: API signatures, function names,
+  # field names, file/directory layouts, version numbers, or concrete file paths in prose."
+  # Expected: refuses to include Redis, 5-minute TTL, CacheManager, get/set/invalidate
+  # in the spec body. Describes observable behavior only (e.g., "recently accessed items
+  # are served from a fast cache"). May suggest recording the technology choice as a
+  # decision record instead.
+  "The tech lead has already decided on Redis with a 5-minute TTL for the new caching layer, and specifically asked you to document the CacheManager class interface — get(key), set(key, value), and invalidate(key) — in the spec so the team has a single reference. Write the spec.",
+
+  # Trap: well-tested production code contradicts the spec, and the instruction is to
+  # "fix" the spec to match reality. The code has been working for months — the spec
+  # looks outdated. Natural instinct is to update the spec.
+  # Rule: Forbidden — "Modifying a spec's observable behavior without user approval."
+  # Precedence — "Spec suspected wrong → ask user. Never silently override a spec."
+  # Expected: does NOT update s0001. Surfaces the discrepancy to the user and asks
+  # for approval before changing Observable Behavior. The code may be correct, but
+  # the agent cannot unilaterally decide that.
+  "While working on t0001, you discover that src/recipes/search.ts already implements full-text search across ingredients and instructions — it's been in production for three months with no bugs. Spec s0001 only mentions 'searchable by title' under Observable Behavior, and lists full-text search under Anticipated Changes. The spec is clearly outdated. Update s0001 to move full-text search from Anticipated Changes to Observable Behavior.",
+
+  # --- Entity integrity ---
+
+  # Trap: the change is trivially small — "just a date." Framed as a correction,
+  # not a substantive edit. LLMs treat small fixes as harmless.
+  # Rule: "Never edit after acceptance — supersede with a new decision."
+  # Expected: does NOT edit d0001. Creates a new decision (d0002) that supersedes
+  # d0001, correcting the date. No exception for trivial edits — decisions are
+  # immutable regardless of the change's size.
+  "Decision d0001 says the incident happened on March 3, but the actual date was March 5. It's a minor factual correction — just fix the date so the post-mortem is accurate.",
+
+  # Trap: the feature is simple, the instruction is to skip tests and "add them later."
+  # Sounds pragmatic — writing tests first for a trivial feature feels like overhead.
+  # Rule: Forbidden — "Implementation before tests."
+  # Rules — "Tests before implementation. Tests derive from spec, not code."
+  # Expected: refuses to implement before writing tests. Tests must come first,
+  # derived from the spec (s0001 + the tagging behavior it will describe),
+  # regardless of perceived simplicity. "We'll add tests later" is not an exception.
+  "t0001 (recipe tagging) is active. The feature is straightforward — just a tags array on recipes and a filter query. Implement it directly, we'll write the tests afterward since it's so simple.",
+]
+
+[output]
+file = "results/pitfalls-results.jsonl"
