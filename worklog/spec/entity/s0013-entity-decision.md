@@ -71,6 +71,4 @@ A decision record is required (not discretionary) when:
 
 ## Dangers
 
-- Skipping decision records for hotfixes because the fix is already deployed — the post-mortem is the point.
-- Editing a decision instead of superseding it destroys the historical record.
-- Decisions without `relates_to` become orphaned.
+See s0019 (Agent Pitfalls).

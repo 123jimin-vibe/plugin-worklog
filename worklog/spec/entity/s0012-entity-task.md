@@ -83,14 +83,4 @@ When work is abandoned (requirements changed, cost exceeds benefit, feature unne
 
 ## Dangers
 
-- Tasks with empty `modifies` that actually change spec-governed behavior escape governance silently.
-- Archiving without verifying the spec is still consistent with the completed work.
-- Hotfix tasks look identical to normal tasks — no urgency signal.
-- Not marking a completed task as done — task lingers in active directory, cluttering the working set and signaling false state.
-
-## Observed Agent Failure Modes
-
-- When modifying active tasks, agents implement only the changed parts and omit updating related tests. Tests must be treated as part of the deliverable, not optional follow-up.
-- Agents tend to not factor out common logic, violating DRY without an apparent reason. Adhering to DRY is not always the right call, but violations should be deliberate and justified — not accidental.
-- Agents do not maintain task status. When starting work on a task, status should move to `active`; when done, to `done`. Status drift undermines the worklog as a source of truth.
-- When working on tasks, agents tend to not update relevant specs in a timely manner, leaving `TODO` markers unremoved even after the item has been implemented.
+See s0019 (Agent Pitfalls).

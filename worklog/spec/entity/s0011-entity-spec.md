@@ -72,9 +72,4 @@ When: spec is superseded by a newer spec, or the governed feature was removed. R
 
 ## Dangers
 
-- Over-granular specs (one per function) fragment governance — prefer extending an existing spec.
-- Specs without `paths` escape drift detection silently.
-- Append-only growth — agents add content but never prune obsolete material.
-- Overlapping `paths` across specs creates ambiguous drift signals.
-- A spec update can silently contradict another spec. Check related specs (via `parent`, shared `tags`, or overlapping `paths`) when making non-trivial updates. Parent–child contradictions must be resolved immediately.
-- Reference docs cited by a spec become part of its behavioral surface but escape drift detection.
+See s0019 (Agent Pitfalls).
