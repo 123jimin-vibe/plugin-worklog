@@ -163,9 +163,9 @@ Three files, one setup each, fan-out at the final user message. Questions must r
 
 | # | Question | SKILL.md dependency | Without SKILL.md |
 |---|---|---|---|
-| 1 | "t0002 is done and verified against s0002. Archive it." | Archive to `worklog/archive/task/`. Verify governing spec consistency. `move_file` as the correct operation. | Might delete, mark done in-place, or move to wrong location. |
+| 1 | "t0002 is done and I've verified it's consistent with s0002. Archive it." | Archive to `worklog/archive/task/`. `move_file` as the correct operation. User says verified — trust it. | Might delete, mark done in-place, or move to wrong location. |
 | 2 | "I want to start implementing recipe tagging (t0001 scope). What's the first thing I should do?" | Tests before implementation (SKILL.md rule). t0001 is already active — no status change. Tests derive from spec (s0001), not code. | "Start coding" or "set status to active." No tests-first rule. |
-| 3 | "t0001 is done — tagging is fully implemented and tested. s0001 has been updated to document tagging. The batch import TODO is still there (that's separate work). Close it out." | Status → done, move to archive. Verify s0001 consistency (user says it's updated). Confirm batch import TODO stays (separate scope). | Would close the task but skip archive, skip spec verification, or remove the TODO. |
+| 3 | "t0001 is done — tagging is fully implemented, tested, and s0001 has been updated to document the new behavior. The batch import TODO in s0001 is unrelated. Close out t0001." | Status → done, move to archive. User confirms spec updated. Batch import TODO stays (user says "unrelated"). | Would close the task but skip archive, skip spec verification, or remove the TODO. |
 
 ### `happy-update.toml` — Spec and decision updates
 
@@ -173,9 +173,9 @@ Three files, one setup each, fan-out at the final user message. Questions must r
 
 | # | Question | SKILL.md dependency | Without SKILL.md |
 |---|---|---|---|
-| 1 | "s0002 doesn't mention retry-storm risk under Dangers. The actual behavior hasn't changed — just the documentation gap. Add it." | Structural update = free, no approval needed. Knows required sections (Dangers is one). | Might ask for approval, or not know Dangers is a standard section. |
-| 2 | "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update." | Behavioral change to spec → requires explicit user approval. Agent should draft the update and present it for approval, not write directly. | Would edit s0002 directly without approval. |
-| 3 | "We realize the soft-delete retention window in s0001 should be 90 days, not 30. The Dangers section already warns about hardcoding this. Record the decision and update the spec." | Decision required for behavioral spec change (d0002, `relates_to = ["s0001"]`). Then spec update — but user explicitly asked for both, so approval is implicit in the request. | Would edit s0001 without a decision record. No decision→spec-change flow. |
+| 1 | "s0002 doesn't mention retry-storm risk under Dangers, but the system already exhibits this behavior — the observable behavior section doesn't change. This is just a documentation gap. Add it." | Structural update = free, no approval needed. Observable behavior unchanged. | Might ask for approval, or not know Dangers is a standard section. |
+| 2 | "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update." | Behavioral change to spec → requires explicit user approval. "Draft" = present for review, not write directly. | Would edit s0002 directly without approval. |
+| 3 | "We've decided the soft-delete retention window in s0001 should be 90 days, not 30. Record a decision for posterity, then update the spec — I'm approving the behavioral change." | Decision d0002 (`relates_to = ["s0001"]`) + spec update. User gives explicit approval. | Would edit s0001 without a decision record. No decision→spec-change flow. |
 
 ## Example project (context.md)
 

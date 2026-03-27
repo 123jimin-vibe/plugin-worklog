@@ -1,0 +1,233 @@
+# Used with prompt-engineer:invoke-llm skill.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+max_tokens = 4096
+
+[vars]
+project = "context.md"
+
+# --- System: SKILL.md (the spec under test) ---
+
+[[prompts]]
+role = "system"
+file = "../../plugin/skills/worklog/SKILL.md"
+
+# --- System: emulated tools + conventions ---
+
+[[prompts]]
+role = "system"
+file = "tools.md"
+
+# --- System: project context ---
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+# --- Pre-baked history: user asks to orient ---
+
+[[prompts]]
+role = "user"
+prompt = "I have some task lifecycle questions. Orient yourself — read the active tasks, their governing specs, and check the archive."
+
+# --- Pre-baked history: agent reads tasks and specs ---
+
+[[prompts]]
+role = "assistant"
+prompt = """I'll read the relevant entities and check the archive.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/task/t0001-recipe-tagging.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/task/t0002-fix-email-delivery.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0001-recipe-storage.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0002-notifications.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/archive/task"}</input>
+</tool_use>"""
+
+# --- Pre-baked history: file contents ---
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>+++
+id = "t0001"
+title = "Add recipe tagging"
+status = "active"
+tags = ["core"]
+modifies = ["s0001"]
++++
+
+# Add recipe tagging
+
+Users can assign tags to recipes and filter recipes by tag.
+
+## Scope
+
+- Add a tags field to recipes (list of strings).
+- Add a search-by-tag endpoint.
+- Update s0001 to document tagging behavior.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "t0002"
+title = "Fix email delivery bug"
+status = "done"
+tags = ["infra"]
+modifies = ["s0002"]
++++
+
+# Fix email delivery bug
+
+Email notifications were silently dropped when the SMTP server returned a transient 4xx error. The retry logic only handled 5xx errors.
+
+## Scope
+
+- Fix retry logic to handle 4xx transient errors.
+- Add logging for all delivery failures.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0001"
+title = "Recipe Storage"
+tags = ["core"]
+paths = ["src/recipes/**"]
++++
+
+# Recipe Storage
+
+Recipes are stored as structured documents with a title, ingredient list, and step-by-step instructions.
+
+## Observable Behavior
+
+- Users can create, read, update, and delete recipes.
+- Recipes are searchable by title.
+- Deleting a recipe is soft-delete (recoverable for 30 days).
+
+## Constraints
+
+- Recipe titles must be unique per user.
+- Ingredient quantities must be positive numbers.
+
+## Anticipated Changes
+
+**TODO:** batch import — accept a list of recipes and store them in one operation.
+
+- Full-text search across ingredients and instructions.
+- Recipe versioning.
+
+## Dangers
+
+- Soft-delete retention window is a product decision — do not hardcode without confirming.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0002"
+title = "Notification System"
+tags = ["infra"]
+paths = ["src/notify/**"]
++++
+
+# Notification System
+
+Sends notifications to users when events occur (e.g., recipe shared, comment added).
+
+## Observable Behavior
+
+- Email notifications are sent for all event types.
+- Notifications are delivered within 60 seconds of the triggering event.
+- Failed sends are retried up to 3 times with exponential backoff.
+
+## Constraints
+
+- Users can opt out of specific event types.
+- Notification content must not include sensitive data (passwords, tokens).
+
+## Anticipated Changes
+
+- Push notification channel.
+- Per-user delivery preferences (email vs. push vs. both).
+
+## Dangers
+
+- Retry storms under high load — backoff parameters must be tuned.</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>t0003-hotfix-rate-limiter.md</output>
+</tool_result>"""
+
+# --- Pre-baked history: agent confirms orientation ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Oriented. Current task state:
+
+- **t0001** (active) — recipe tagging, modifies s0001. In progress.
+- **t0002** (done) — email delivery fix, modifies s0002. Still in task/ — not yet archived.
+- **t0003** (done, archived) — rate limiter hotfix, modifies s0002.
+
+Governing specs read: s0001 (Recipe Storage), s0002 (Notifications). Ready."""
+
+# --- Fan-out questions ---
+#
+# Design constraint: each question must require SKILL.md knowledge to answer
+# correctly. Without SKILL.md, the LLM produces a fundamentally different answer.
+#
+# 01-archive: Tests archival procedure.
+# Expected: move_file from worklog/task/t0002-fix-email-delivery.md to
+#   worklog/archive/task/t0002-fix-email-delivery.md.
+#   - User says "I've verified" — agent should trust this, not re-verify.
+#   - Must use move_file (not write+delete or copy).
+#   - Without SKILL.md: might delete, mark in-place, or move to wrong location.
+#
+# 02-tests-first: Tests the "tests before implementation" rule.
+# Expected: agent says to write tests first, derived from spec s0001.
+#   - t0001 is already active — no status change needed.
+#   - Tests derive from spec, not from reading source code.
+#   - Without SKILL.md: would say "start coding" or "set status to active."
+#
+# 03-close-out: Tests full task completion sequence.
+# Expected: write_file to set t0001 status = "done", then move_file to archive.
+#   - s0001 consistency: user confirms it's updated.
+#   - Batch import TODO stays — user says "unrelated" (separate scope).
+#   - Without SKILL.md: would mark done but skip archive, skip spec check,
+#     or remove the TODO.
+
+[[prompts]]
+role = "user"
+prompt = [
+  "t0002 is done and I've verified it's consistent with s0002. Archive it.",
+  "I want to start implementing recipe tagging (t0001 scope). What's the first thing I should do?",
+  "t0001 is done — tagging is fully implemented, tested, and s0001 has been updated to document the new behavior. The batch import TODO in s0001 is unrelated. Close out t0001.",
+]
+
+[output]
+file = "results/happy-lifecycle-results.jsonl"

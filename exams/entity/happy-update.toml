@@ -1,0 +1,285 @@
+# Used with prompt-engineer:invoke-llm skill.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+max_tokens = 4096
+
+[vars]
+project = "context.md"
+
+# --- System: SKILL.md (the spec under test) ---
+
+[[prompts]]
+role = "system"
+file = "../../plugin/skills/worklog/SKILL.md"
+
+# --- System: emulated tools + conventions ---
+
+[[prompts]]
+role = "system"
+file = "tools.md"
+
+# --- System: project context ---
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+# --- Pre-baked history: user asks to orient ---
+
+[[prompts]]
+role = "user"
+prompt = "I have some spec and decision questions. Orient yourself — read the specs, the decision record, and the active task."
+
+# --- Pre-baked history: agent reads entities ---
+
+[[prompts]]
+role = "assistant"
+prompt = """I'll read the relevant entities.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0001-recipe-storage.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0002-notifications.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/decision/d0001-rate-limiter-postmortem.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/task/t0001-recipe-tagging.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/spec"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/decision"}</input>
+</tool_use>
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "python worklog/script/next_id.py spec"}</input>
+</tool_use>
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "python worklog/script/next_id.py decision"}</input>
+</tool_use>"""
+
+# --- Pre-baked history: file contents + results ---
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0001"
+title = "Recipe Storage"
+tags = ["core"]
+paths = ["src/recipes/**"]
++++
+
+# Recipe Storage
+
+Recipes are stored as structured documents with a title, ingredient list, and step-by-step instructions.
+
+## Observable Behavior
+
+- Users can create, read, update, and delete recipes.
+- Recipes are searchable by title.
+- Deleting a recipe is soft-delete (recoverable for 30 days).
+
+## Constraints
+
+- Recipe titles must be unique per user.
+- Ingredient quantities must be positive numbers.
+
+## Anticipated Changes
+
+**TODO:** batch import — accept a list of recipes and store them in one operation.
+
+- Full-text search across ingredients and instructions.
+- Recipe versioning.
+
+## Dangers
+
+- Soft-delete retention window is a product decision — do not hardcode without confirming.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0002"
+title = "Notification System"
+tags = ["infra"]
+paths = ["src/notify/**"]
++++
+
+# Notification System
+
+Sends notifications to users when events occur (e.g., recipe shared, comment added).
+
+## Observable Behavior
+
+- Email notifications are sent for all event types.
+- Notifications are delivered within 60 seconds of the triggering event.
+- Failed sends are retried up to 3 times with exponential backoff.
+
+## Constraints
+
+- Users can opt out of specific event types.
+- Notification content must not include sensitive data (passwords, tokens).
+
+## Anticipated Changes
+
+- Push notification channel.
+- Per-user delivery preferences (email vs. push vs. both).
+
+## Dangers
+
+- Retry storms under high load — backoff parameters must be tuned.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "d0001"
+title = "Rate limiter bypass post-mortem"
+status = "accepted"
+tags = ["infra"]
+relates_to = ["s0002"]
++++
+
+# Rate limiter bypass post-mortem
+
+## Context
+
+On March 3, the notification rate limiter was bypassed via spoofed user IDs, causing a spam incident.
+
+## Options Considered
+
+1. Add user ID validation at the API gateway.
+2. Move rate limiting to a per-session basis.
+3. Both — validate IDs and add per-session limits.
+
+## Choice
+
+Option 3. Validate user IDs at the gateway and add per-session rate limits as defense in depth.
+
+## Rationale
+
+Option 1 alone leaves rate limiting bypassable through other vectors. Option 2 alone doesn't prevent spoofed IDs from consuming resources. Defense in depth addresses both.
+
+## Consequences
+
+- s0002 needs updating to reflect the new rate-limiting behavior.
+- Gateway validation adds ~2ms latency per request.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "t0001"
+title = "Add recipe tagging"
+status = "active"
+tags = ["core"]
+modifies = ["s0001"]
++++
+
+# Add recipe tagging
+
+Users can assign tags to recipes and filter recipes by tag.
+
+## Scope
+
+- Add a tags field to recipes (list of strings).
+- Add a search-by-tag endpoint.
+- Update s0001 to document tagging behavior.</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>s0001-recipe-storage.md
+s0002-notifications.md</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>d0001-rate-limiter-postmortem.md</output>
+</tool_result>
+
+<tool_result>
+<name>bash</name>
+<output>s0003</output>
+</tool_result>
+
+<tool_result>
+<name>bash</name>
+<output>d0002</output>
+</tool_result>"""
+
+# --- Pre-baked history: agent confirms orientation ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Oriented. Current state:
+
+- **s0001** (Recipe Storage) — has a TODO for batch import. Governed paths: src/recipes/**.
+- **s0002** (Notifications) — email-based, 3 retries, 60s delivery window. Governed paths: src/notify/**.
+- **d0001** (rate limiter post-mortem) — recommends gateway validation + per-session rate limits. s0002 not yet updated.
+- **t0001** (active) — recipe tagging, modifies s0001.
+- Next IDs: s0003, d0002.
+
+Ready."""
+
+# --- Fan-out questions ---
+#
+# Design constraint: each question must require SKILL.md knowledge to answer
+# correctly. Without SKILL.md, the LLM produces a fundamentally different answer.
+#
+# 01-structural-update: Tests structural vs behavioral spec update distinction.
+# Expected: write_file to update s0002's Dangers section directly.
+#   - "observable behavior section doesn't change" = structural update.
+#   - Structural updates are free — no user approval needed.
+#   - Without SKILL.md: might ask for approval, or not know Dangers is a
+#     standard section.
+#
+# 02-behavioral-draft: Tests behavioral change approval gate.
+# Expected: agent presents a draft of the spec update but does NOT write_file.
+#   - "Draft the spec update" = present for review, not commit directly.
+#   - Behavioral change (new rate-limiting behavior) requires explicit approval.
+#   - Without SKILL.md: would write_file directly, editing s0002 without approval.
+#
+# 03-decision-then-update: Tests decision→spec-change flow.
+# Expected: TWO write_file calls — decision d0002, then updated s0001.
+#   - Decision: id = "d0002", relates_to = ["s0001"]. Records the retention
+#     window change and rationale.
+#   - Spec update: change "30 days" to "90 days" in s0001.
+#   - User gives explicit approval ("I'm approving the behavioral change")
+#     and explicit instruction to record a decision. Agent should not ask again.
+#   - Without SKILL.md: would edit s0001 directly without a decision record.
+#     No awareness that behavioral spec changes warrant a decision.
+
+[[prompts]]
+role = "user"
+prompt = [
+  "s0002 doesn't mention retry-storm risk under Dangers, but the system already exhibits this behavior — the observable behavior section doesn't change. This is just a documentation gap. Add it.",
+  "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update.",
+  "We've decided the soft-delete retention window in s0001 should be 90 days, not 30. The Dangers section already warns about hardcoding this. Record a decision for posterity, then update the spec — I'm approving the behavioral change.",
+]
+
+[output]
+file = "results/happy-update-results.jsonl"
