@@ -147,7 +147,7 @@ class TestDriftPresent(unittest.TestCase):
         _git(root, "commit", "-m", "initial")
 
         # Now change the source file without touching the spec.
-        src_file.write_text("# login v2 — changed\n")
+        src_file.write_text("# login v2 - changed\n")
         _git(root, "add", "-A")
         _git(root, "commit", "-m", "change source")
 

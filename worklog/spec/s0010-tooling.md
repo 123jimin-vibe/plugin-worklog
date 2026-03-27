@@ -23,7 +23,7 @@ Scripts that automate worklog operations, bundled with the plugin at `plugin/ski
 
 `next_id.py` — next available ID for a given entity type.
 
-TODO: drift — spec-code drift report for specs with `paths`.
+`drift.py` — spec-code drift report for specs with `paths`.
 
 `search.py` — query entities by tag, status, or relationship. ID arguments are normalized (e.g. `s1` matches `s0001`). Prints `(none)` when no matches.
 
