@@ -19,15 +19,15 @@ Scripts that automate worklog operations, bundled with the plugin at `plugin/ski
 
 ## Scripts
 
-TODO: validate — dangling refs, invalid statuses, missing required fields.
+`validate.py` — dangling refs, invalid statuses, missing required fields, ID format, duplicate IDs, unknown tags.
 
-TODO: next-id — next available ID for a given entity type.
+`next_id.py` — next available ID for a given entity type.
 
 TODO: drift — spec-code drift report for specs with `paths`.
 
-TODO: search — query entities by tag, status, or relationship. ID arguments are normalized (e.g. `s1` matches `s0001`). Prints `(none)` when no matches.
+`search.py` — query entities by tag, status, or relationship. ID arguments are normalized (e.g. `s1` matches `s0001`). Prints `(none)` when no matches.
 
-TODO: list — list entities with optional grouping and sorting. Prints `(none)` when no matches.
+`list.py` — list entities with optional grouping and sorting. Prints `(none)` when no matches.
 
 ## Anticipated Changes
 
