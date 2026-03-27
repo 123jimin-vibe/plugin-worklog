@@ -146,6 +146,7 @@ Ready."""
 # 01-governance-task: Tests paths→governance inference + TODO awareness.
 # Expected: write_file for worklog/task/t0004-batch-import.md (or similar).
 #   - Frontmatter: id = "t0004", modifies = ["s0001"], status = "pending".
+#   - "I'm about to start" = work not yet begun, so status is pending.
 #   - Key reasoning: src/recipes/** is governed by s0001 (via paths), so
 #     modifies must include s0001. s0001 has a TODO for batch import.
 #   - Without SKILL.md: creates a standalone task without modifies. No
@@ -163,25 +164,24 @@ Ready."""
 #   - Without SKILL.md: creates a task or design doc directly. No spec-first
 #     workflow, no paths, no TODO convention.
 #
-# 03-decision-plus-task: Tests decision→task flow + approval gate.
+# 03-decision-plus-task: Tests decision→task flow + spec-edit restraint.
 # Expected: TWO write_file calls — decision + task.
 #   - Decision: worklog/decision/d0002-rate-limit-enforcement.md (or similar)
 #     id = "d0002", relates_to = ["s0002"]. Body: context referencing d0001,
 #     choice, rationale, consequences.
 #   - Task: worklog/task/t0004-rate-limit-enforcement.md (or similar)
 #     id = "t0004", modifies = ["s0002"], status = "pending".
-#   - Key reasoning: behavioral change to s0002 needs user approval before
-#     spec edit. Decision records the choice; task covers the work; neither
-#     directly modifies s0002 without approval.
+#   - Key reasoning: user explicitly defers spec update ("we'll update s0002
+#     once the work is done and reviewed"). Agent must not edit s0002 now.
 #   - Without SKILL.md: records the decision and edits s0002 directly.
-#     No approval gate, no decision→task flow.
+#     No decision→task flow.
 
 [[prompts]]
 role = "user"
 prompt = [
-  "I've been adding batch import logic under src/recipes/. There's a TODO for it in s0001. Create a task to track this work.",
-  "New feature: user accounts. Code goes under src/accounts/. We want registration, login, and session management, but password requirements are still TBD. Set up the worklog so we're ready to start implementing.",
-  "We've agreed to implement d0001's recommendations: gateway validation and per-session rate limits for notifications. This changes rate-limiting behavior. Record the decision and set up the work.",
+  "I'm about to start implementing batch import for recipes — the code will go under src/recipes/. There's a TODO for it in s0001. Create a task to track this.",
+  "New feature: user accounts. Code goes under src/accounts/. We want registration, login, and session management as a single deliverable, but password requirements are still TBD. Set up the worklog so we're ready to start implementing.",
+  "We've agreed to implement d0001's recommendations: gateway validation and per-session rate limits for notifications. Record the decision and create a task for the implementation. We'll update s0002 once the work is done and reviewed.",
 ]
 
 [output]
