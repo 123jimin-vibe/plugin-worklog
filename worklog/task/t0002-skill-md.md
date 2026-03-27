@@ -3,7 +3,7 @@ id = "t0002"
 title = "Write first proper SKILL.md"
 tags = ["methodology"]
 status = "pending"
-modifies = ["s0001"]
+modifies = ["s0001", "s0018"]
 +++
 
 # Write first proper SKILL.md

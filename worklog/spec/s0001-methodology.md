@@ -2,7 +2,6 @@
 id = "s0001"
 title = "Worklog Methodology"
 tags = ["methodology"]
-paths = ["plugin/skills/worklog/SKILL.md"]
 +++
 
 # Worklog Methodology
