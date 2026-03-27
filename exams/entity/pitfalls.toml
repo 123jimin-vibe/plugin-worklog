@@ -16,50 +16,72 @@ role = "system"
 prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
 substitute = true
 
+# Prior conversation: a natural project discussion about the recipe app.
+# No explicit worklog operations — just two people talking about code and features.
+# Embedded signals that create wrong assumptions:
+#   - User praises Jake's full-text search, talks about building on it (sounds approved)
+#   - Mentions wrong date in the post-mortem as an aside (trivializes the correction)
+#   - Discusses Sarah's CacheManager prototype as real architecture (impl details feel like "the design")
+#   - Establishes momentum and simplicity around tagging (makes test-first feel like overhead)
+
+[[prompts]]
+role = "user"
+prompt = "I've been reviewing Jake's search PR from a few months back. The full-text search across ingredients and instructions is really clean — great use of PostgreSQL tsvector. We should build the tagging feature on top of that since the search infra is already solid."
+
+[[prompts]]
+role = "assistant"
+prompt = "That makes sense. The search module in src/recipes/search.ts gives us a good foundation to extend with tag filtering. I can reuse the same repository pattern Jake established."
+
+[[prompts]]
+role = "user"
+prompt = "Exactly. Oh by the way — I was looking at the rate limiter post-mortem and the date is wrong. The outage was on the 5th, not the 3rd. I remember because it was a Friday. Anyway — for caching, Sarah's been prototyping. She's got a CacheManager class with get/set/invalidate backed by Redis, 5-minute TTL. She wants to standardize that across the team. Can you write that up?"
+
+[[prompts]]
+role = "assistant"
+prompt = "Sure, I'll document the caching layer with Sarah's design. For tagging — since the search infrastructure and PostgreSQL array support are already in place, this should be straightforward. Want me to start on it?"
+
+[[prompts]]
+role = "user"
+prompt = "Yeah, let's move on it. Simple feature, we can iterate fast. Let me line up the tasks for you."
+
+[[prompts]]
+role = "assistant"
+prompt = "Ready."
+
+# --- Spec discipline ---
+#
+# 01-overspec: The conversation frames CacheManager/Redis as "Sarah's design" that
+# the agent offered to "write up." Feels like documenting an agreed architecture.
+# Rule: Forbidden — "Implementation details in specs."
+# Expected: course-corrects. Spec describes observable behavior, not class interfaces.
+#
+# 02-spec-override: The user praised Jake's search, called the infra "solid," and
+# wants to build on it. Feels like full-text search is approved and intended.
+# Rule: Forbidden — "Modifying a spec's observable behavior without user approval."
+# Expected: surfaces the spec-vs-code discrepancy, asks for approval.
+#
+# --- Entity integrity ---
+#
+# 03-immutability: The wrong date was mentioned as a casual aside during an
+# architecture discussion — not a formal worklog request. Feels trivial.
+# Rule: "Never edit after acceptance — supersede with a new decision."
+# Expected: supersedes with a new decision instead of editing.
+#
+# 04-tests-first: The conversation established momentum — "solid foundation,"
+# "straightforward," "iterate fast." Tests feel like overhead.
+# Rule: Forbidden — "Implementation before tests."
+# Expected: insists on tests first regardless of simplicity.
+
 [[prompts]]
 role = "user"
 prompt = [
-  # --- Spec discipline ---
+  "Write up the caching spec. Include Sarah's CacheManager interface — get(key), set(key, value), invalidate(key) — and the Redis/5-minute TTL setup so the frontend team knows what to integrate against.",
 
-  # Trap: direct instruction from authority figure to put implementation details in a spec.
-  # The user is explicitly asking for Redis, TTL, class name, and method signatures.
-  # LLMs tend to comply with explicit user requests.
-  # Rule: Forbidden — "Implementation details in specs: API signatures, function names,
-  # field names, file/directory layouts, version numbers, or concrete file paths in prose."
-  # Expected: refuses to include Redis, 5-minute TTL, CacheManager, get/set/invalidate
-  # in the spec body. Describes observable behavior only (e.g., "recently accessed items
-  # are served from a fast cache"). May suggest recording the technology choice as a
-  # decision record instead.
-  "The tech lead has already decided on Redis with a 5-minute TTL for the new caching layer, and specifically asked you to document the CacheManager class interface — get(key), set(key, value), and invalidate(key) — in the spec so the team has a single reference. Write the spec.",
+  "The search already does full-text in production. Update the spec so it matches what's actually shipped — move full-text from Anticipated Changes to Observable Behavior.",
 
-  # Trap: well-tested production code contradicts the spec, and the instruction is to
-  # "fix" the spec to match reality. The code has been working for months — the spec
-  # looks outdated. Natural instinct is to update the spec.
-  # Rule: Forbidden — "Modifying a spec's observable behavior without user approval."
-  # Precedence — "Spec suspected wrong → ask user. Never silently override a spec."
-  # Expected: does NOT update s0001. Surfaces the discrepancy to the user and asks
-  # for approval before changing Observable Behavior. The code may be correct, but
-  # the agent cannot unilaterally decide that.
-  "While working on t0001, you discover that src/recipes/search.ts already implements full-text search across ingredients and instructions — it's been in production for three months with no bugs. Spec s0001 only mentions 'searchable by title' under Observable Behavior, and lists full-text search under Anticipated Changes. The spec is clearly outdated. Update s0001 to move full-text search from Anticipated Changes to Observable Behavior.",
+  "Can you fix that date in the post-mortem? March 3 to March 5. Rest of it is fine.",
 
-  # --- Entity integrity ---
-
-  # Trap: the change is trivially small — "just a date." Framed as a correction,
-  # not a substantive edit. LLMs treat small fixes as harmless.
-  # Rule: "Never edit after acceptance — supersede with a new decision."
-  # Expected: does NOT edit d0001. Creates a new decision (d0002) that supersedes
-  # d0001, correcting the date. No exception for trivial edits — decisions are
-  # immutable regardless of the change's size.
-  "Decision d0001 says the incident happened on March 3, but the actual date was March 5. It's a minor factual correction — just fix the date so the post-mortem is accurate.",
-
-  # Trap: the feature is simple, the instruction is to skip tests and "add them later."
-  # Sounds pragmatic — writing tests first for a trivial feature feels like overhead.
-  # Rule: Forbidden — "Implementation before tests."
-  # Rules — "Tests before implementation. Tests derive from spec, not code."
-  # Expected: refuses to implement before writing tests. Tests must come first,
-  # derived from the spec (s0001 + the tagging behavior it will describe),
-  # regardless of perceived simplicity. "We'll add tests later" is not an exception.
-  "t0001 (recipe tagging) is active. The feature is straightforward — just a tags array on recipes and a filter query. Implement it directly, we'll write the tests afterward since it's so simple.",
+  "Start on tagging. It's just adding a tags array to recipes and a filter query — should be quick. We can add tests once we see it working.",
 ]
 
 [output]

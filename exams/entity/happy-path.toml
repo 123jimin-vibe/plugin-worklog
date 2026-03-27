@@ -16,40 +16,62 @@ role = "system"
 prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
 substitute = true
 
+# Prior conversation: implementation-heavy discussion about the recipe app.
+# Full of class names, frameworks, and technology choices that must NOT leak
+# into entity creation. Also contains casual statements that sound like
+# approvals but aren't formal.
+
+[[prompts]]
+role = "user"
+prompt = "For user accounts, I'm thinking Express.js with Passport.js. The UserController handles registration and login, sessions in Redis via connect-redis. AccountModel on Sequelize with PostgreSQL. We'll probably want rate limiting on the auth endpoints too — maybe reuse the pattern from the notification system."
+
+[[prompts]]
+role = "assistant"
+prompt = "Solid stack. Passport gives us OAuth support down the road if we need it. For the session store, connect-redis pairs well with the caching layer Sarah's been setting up. I'd suggest a SessionService that wraps the Redis interaction so we're not coupling Passport directly to the store."
+
+[[prompts]]
+role = "user"
+prompt = "Good call on the SessionService. Oh — I noticed the retry count in src/notify/email.ts is 5 instead of 3 like the spec says. Pretty sure we bumped it during the outage but nobody updated the spec. Also, we've decided to move to webhooks for notifications — email has been more trouble than it's worth. Anyway, let me give you the actual tasks."
+
+[[prompts]]
+role = "assistant"
+prompt = "Noted on both. Ready for the tasks."
+
+# --- Creation & lifecycle ---
+#
+# 01-creation: Prior conversation is saturated with implementation details
+# (Express, Passport, UserController, Sequelize, PostgreSQL, SessionService,
+# connect-redis). The spec must contain NONE of these.
+# Expected: s0003, paths = ["src/accounts/**"], observable behavior only.
+#
+# 02-lifecycle: Prior conversation mentions Firebase for push. Must not
+# leak into the task. Tests full lifecycle walkthrough.
+# Expected: t0004, modifies = ["s0002"], status "pending". On completion:
+# done, archive, verify spec.
+#
+# --- Relationships & precedence ---
+#
+# 03-relationships: The user casually explained the retry discrepancy
+# ("we bumped it during the outage"). This sounds like the 5 is intentional.
+# But spec still takes precedence — explanation is context, not approval.
+# Expected: blocked_by = ["t0001"], modifies = ["s0001"]. Retry: spec wins.
+#
+# --- Decisions ---
+#
+# 04-decisions: The user said "we've decided to move to webhooks" in passing.
+# Casual statement, not formal approval to change the spec.
+# Expected: d0002 with relates_to = ["s0002"]. Does NOT edit s0002 directly.
+
 [[prompts]]
 role = "user"
 prompt = [
-  # --- Creation & lifecycle ---
+  "Create the user accounts spec. Source code goes under src/accounts/. Show the complete file.",
 
-  # Tests spec creation: correct ID sequencing, TOML frontmatter, paths glob,
-  # observable-behavior body, anticipated changes, dangers.
-  # Expected: file named s0003-user-accounts.md (or similar kebab-case), ID s0003,
-  # paths = ["src/accounts/**"], body focused on observable behavior not implementation.
-  "The team wants to track a new 'user accounts' feature. No spec exists yet. Create the spec file — show the complete file content including frontmatter. The source code will live under src/accounts/.",
+  "Create a task for adding push notifications to the notification system. Then walk through what happens step by step when the task is eventually finished.",
 
-  # Tests task creation through full lifecycle: correct frontmatter with modifies,
-  # status progression, archival, and spec consistency check.
-  # Expected: new task (t0004) with modifies = ["s0002"], status = "pending".
-  # On completion: status changes to "done", file moves to worklog/archive/task/,
-  # governing spec s0002 reviewed for consistency.
-  "A new requirement came in: add push notifications to the notification system. Create the task for it, then walk through what happens step by step when the task is eventually finished.",
+  "I need a task for updating recipe search to use tags, but it depends on t0001 finishing first. Create it. Also, that retry discrepancy I mentioned — 5 in the code vs 3 in the spec. How do you handle that?",
 
-  # --- Relationships & precedence ---
-
-  # Tests blocked_by relationship and spec-code conflict resolution in one scenario.
-  # Expected: task with blocked_by = ["t0001"], modifies = ["s0001"], status = "blocked".
-  # For the conflict: spec s0002 takes precedence (says retry limit is 3),
-  # the code retrying 5 times is a bug in the code, not a spec error.
-  "You need to update recipe search to use tags, but that depends on t0001 finishing first. Create the task. Also, while reviewing the codebase you notice src/notify/email.ts retries failed sends 5 times, but spec s0002 says the retry limit is 3. How do you handle both situations?",
-
-  # --- Decisions ---
-
-  # Tests decision creation with correct structure and the separation between
-  # recording a decision and acting on it.
-  # Expected: decision record (d0002) with context, options, decision, consequences,
-  # relates_to = ["s0002"]. Must NOT directly edit s0002 — spec changes require
-  # separate user approval. The decision records intent, not authorization.
-  "The team decides to switch from email to webhooks for the notification system. Record this decision and explain what happens next to the affected spec.",
+  "Record the webhook decision I mentioned — switching notifications from email to webhooks. What happens next to s0002?",
 ]
 
 [output]
