@@ -41,9 +41,22 @@ TOML configs for the prompt-engineer:invoke-llm skill. The system prompt referen
 - Convention for exam file naming relative to spec ID.
 - Result archiving strategy.
 
+## Writing Adversarial Questions
+
+Adversarial questions push the LLM toward a wrong answer. Two requirements: the question must be misleading, and the correct answer must be irrefutable.
+
+**Irrefutability constraint.** The correct answer must follow from an explicit rule with no exception. If a reasonable person could argue the other side, the question fails as a test. Structural rules (decisions are immutable, specs cannot contain implementation details, tests before implementation) are safer targets than approval-gated rules (spec behavioral changes require user approval) — because in a user-message format, any user statement about the topic can be construed as the approval that satisfies the gate.
+
+**Pressure source.** The misleading pressure should come from context — chat history, momentum, trivialization, social signals, the agent's own prior commitments — not from the user's exam question itself. When the user's message directly instructs the wrong action, the LLM can reasonably interpret it as authorization, making the expected answer refutable.
+
+**Harm test.** The wrong action should cause real damage (lost audit trail, ungoverned code, false authority, untested behavior), not just violate a structural convention. If the wrong action is harmless, the question tests rule-following rather than judgment.
+
+**Multi-turn dilution.** Prior conversation turns where the agent already agreed to the wrong action create strong pressure to follow through. The agent must course-correct mid-conversation, which is harder than rejecting a fresh request.
+
 ## Dangers
 
 - Leading questions that embed the expected answer bias results toward passing.
 - Happy-path-only questions miss the failure modes that matter.
 - Testing your interpretation of the spec rather than realistic user inputs.
 - Exams not updated after spec changes — stale questions validate outdated behavior.
+- Adversarial questions that use direct user instructions as the trap — the LLM can treat the instruction as authorization, making the expected answer refutable.
