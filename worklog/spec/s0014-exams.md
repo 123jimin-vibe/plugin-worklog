@@ -35,6 +35,21 @@ TOML configs for the prompt-engineer:invoke-llm skill. The system prompt referen
 |-----------|----------------------|--------|
 | Outbound  | system prompt `file` | Spec   |
 
+## Tool Emulation
+
+Some exams need to test agent behavior in realistic environments where the agent reads files, creates entities, and archives tasks. When the underlying runner does not support tool invocation, exams emulate tools via prompt conventions — tool schemas in the system prompt, tool calls as structured text in the response.
+
+**Minimal tool set.** The emulated tools should be the smallest set that covers the entity lifecycle: orienting (reading, listing, searching) and acting (writing, moving). Git operations and other non-entity tooling are excluded unless the exam specifically targets them.
+
+**Single-turn constraint.** Exams are single-turn — the runner sends one prompt and collects one response. Multi-step tool loops cannot be tested. Only the immediate next action (tool call, reasoning, or refusal) is observable. Workarounds: instruct the LLM to include its reasoning alongside tool calls, or encourage parallel tool calls so multiple actions are visible in one response.
+
+**One scenario per file.** A TOML exam file can test multiple scenarios only when the final user message differs between them. All prior turns (system prompt, conversation history, tool results) are shared. This means each file is effectively one setup with a fan-out at the last message.
+
+**Two patterns for injecting tool context:**
+
+- **Pre-baked history:** Prior conversation turns already contain tool calls and results, placing the agent mid-scenario. The exam question tests what the agent does next. Tests entity knowledge — decisions, precedence, lifecycle rules.
+- **Dry calls:** No prior tool history. The agent writes tool calls in its response that are never executed. The exam evaluates intent — right tool, right arguments, right order. Tests orientation and discovery — ID allocation, archive checks, reference lookups.
+
 ## Anticipated Changes
 
 - Grading rubric or automated scoring.
