@@ -70,13 +70,15 @@ invoke-llm is text-in/text-out — no tool invocation. We simulate a realistic a
 |---|---|---|
 | `read_file` | `(path) → content` | Reading specs, tasks, decisions, source code |
 | `write_file` | `(path, content) → ok` | Creating and updating entities |
-| `list_directory` | `(path) → entries[]` | ID allocation, existence checks, scanning archives |
+| `list_directory` | `(path) → entries[]` | Existence checks, scanning archives |
 | `move_file` | `(src, dst) → ok` | Archiving completed tasks |
 | `search_files` | `(pattern, path?) → matches[]` | Reverse lookups, reference discovery, orphan detection |
+| `bash` | `(command) → stdout/stderr` | Shell commands, including worklog scripts (`next_id`, `validate`, `drift`, `list`, `search`) |
 
-**Why these five:**
+**Why these six:**
 - `read_file` + `list_directory` + `search_files` = the agent can orient itself in the worklog.
 - `write_file` + `move_file` = the agent can act on it (create, update, archive).
+- `bash` = general-purpose shell access. The tool definition is generic — it does not hint at worklog scripts. Tests whether the agent discovers and uses scripts from SKILL.md knowledge alone. Note: current SKILL.md marks scripts as "TODO: not yet implemented" — this is intentional.
 - Git operations (log, diff) are omitted. Drift detection is important but not entity-lifecycle — and adding git tools would complicate the emulation without testing entity spec knowledge.
 
 **Why not fewer:**
@@ -130,6 +132,50 @@ id = "t0001"
 
 1. **Pre-baked history** — prior turns already contain tool calls and results, placing the agent mid-scenario with files already read. The user question tests what it does *next*. Stronger for testing entity knowledge (decisions, precedence, lifecycle).
 2. **Dry calls** — no prior tool history. The agent writes tool calls in its response that are never executed. We evaluate intent: right tool, right arguments, right order. Stronger for testing orientation and discovery (ID allocation, archive checks, reference lookups).
+
+## Common prompt conventions
+
+All exam files share these conventions in the system prompt:
+
+- **Exclusive access.** Instruct the agent that it is the only user with filesystem access. Files do not change between reads — no need to re-read a file already seen in the conversation. This prevents wasted tool calls and keeps single-turn responses focused on action.
+- **Pre-baked orientation.** Conversation history contains a realistic sequence of tool calls and results that provide all background information the agent needs. The agent should not need to re-orient; the final user message is a task to act on.
+- **Reasoning + tool calls.** Instruct the agent to emit its reasoning alongside tool calls, and to use parallel tool calls when actions are independent. This maximizes observable signal in a single turn.
+
+## Happy-path exam design
+
+Three files, one setup each, fan-out at the final user message. Questions must require SKILL.md-specific reasoning — not just general software knowledge. Without SKILL.md, the LLM should produce a fundamentally different (wrong) answer, not just a differently formatted one.
+
+**Design principle:** Test reasoning, not templates. Each question should require the agent to infer governance from `paths`, follow workflow ordering, apply relationship semantics, or respect approval gates — things that only SKILL.md defines.
+
+### `happy-create.toml` — Entity creation with governance
+
+**Setup (pre-baked history):** Agent has listed all worklog directories (including archive), run `next_id` for all types, and confirmed orientation.
+
+| # | Question | SKILL.md dependency | Without SKILL.md |
+|---|---|---|---|
+| 1 | "I've been adding batch import logic under src/recipes/. There's a TODO for it in s0001. Create a task to track this." | Governance: `paths = ["src/recipes/**"]` → `modifies = ["s0001"]`. TODO awareness. Correct ID (t0004, not t0003). | No paths→governance inference. Would create a standalone task without `modifies`. |
+| 2 | "New feature: user accounts. Code goes under src/accounts/. We want registration, login, and session management, but password requirements are still TBD. Set up the worklog." | Greenfield workflow: spec first, then task. `paths` on spec. TODO marker for TBD items. Task's `modifies` references just-created spec. | Would create a task or design doc. No spec-first workflow, no TODO convention, no `paths`. |
+| 3 | "We've agreed to implement d0001's recommendations: gateway validation and per-session rate limits for notifications. This changes rate-limiting behavior. Record the decision and set up the work." | Decision with `relates_to = ["s0002"]` + task with `modifies = ["s0002"]`. Behavioral change to s0002 = needs user approval before spec edit. | Would record the decision and edit s0002 directly. No approval gate. |
+
+### `happy-lifecycle.toml` — Task lifecycle transitions
+
+**Setup (pre-baked history):** Agent has read t0001 (active), t0002 (done, in task/), s0001, s0002, and listed archive/task/ (contains t0003).
+
+| # | Question | SKILL.md dependency | Without SKILL.md |
+|---|---|---|---|
+| 1 | "t0002 is done and verified against s0002. Archive it." | Archive to `worklog/archive/task/`. Verify governing spec consistency. `move_file` as the correct operation. | Might delete, mark done in-place, or move to wrong location. |
+| 2 | "I want to start implementing recipe tagging (t0001 scope). What's the first thing I should do?" | Tests before implementation (SKILL.md rule). t0001 is already active — no status change. Tests derive from spec (s0001), not code. | "Start coding" or "set status to active." No tests-first rule. |
+| 3 | "t0001 is done — tagging is fully implemented and tested. s0001 has been updated to document tagging. The batch import TODO is still there (that's separate work). Close it out." | Status → done, move to archive. Verify s0001 consistency (user says it's updated). Confirm batch import TODO stays (separate scope). | Would close the task but skip archive, skip spec verification, or remove the TODO. |
+
+### `happy-update.toml` — Spec and decision updates
+
+**Setup (pre-baked history):** Agent has read d0001, s0001 (with batch import TODO), s0002, t0001 (active), and listed all directories.
+
+| # | Question | SKILL.md dependency | Without SKILL.md |
+|---|---|---|---|
+| 1 | "s0002 doesn't mention retry-storm risk under Dangers. The actual behavior hasn't changed — just the documentation gap. Add it." | Structural update = free, no approval needed. Knows required sections (Dangers is one). | Might ask for approval, or not know Dangers is a standard section. |
+| 2 | "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update." | Behavioral change to spec → requires explicit user approval. Agent should draft the update and present it for approval, not write directly. | Would edit s0002 directly without approval. |
+| 3 | "We realize the soft-delete retention window in s0001 should be 90 days, not 30. The Dangers section already warns about hardcoding this. Record the decision and update the spec." | Decision required for behavioral spec change (d0002, `relates_to = ["s0001"]`). Then spec update — but user explicitly asked for both, so approval is implicit in the request. | Would edit s0001 without a decision record. No decision→spec-change flow. |
 
 ## Example project (context.md)
 
