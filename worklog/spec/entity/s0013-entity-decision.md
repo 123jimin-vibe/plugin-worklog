@@ -45,7 +45,7 @@ Free-form markdown. Should cover:
 3. Record the decision and its consequences.
 4. Link to affected specs via `relates_to`.
 
-Only action allowed. Decisions are immutable after creation — a decision that needs correction is superseded by a new decision.
+Only action allowed. Decisions are immutable after creation — a decision that needs non-trivial correction is superseded by a new decision. Trivial fixes (typos, formatting, correcting an obvious date) may be edited in place.
 
 Create when: non-trivial choice made, design flaw discovered, requirement changed, cost/benefit abandonment. Not every small choice needs a record — reserve for choices that affect observable behavior or constrain future work.
 
@@ -60,7 +60,7 @@ A decision record is required (not discretionary) when:
 
 ## Forbidden
 
-- Edit after creation. Supersede instead.
+- Non-trivial edit after creation. Supersede instead. (Trivial fixes — typos, formatting, obvious date corrections — are acceptable.)
 - Archive or delete. Decisions are permanent records.
 - Omit `relates_to` — unlinked decisions float free of spec governance and become hard to discover.
 

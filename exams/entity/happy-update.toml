@@ -251,11 +251,11 @@ Ready."""
 # correctly. Without SKILL.md, the LLM produces a fundamentally different answer.
 #
 # 01-structural-update: Tests structural vs behavioral spec update distinction.
-# Expected: write_file to update s0002's Dangers section directly.
-#   - "observable behavior section doesn't change" = structural update.
+# Expected: write_file to update s0002's Constraints section directly.
+#   - "observable behavior doesn't change" = structural update.
 #   - Structural updates are free — no user approval needed.
-#   - Without SKILL.md: might ask for approval, or not know Dangers is a
-#     standard section.
+#   - Without SKILL.md: might ask for approval, or not know the
+#     structural/behavioral distinction.
 #
 # 02-behavioral-draft: Tests behavioral change approval gate.
 # Expected: agent presents a draft of the spec update but does NOT write_file.
@@ -276,7 +276,7 @@ Ready."""
 [[prompts]]
 role = "user"
 prompt = [
-  "s0002 doesn't mention retry-storm risk under Dangers, but the system already exhibits this behavior — the observable behavior section doesn't change. This is just a documentation gap. Add it.",
+  "s0002's Constraints section doesn't mention that notification templates are immutable after send — you can't retroactively edit a delivered notification's content. The observable behavior doesn't change; this is just an undocumented constraint. Add it.",
   "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update.",
   "We've decided the soft-delete retention window in s0001 should be 90 days, not 30. The Dangers section already warns about hardcoding this. Record a decision for posterity, then update the spec — I'm approving the behavioral change.",
 ]

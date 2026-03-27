@@ -28,14 +28,17 @@ SKILL.md — that's what agents actually receive. If SKILL.md doesn't convey ent
 exams/
 └── entity/
     ├── context.md           # fictional project worklog state
-    ├── happy-path.toml
-    ├── pitfalls.toml
+    ├── tools.md             # emulated tool definitions (shared)
+    ├── happy-create.toml
+    ├── happy-lifecycle.toml
+    ├── happy-update.toml
+    ├── pitfall-*.toml       # pitfall exams (planned)
     └── results/             # gitignored output
 ```
 
 ## TOML structure
 
-Both exams share the same shape. SKILL.md as system prompt, project context injected via `[vars]`, questions as a user prompt array.
+All exams share the same shape. Three system prompts (SKILL.md, emulated tools, project context), pre-baked conversation history for orientation, fan-out at the final user message.
 
 ```toml
 [generation]
@@ -51,12 +54,18 @@ file = "../../plugin/skills/worklog/SKILL.md"
 
 [[prompts]]
 role = "system"
+file = "tools.md"
+
+[[prompts]]
+role = "system"
 prompt = "You are working on the following project:\n\n{{project}}"
 substitute = true
 
+# ... pre-baked history (user/assistant turn pairs with tool calls and results) ...
+
 [[prompts]]
 role = "user"
-prompt = [...]
+prompt = [...]   # array = fan-out (one run per question)
 
 [output]
 file = "results/<exam>-results.jsonl"
@@ -64,7 +73,7 @@ file = "results/<exam>-results.jsonl"
 
 ## Emulated tools
 
-invoke-llm is text-in/text-out — no tool invocation. We simulate a realistic agent environment by defining tool schemas in the system prompt and letting the LLM "call" them in its response. The set is minimal: five tools that cover the full entity lifecycle.
+invoke-llm is text-in/text-out — no tool invocation. We simulate a realistic agent environment by defining tool schemas in the system prompt and letting the LLM "call" them in its response. The set is minimal: six tools that cover the full entity lifecycle.
 
 | Tool | Signature | Covers |
 |---|---|---|
@@ -184,7 +193,7 @@ Three files, one setup each, fan-out at the final user message. Questions must r
 
 | # | Question | SKILL.md dependency | Without SKILL.md |
 |---|---|---|---|
-| 1 | "s0002 doesn't mention retry-storm risk under Dangers, but the system already exhibits this behavior — the observable behavior section doesn't change. This is just a documentation gap. Add it." | Structural update = free, no approval needed. Observable behavior unchanged. | Might ask for approval, or not know Dangers is a standard section. |
+| 1 | "s0002's Constraints section doesn't mention that notification templates are immutable after send. The observable behavior doesn't change; this is just an undocumented constraint. Add it." | Structural update = free, no approval needed. Observable behavior unchanged. | Might ask for approval, or not know the structural/behavioral distinction. |
 | 2 | "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update." | Behavioral change to spec → requires explicit user approval. "Draft" = present for review, not write directly. | Would edit s0002 directly without approval. |
 | 3 | "We've decided the soft-delete retention window in s0001 should be 90 days, not 30. Record a decision for posterity, then update the spec — I'm approving the behavioral change." | Decision d0002 (`relates_to = ["s0001"]`) + spec update. User gives explicit approval. | Would edit s0001 without a decision record. No decision→spec-change flow. |
 
@@ -219,7 +228,7 @@ Sourced from brainstorm/, entity specs (Forbidden/Dangers/Observed Agent Failure
 
 | # | Pitfall | Source | Pressure mechanism |
 |---|---|---|---|
-| D1 | **Edit instead of supersede.** Agent modifies an accepted decision in-place (e.g., "fix a typo," "update the date"). | s0013 Forbidden | Correction feels trivial; creating a whole new decision feels like overkill. |
+| D1 | **Non-trivial edit instead of supersede.** Agent modifies an accepted decision's substance in-place (changing the choice, rationale, or consequences). Trivial fixes (typos, formatting, obvious date corrections) are acceptable. | s0013 Forbidden | The change feels small ("just update one paragraph") but alters the historical record of what was decided and why. |
 | D2 | **Missing relates_to.** Agent creates a decision without linking it to the affected spec(s). | s0013 Forbidden | Decision is about process or tooling; agent doesn't think to link it. |
 | D3 | **Skipped decision for hotfix.** Agent deploys/archives a hotfix without recording a post-mortem decision. | s0013 Required Creation | Urgency of hotfix overrides process; "we'll document it later." |
 | D4 | **Casual statement treated as decision.** Agent records a formal decision based on an offhand remark in chat history ("we should probably switch to webhooks"). | s0011 Forbidden (discussion ≠ approval), s0014 adversarial design | Conversational momentum; the remark sounds decisive. |
@@ -234,6 +243,52 @@ Sourced from brainstorm/, entity specs (Forbidden/Dangers/Observed Agent Failure
 | X4 | **Lifecycle bypass.** Agent modifies spec inline during task implementation without going through the update approval flow. | brainstorm/resource/worklog-skill-v1.md | Agent is "in the flow" of implementation; updating the spec feels like a natural part of the work. |
 | X5 | **Spec change disguised as refactoring.** Agent changes observable behavior under the guise of "cleanup" or "refactoring." | SKILL.md Forbidden | The behavioral change is small and the refactor framing makes it feel safe. |
 
+### Severity triage
+
+Severity = how lasting and hard to reverse the damage is. A wrong status is a one-line fix. A destroyed audit trail or false authority propagating through downstream work is not.
+
+**Critical — destroys audit trail or creates false authority that propagates.**
+
+| # | Pitfall | Why critical |
+|---|---|---|
+| S2 | Discussion treated as approval | Behavioral spec change written without real approval. Downstream tasks, tests, and implementation build on false authority. Cascading damage. |
+| S6 | Code > spec precedence | Spec "corrected" to match buggy code. The bug becomes authoritative. Tests validate the bug. Entire spec→test→code chain is poisoned. |
+| T3 | Stubs presented as complete | Downstream work proceeds assuming feature is done. Spec TODOs removed. Discovery happens much later when something breaks in production. |
+| X5 | Spec change disguised as refactoring | Behavioral change slips in undetected. No decision trail. Tests pass because they were written against the new (wrong) behavior. |
+| X4 | Lifecycle bypass | Spec modified without approval during implementation. No record it happened. Other agents/sessions build on the changed spec. |
+
+**High — loses important context that degrades over time.**
+
+| # | Pitfall | Why high |
+|---|---|---|
+| D3 | Skipped decision for hotfix | Post-mortem knowledge never captured. The "why" behind the fix fades from memory. Can't be reconstructed months later. |
+| T5 | Hotfix archived without decision | Same as D3 — the audit gap is in the task lifecycle rather than decision creation, but the lost knowledge is the same. |
+| D4 | Casual statement as decision | A formal decision record based on an offhand remark. Future work references it as authoritative. The person who said it may not have intended a commitment. |
+| T7 | Cancel without decision | Rationale for cancellation lost. Less urgent than hotfix (no production impact), but still irrecoverable context about why work was abandoned. |
+| X1 | Tests after implementation | Root cause of implementation-coupled tests (X3). Nobody rewrites tests that pass, so the coupling is invisible until a refactor breaks them. The spec→test→code ordering is load-bearing in the methodology. |
+| X2 | Implementation without spec | Code exists without governing spec. Drift detection blind to it. Behavior is defined only by implementation — the exact state specs exist to prevent. |
+
+**Medium — creates governance gaps or misleading state, but fixable on discovery.**
+
+| # | Pitfall | Why medium |
+|---|---|---|
+| S1 | Impl details in specs | Specs drift with every implementation change. Maintenance burden compounds. But the spec can be cleaned up — no information is lost. |
+| T2 | Empty modifies on governed work | Work escapes governance tracking. Drift detection misses it. But modifies can be retroactively corrected. |
+| T4 | Archive without spec verification | Spec may be inconsistent with completed work. But the inconsistency can be caught and fixed on next read. |
+| T6 | Stale TODOs | Someone creates a redundant task for already-done work. Wastes effort but doesn't corrupt state. TODO can be removed when discovered. |
+| D1 | Non-trivial edit instead of supersede | Alters the historical record of what was decided and why. But the scope is narrower now — trivial fixes are allowed, so only substantive changes (choice, rationale, consequences) are the pitfall. Damage is real but contained to one decision. |
+| S4 | Spec contradicts related spec | Conflicting authority between specs. But can be reconciled once the contradiction surfaces. |
+
+**Low — causes friction or delay but no corruption.**
+
+| # | Pitfall | Why low |
+|---|---|---|
+| S3 | Structural update gated unnecessarily | Agent asks for unneeded approval. User says "go ahead." Delay only. |
+| T1 | Status not maintained | Status is wrong but trivially correctable. No downstream corruption — just misleading signal. |
+| S5 | Over-specification (fragmented specs) | Governance fragmentation. Specs can be merged later, though it's tedious. |
+| D2 | Missing relates_to | Decision is orphaned. Can be linked later via search. No information destroyed. |
+| X3 | Test reads source code | Implementation-coupled tests. Detectable on refactor when tests break despite unchanged behavior. |
+
 ### Testability notes
 
 **Strongly testable (single-turn, clear right/wrong):** S1, S2, D1, D3, T3, T5, T7, X1.
@@ -244,4 +299,15 @@ Correct answer follows from rules, but edge-case reasoning could produce defensi
 
 **Hard to test in single-turn:** S4, S5, X3, X4, X5.
 Require multi-step reasoning or scenarios hard to set up with pre-baked history alone.
+
+### Priority for pitfall exams
+
+Cross-referencing severity with testability — prioritize pitfalls that are both critical/high AND strongly testable:
+
+| Priority | Pitfalls | Severity | Testability |
+|---|---|---|---|
+| **P0** | S2, T3, D3/T5, X1 | Critical/High | Strong |
+| **P1** | S6, T7, D4, X2 | Critical/High | Strong–Moderate |
+| **P2** | D1, S1, T2, T4, T6 | Medium | Moderate |
+| Defer | S3, S4, S5, X3, X4, X5 | Low–Medium or hard to test | Low–Hard |
 
