@@ -64,12 +64,11 @@ When status reaches `done`: move file to `archive/`, verify the governing spec i
 
 ## Cancelling
 
-When work is abandoned (requirements changed, cost exceeds benefit, feature unnecessary, approach wrong): create a decision record, set status to `cancelled`. Cancelled tasks may be archived if they contain useful findings; otherwise deleted.
+When work is abandoned (requirements changed, cost exceeds benefit, feature unnecessary, approach wrong): set status to `cancelled`. A decision record is recommended when cancellation carries non-trivial context (requirement change after work began, design flaw discovered, cost/benefit abandonment) but is not required. A brief note in the task body explaining why is always sufficient. Cancelled tasks may be archived if they contain useful findings; otherwise deleted.
 
 ## Forbidden
 
-- Archive a hotfix task without a linked decision record (post-mortem).
-- Cancel without a decision record explaining why.
+- Cancel without any explanation (at minimum, note the reason in the task body).
 - Point `modifies` at a nonexistent spec.
 - Work that changes spec-governed behavior without a covering spec in `modifies`.
 - Present unapproved scope as decided.

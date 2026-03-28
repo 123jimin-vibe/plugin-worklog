@@ -53,15 +53,17 @@ Create when: non-trivial choice made, design flaw discovered, requirement change
 
 A decision record is required (not discretionary) when:
 
-- Hotfix deployed (post-mortem: root cause, what went wrong).
-- Hotfix bypasses normal review (documents why).
-- Task cancelled due to requirement change.
 - Refactor abandoned because cost exceeds benefit.
+
+A decision record is recommended (not required) when:
+
+- Task cancelled after significant investment — useful for preserving context.
+- Hotfix leads to a design choice (e.g., adding validation to prevent a class of bug). The hotfix itself is not a decision; any preventive measure arising from it may be.
 
 ## Forbidden
 
 - Non-trivial edit after creation. Supersede instead. (Trivial fixes — typos, formatting, obvious date corrections — are acceptable.)
-- Archive or delete. Decisions are permanent records.
+- Archive or delete a decision that has not been superseded. Superseded decisions may be archived or deleted.
 - Omit `relates_to` — unlinked decisions float free of spec governance and become hard to discover.
 
 ## Anticipated Changes

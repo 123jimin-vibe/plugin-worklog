@@ -205,20 +205,19 @@ Pitfall catalog and severity triage are in s0019.
 
 How well each s0019 pitfall can be tested in single-turn emulated-tool exams (per s0014).
 
-**Strong** (irrefutable correct answer from explicit rule): S1, S2, D1, D3, T3, T7, X1.
+**Strong** (irrefutable correct answer from explicit rule): S1, D1, T3, X1.
 
-**Moderate** (correct answer follows from rules, but edge cases exist): S3, S6, T2, T4, T6, D4, X2.
+**Moderate** (correct answer follows from rules, but edge cases exist): S2, S5, T2, T4, T6, D3, X2.
 
-**Hard** (multi-step reasoning or difficult setup): S4, S5, X3, X4, X5.
+**Hard** (multi-step reasoning or difficult setup): S3, S4, X3, X4, X5.
 
 ### Exam priority
 
-Cross-referencing s0019 severity with testability — target P0 first:
+Cross-referencing s0019 severity (now including visibility) with testability:
 
 | Priority | Pitfalls | Severity | Testability |
 |---|---|---|---|
-| **P0** | S2, T3, D3, X1 | Critical/High | Strong |
-| **P1** | S6, T7, D4, X2 | Critical/High | Strong–Moderate |
-| **P2** | D1, S1, T2, T4, T6 | Medium | Moderate |
-| Defer | S3, S4, S5, X3, X4, X5 | Low–Medium or hard to test | Low–Hard |
+| **P0** | T3, X1, S5 | Critical | Strong |
+| **P2** | D1, S1, T2, T4, T6, X2 | Medium/High | Moderate |
+| Defer | S2, S3, S4, X3, X4, X5 | Low or hard to test | Low–Hard |
 
