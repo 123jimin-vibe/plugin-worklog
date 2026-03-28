@@ -1,20 +1,19 @@
 +++
 id = "t0001"
-title = "Implement initial exams for entity specs"
+title = "Initial exam setup and happy-path exams"
 tags = ["quality"]
-status = "active"
-modifies = ["s0014", "s0019"]
+status = "done"
+modifies = ["s0014"]
 +++
 
-# Implement initial exams for entity specs
+# Initial exam setup and happy-path exams
 
-Create two exams — one happy-path, one pitfall-focused — to verify that LLMs follow the entity specs correctly.
+Exam infrastructure (emulated tools, example project, TOML conventions) and three happy-path exams verifying correct entity lifecycle behavior.
 
 ## Scope
 
 - **Example project:** a small fictional project (specs, tasks, decisions) provided as context alongside the spec under test. Gives the LLM a concrete worklog to reason about rather than abstract rules.
 - **Happy-path exam:** question groups that test correct behavior — creating entities, updating status, following lifecycle, respecting precedence.
-- **Pitfall exam:** question groups that probe known failure modes — over-specification, TODO markers skipped, archive without decision, spec-code conflict resolution.
 
 Each exam is a TOML config for prompt-engineer:invoke-llm per s0014. Questions are grouped by topic within each exam.
 
@@ -32,7 +31,6 @@ exams/
     ├── happy-create.toml
     ├── happy-lifecycle.toml
     ├── happy-update.toml
-    ├── pitfall-*.toml       # pitfall exams (planned)
     └── results/             # gitignored output
 ```
 
@@ -196,28 +194,4 @@ Three files, one setup each, fan-out at the final user message. Questions must r
 | 1 | "s0002's Constraints section doesn't mention that notification templates are immutable after send. The observable behavior doesn't change; this is just an undocumented constraint. Add it." | Structural update = free, no approval needed. Observable behavior unchanged. | Might ask for approval, or not know the structural/behavioral distinction. |
 | 2 | "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update." | Behavioral change to spec → requires explicit user approval. "Draft" = present for review, not write directly. | Would edit s0002 directly without approval. |
 | 3 | "We've decided the soft-delete retention window in s0001 should be 90 days, not 30. Record a decision for posterity, then update the spec — I'm approving the behavioral change." | Decision d0002 (`relates_to = ["s0001"]`) + spec update. User gives explicit approval. | Would edit s0001 without a decision record. No decision→spec-change flow. |
-
-## Pitfall exam design
-
-Pitfall catalog and severity triage are in s0019.
-
-### Testability
-
-How well each s0019 pitfall can be tested in single-turn emulated-tool exams (per s0014).
-
-**Strong** (irrefutable correct answer from explicit rule): S1, D1, T3, X1.
-
-**Moderate** (correct answer follows from rules, but edge cases exist): S2, S5, T2, T4, T6, D3, X2.
-
-**Hard** (multi-step reasoning or difficult setup): S3, S4, X3, X4, X5.
-
-### Exam priority
-
-Cross-referencing s0019 severity (now including visibility) with testability:
-
-| Priority | Pitfalls | Severity | Testability |
-|---|---|---|---|
-| **P0** | T3, X1, S5 | Critical | Strong |
-| **P2** | D1, S1, T2, T4, T6, X2 | Medium/High | Moderate |
-| Defer | S2, S3, S4, X3, X4, X5 | Low or hard to test | Low–Hard |
 
