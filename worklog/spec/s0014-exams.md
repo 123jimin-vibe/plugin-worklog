@@ -15,7 +15,7 @@ Specs prescribe behavior, but predicting whether an LLM will follow a spec corre
 
 ## Location
 
-`exams/` — organized by spec under test.
+`exams/` — organized by spec under test. Fictional source files and other test data go in `fixtures/` subdirectories alongside the exam TOMLs.
 
 ## Format
 

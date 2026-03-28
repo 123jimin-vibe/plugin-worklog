@@ -1,0 +1,165 @@
+# Used with prompt-engineer:invoke-llm skill.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+max_tokens = 4096
+
+[vars]
+project = "context.md"
+src_store = "fixtures/src-recipes-store.py"
+
+# --- System: SKILL.md (the spec under test) ---
+
+[[prompts]]
+role = "system"
+file = "../../plugin/skills/worklog/SKILL.md"
+
+# --- System: emulated tools + conventions ---
+
+[[prompts]]
+role = "system"
+file = "tools.md"
+
+# --- System: project context ---
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+# --- Pre-baked history: user asks to orient ---
+
+[[prompts]]
+role = "user"
+prompt = "I'm working on recipe tagging (t0001). I want to review the spec and current code before we proceed."
+
+# --- Pre-baked history: agent reads task, spec, and source code ---
+
+[[prompts]]
+role = "assistant"
+prompt = """I'll read the task, its governing spec, and the current source code.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/task/t0001-recipe-tagging.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0001-recipe-storage.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/store.py"}</input>
+</tool_use>"""
+
+# --- Pre-baked history: file contents ---
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>+++
+id = "t0001"
+title = "Add recipe tagging"
+status = "active"
+tags = ["core"]
+modifies = ["s0001"]
++++
+
+# Add recipe tagging
+
+Users can assign tags to recipes and filter recipes by tag.
+
+## Scope
+
+- Add a tags field to recipes (list of strings).
+- Add a search-by-tag endpoint.
+- Update s0001 to document tagging behavior.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0001"
+title = "Recipe Storage"
+tags = ["core"]
+paths = ["src/recipes/**"]
++++
+
+# Recipe Storage
+
+Recipes are stored as structured documents with a title, ingredient list, and step-by-step instructions.
+
+## Observable Behavior
+
+- Users can create, read, update, and delete recipes.
+- Recipes are searchable by title.
+- Deleting a recipe is soft-delete (recoverable for 30 days).
+
+## Constraints
+
+- Recipe titles must be unique per user.
+- Ingredient quantities must be positive numbers.
+
+## Anticipated Changes
+
+**TODO:** batch import — accept a list of recipes and store them in one operation.
+
+- Full-text search across ingredients and instructions.
+- Recipe versioning.
+
+## Dangers
+
+- Soft-delete retention window is a product decision — do not hardcode without confirming.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{src_store}}</output>
+</tool_result>"""
+substitute = true
+
+# --- Pre-baked history: agent confirms orientation ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Oriented. Working on t0001 (recipe tagging), governed by s0001.
+
+I've reviewed the spec and current source code. The spec defines soft-delete, title uniqueness, and positive ingredient quantities as requirements. Ready to proceed."""
+
+# --- Fan-out questions ---
+#
+# Pitfall exam: tests whether the agent follows spec > code precedence
+# and derives tests from spec rather than visible source code.
+#
+# 01-spec-vs-code (S5): Spec-code conflict resolution.
+# Setup: s0001 says soft-delete; src/recipes/store.py does hard-delete.
+#   Agent has already read both.
+# Expected: agent flags the code as not matching the spec. Does NOT
+#   suggest updating the spec to match the code. May suggest filing
+#   a bug, fixing the code, or asking the user — but spec is authoritative.
+#   - Without SKILL.md: would likely update the spec to match production
+#     code, since "code is what actually runs."
+#
+# 02-tests-from-spec (X1): Tests derived from spec, not code.
+# Setup: source code is already visible in context with bugs (no
+#   uniqueness check, hard-delete). Agent is asked to write tests for
+#   the tagging feature (t0001 scope).
+# Expected: tests derive from s0001 (the governing spec), not from the
+#   source code visible in context. Should cover spec-defined behaviors
+#   relevant to tagging. Must not mirror buggy code patterns.
+#   - Without SKILL.md: would derive tests from the visible source code,
+#     testing current implementation patterns rather than spec requirements.
+
+[[prompts]]
+role = "user"
+prompt = [
+  "The delete method in store.py does a hard delete, but s0001 says soft-delete. The hard delete has been in production for months without complaints. Should we update s0001 to match what the code actually does?",
+  "Before I start implementing the tagging feature, write tests for it. Cover the core behaviors that t0001 should deliver.",
+]
+
+[output]
+file = "results/pitfall-precedence-results.jsonl"

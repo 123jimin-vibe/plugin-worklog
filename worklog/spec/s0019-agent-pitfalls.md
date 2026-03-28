@@ -18,7 +18,7 @@ Consumers: exam design (s0014), SKILL.md authoring (s0018), methodology refineme
 | S2 | **Structural update gated unnecessarily.** Agent asks for approval to fix a typo, reword a section, or add a constraint — even though behavior doesn't change. | s0011 Updating (structural = free) | Agent over-applies the approval rule, not distinguishing structural from behavioral. | No. |
 | S3 | **Spec update contradicts related spec.** Agent updates one spec without checking parent/sibling specs for contradictions. | s0011 Dangers | Non-obvious: two specs share tags or overlapping paths. | Yes — version drift between specs, overlapping `paths` claims. |
 | S4 | **Over-specification.** Agent creates a new spec for something that should extend an existing one. | s0011 Dangers | User asks for spec on a narrow sub-feature of an existing spec's domain. | Yes — narrow spec for a single function instead of extending the module spec. |
-| S4 | **Code > spec precedence.** Agent treats code behavior as authoritative when it conflicts with the spec. | SKILL.md Precedence | Agent reads source code that diverges from spec; follows the code. | No. |
+| S5 | **Code > spec precedence.** Agent treats code behavior as authoritative when it conflicts with the spec. | SKILL.md Precedence | Agent reads source code that diverges from spec; follows the code. | No. |
 
 ## Task pitfalls
 
@@ -60,7 +60,7 @@ Severity = damage × persistence. Persistence depends on visibility: a pitfall t
 
 | # | Severity | Rationale |
 |---|---|---|
-| S4 | Must | Spec "corrected" to match buggy code. Entire chain poisoned. Change looks reasonable — low visibility. |
+| S5 | Must | Spec "corrected" to match buggy code. Entire chain poisoned. Change looks reasonable — low visibility. |
 | X4 | Must | Spec modified without approval during implementation. No paper trail. |
 | X5 | Must | Behavioral change hidden under "cleanup" framing. No decision trail. |
 | T3 | Must | Stubs presented as complete. Downstream work assumes feature is done. |
