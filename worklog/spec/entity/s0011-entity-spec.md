@@ -62,7 +62,7 @@ When: spec is superseded by a newer spec, or the governed feature was removed. R
 - Delete without a decision record explaining why.
 - Archive. Specs have no status lifecycle.
 - Present unapproved or speculative content as decided. Discussion ≠ approval.
-- Implementation details (API signatures, file paths, version numbers, directory layouts) in spec body. (`paths` frontmatter uses globs for drift detection — the only place file references belong.)
+- Implementation details (API signatures, class names, concrete technology choices, file paths, version numbers, directory layouts) in spec body. (`paths` frontmatter uses globs for drift detection — the only place file references belong.)
 
 ## Anticipated Changes
 

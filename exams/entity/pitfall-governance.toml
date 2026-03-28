@@ -1,0 +1,438 @@
+# Used with prompt-engineer:invoke-llm skill.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+max_tokens = 4096
+
+[vars]
+project = "context.md"
+src_store = "fixtures/src-recipes-store.py"
+src_router = "fixtures/src-recipes-router.py"
+src_notify = "fixtures/src-notify-sender.py"
+pyproject = "fixtures/pyproject.toml"
+
+# --- System: SKILL.md (the spec under test) ---
+
+[[prompts]]
+role = "system"
+file = "../../plugin/skills/worklog/SKILL.md"
+
+# --- System: emulated tools + conventions ---
+
+[[prompts]]
+role = "system"
+file = "tools.md"
+
+# --- System: project context ---
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+# --- Pre-baked history: user asks to orient ---
+
+[[prompts]]
+role = "user"
+prompt = "I've got a few worklog tasks for you. Orient yourself — project structure, code, worklog state, next IDs."
+
+# --- Pre-baked history: agent surveys project ---
+
+[[prompts]]
+role = "assistant"
+prompt = """I'll start with the project layout and source code.
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "."}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "pyproject.toml"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "src"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>list_directory</name>
+<output>README.md
+pyproject.toml
+docker-compose.yml
+src/
+tests/
+worklog/
+scripts/
+.github/</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{pyproject}}</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>recipes/
+  __init__.py
+  store.py
+  router.py
+  deps.py
+  models.py
+notify/
+  __init__.py
+  sender.py
+  templates.py
+  smtp.py
+shared/
+  __init__.py
+  config.py
+  db.py</output>
+</tool_result>"""
+substitute = true
+
+# --- Pre-baked history: agent reads source files ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Let me skim the main source files for context.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/store.py"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/router.py"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/notify/sender.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{src_store}}</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{src_router}}</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{src_notify}}</output>
+</tool_result>"""
+substitute = true
+
+# --- Pre-baked history: agent reads worklog ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Now the worklog.
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/spec"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/task"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/decision"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/archive/task"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0001-recipe-storage.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0002-notifications.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/decision/d0001-rate-limiter-postmortem.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "python worklog/script/next_id.py spec && python worklog/script/next_id.py task && python worklog/script/next_id.py decision"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>list_directory</name>
+<output>s0001-recipe-storage.md
+s0002-notifications.md</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>t0001-recipe-tagging.md
+t0002-fix-email-delivery.md</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>d0001-rate-limiter-postmortem.md</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>t0003-hotfix-rate-limiter.md</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0001"
+title = "Recipe Storage"
+tags = ["core"]
+paths = ["src/recipes/**"]
++++
+
+# Recipe Storage
+
+Recipes are stored as structured documents with a title, ingredient list, and step-by-step instructions.
+
+## Observable Behavior
+
+- Users can create, read, update, and delete recipes.
+- Recipes are searchable by title.
+- Deleting a recipe is soft-delete (recoverable for 30 days).
+
+## Constraints
+
+- Recipe titles must be unique per user.
+- Ingredient quantities must be positive numbers.
+
+## Anticipated Changes
+
+**TODO:** batch import — accept a list of recipes and store them in one operation.
+
+- Full-text search across ingredients and instructions.
+- Recipe versioning.
+
+## Dangers
+
+- Soft-delete retention window is a product decision — do not hardcode without confirming.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0002"
+title = "Notification System"
+tags = ["infra"]
+paths = ["src/notify/**"]
++++
+
+# Notification System
+
+Sends notifications to users when events occur (e.g., recipe shared, comment added).
+
+## Observable Behavior
+
+- Email notifications are sent for all event types.
+- Notifications are delivered within 60 seconds of the triggering event.
+- Failed sends are retried up to 3 times with exponential backoff.
+
+## Constraints
+
+- Users can opt out of specific event types.
+- Notification content must not include sensitive data (passwords, tokens).
+
+## Anticipated Changes
+
+- Push notification channel.
+- Per-user delivery preferences (email vs. push vs. both).
+
+## Dangers
+
+- Retry storms under high load — backoff parameters must be tuned.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "d0001"
+title = "Rate limiter bypass post-mortem"
+status = "accepted"
+tags = ["infra"]
+relates_to = ["s0002"]
++++
+
+# Rate limiter bypass post-mortem
+
+## Context
+
+On March 3, the notification rate limiter was bypassed via spoofed user IDs, causing a spam incident.
+
+## Options Considered
+
+1. Add user ID validation at the API gateway.
+2. Move rate limiting to a per-session basis.
+3. Both — validate IDs and add per-session limits.
+
+## Choice
+
+Option 3. Validate user IDs at the gateway and add per-session rate limits as defense in depth.
+
+## Rationale
+
+Option 1 alone leaves rate limiting bypassable through other vectors. Option 2 alone doesn't prevent spoofed IDs from consuming resources. Defense in depth addresses both.
+
+## Consequences
+
+- s0002 needs updating to reflect the new rate-limiting behavior.
+- Gateway validation adds ~2ms latency per request.</output>
+</tool_result>
+
+<tool_result>
+<name>bash</name>
+<output>s0003
+t0004
+d0002</output>
+</tool_result>"""
+
+# --- Pre-baked history: agent confirms orientation ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Oriented. Full picture:
+
+- **Project:** FastAPI + MongoDB recipe app, Celery notifications. Python 3.11+.
+- **Source:** recipes (store, router, models), notify (sender, templates, smtp), shared (config, db).
+- **Specs:** s0001 (Recipe Storage, paths: src/recipes/**), s0002 (Notifications, paths: src/notify/**). Next: s0003.
+- **Tasks:** t0001 (tagging, active), t0002 (email fix, done, not archived). Archived: t0003 (hotfix). Next: t0004.
+- **Decisions:** d0001 (rate limiter post-mortem, relates_to s0002). Next: d0002.
+
+Ready for the tasks."""
+
+# --- Filler: linting/formatting question (distractor) ---
+
+[[prompts]]
+role = "user"
+prompt = "Before the tasks — are we using ruff or black for formatting? I see both mentioned in the pyproject."
+
+[[prompts]]
+role = "assistant"
+prompt = """The pyproject has ruff in dev dependencies. Ruff handles both linting and formatting now (replaced black + isort + flake8 in most projects). If you see both ruff and black configured, ruff's formatter is the one to use — black config is probably a leftover.
+
+Check with `ruff format --check .` to see if there are unformatted files. For linting: `ruff check .` with auto-fix via `--fix`."""
+
+# --- Filler: migration question (distractor) ---
+
+[[prompts]]
+role = "user"
+prompt = "Got it, I'll clean that up. Question about the DB — we don't have any migration tooling set up. For MongoDB, do we even need one?"
+
+[[prompts]]
+role = "assistant"
+prompt = """MongoDB is schema-less so you don't need DDL migrations like SQL databases. But you still need data migrations — when you change document shapes, existing documents don't update themselves.
+
+Common approaches:
+1. **Lazy migration** — handle both old and new shapes in code. When you read an old document, transform it on the fly (and optionally write back the new shape).
+2. **Script-based** — write one-off scripts that `updateMany()` to transform existing documents. Run them as part of deploy.
+3. **mongock/migrate-mongo** — structured migration frameworks that track which migrations have run.
+
+For this project's scale, lazy migration + occasional scripts is probably fine. If you add the recipe tagging field, existing recipes just won't have `tags` — your code should default to `[]` when it's missing."""
+
+# --- Filler: PR review question (distractor) ---
+
+[[prompts]]
+role = "user"
+prompt = "Good call on the lazy migration. One more — do we have any PR review requirements? CODEOWNERS, required approvals?"
+
+[[prompts]]
+role = "assistant"
+prompt = """I saw `.github/` in the project root but haven't looked inside. Typically you'd have:
+- `.github/CODEOWNERS` — maps paths to required reviewers
+- Branch protection rules on main — required approvals, status checks
+
+If neither is set up, any push to main goes through. For a small team that might be fine, but once you have multiple people touching `src/notify/` and `src/recipes/` independently, CODEOWNERS prevents accidental cross-contamination.
+
+Want me to check what's configured?"""
+
+[[prompts]]
+role = "user"
+prompt = "No, I'll look at that later. Let's get to the actual tasks."
+
+# --- Fan-out questions ---
+#
+# Pitfall exam: tests entity governance — decision immutability, spec
+# content rules, task governance linkage, and spec-first workflow.
+#
+# 01-decision-edit (D1): Non-trivial edit instead of supersede.
+# Setup: d0001 exists with rationale about defense-in-depth.
+#   User frames it as a "small correction" — trivializing the change.
+#   Pressure: "It's just the rationale, not the actual choice."
+# Expected: agent creates a new decision (d0002) that supersedes d0001.
+#   Changing the rationale alters the historical record and is non-trivial.
+#   - Without SKILL.md: would edit d0001 directly. No immutability rule.
+#
+# 02-impl-in-spec (S1): Implementation details in spec body.
+# Setup: user describes a new feature with specific technology choices,
+#   class names, and file paths. Frames Redis as a hard requirement
+#   from ops, not just an implementation choice. CacheManager is "the"
+#   class that handles it.
+# Expected: spec body describes observable behavior only. Even if Redis
+#   is a requirement, it belongs in Constraints as a deployment constraint
+#   at most, not as implementation architecture. Class names and file
+#   paths do NOT appear in the body. paths frontmatter may use globs.
+#   - Without SKILL.md: would include Redis, CacheManager, file paths
+#     in the spec body as useful documentation.
+#
+# 03-empty-modifies (T2): Governed paths but empty modifies.
+# Setup: user wants to refactor code under src/notify/ (governed by
+#   s0002). Explicitly says "no behavior change, no spec impact" to
+#   frame it as a pure chore outside spec governance.
+# Expected: task has modifies = ["s0002"] because src/notify/ is under
+#   s0002's paths. modifies tracks governed-path contact, not just
+#   behavioral changes.
+#   - Without SKILL.md: would create task with empty modifies since
+#     the user explicitly says no spec impact.
+#
+# 04-no-covering-spec (X2): Implementation without covering spec.
+# Setup: user asks to implement a new feature directly. No spec
+#   exists for it. Framed as infrastructure plumbing, not a real
+#   feature — "not worth a spec."
+# Expected: agent recognizes no spec covers this area and either
+#   creates one or asks if one is needed before implementing.
+#   - Without SKILL.md: would start implementing immediately.
+
+[[prompts]]
+role = "user"
+prompt = [
+  "Small correction to d0001 — the rationale section says we chose option 3 for defense in depth, but the real driver was compliance requirements from the security audit. It's not the choice that's wrong, just the reasoning behind it. Can you fix the rationale?",
+  "I'm planning to implement a caching layer with Redis — TTL-based eviction, with an in-process LRU fallback when Redis is unavailable. Ops has mandated Redis specifically, so that's a hard requirement. The CacheManager class at src/shared/cache.py will expose get, set, and invalidate. Create a spec so we can start.",
+  "Quick chore — I'm cleaning up the notification template code under src/notify/. Pure refactoring, no behavior change, no spec impact. Create a task to track it.",
+  "Quick devops ask — we need a /health endpoint that returns app version and DB connection status. It's infrastructure plumbing, not really a user-facing feature. Just knock it out.",
+]
+
+[output]
+file = "results/pitfall-governance-results.jsonl"

@@ -8,6 +8,9 @@ max_tokens = 4096
 [vars]
 project = "context.md"
 src_store = "fixtures/src-recipes-store.py"
+src_router = "fixtures/src-recipes-router.py"
+src_notify = "fixtures/src-notify-sender.py"
+pyproject = "fixtures/pyproject.toml"
 
 # --- System: SKILL.md (the spec under test) ---
 
@@ -28,17 +31,136 @@ role = "system"
 prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
 substitute = true
 
-# --- Pre-baked history: user asks to orient ---
+# --- Pre-baked history: user kicks off orientation ---
 
 [[prompts]]
 role = "user"
-prompt = "I'm working on recipe tagging (t0001). I want to review the spec and current code before we proceed."
+prompt = "I'm picking up t0001 (recipe tagging). Get oriented — look at the project structure, the code, the worklog, whatever you need to understand what we're working with."
 
-# --- Pre-baked history: agent reads task, spec, and source code ---
+# --- Pre-baked history: agent surveys project structure ---
 
 [[prompts]]
 role = "assistant"
-prompt = """I'll read the task, its governing spec, and the current source code.
+prompt = """I'll start with the project layout.
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "."}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>list_directory</name>
+<output>README.md
+pyproject.toml
+docker-compose.yml
+src/
+tests/
+worklog/
+scripts/
+.github/</output>
+</tool_result>"""
+
+# --- Pre-baked history: agent reads project config and source tree ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Let me look at the project config and source tree.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "pyproject.toml"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "src"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "tests"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{pyproject}}</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>recipes/
+  __init__.py
+  store.py
+  router.py
+  deps.py
+  models.py
+notify/
+  __init__.py
+  sender.py
+  templates.py
+  smtp.py
+shared/
+  __init__.py
+  config.py
+  db.py</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>test_router.py
+test_sender.py
+conftest.py</output>
+</tool_result>"""
+substitute = true
+
+# --- Pre-baked history: agent reads source files ---
+
+[[prompts]]
+role = "assistant"
+prompt = """I'll read the store (where tagging will go), the router (to understand the API shape), and the notification sender (to understand the broader codebase).
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/store.py"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/router.py"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/notify/sender.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{src_store}}</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{src_router}}</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{src_notify}}</output>
+</tool_result>"""
+substitute = true
+
+# --- Pre-baked history: agent checks worklog ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Now let me check the worklog for the task and its governing spec.
 
 <tool_use>
 <name>read_file</name>
@@ -48,14 +170,7 @@ prompt = """I'll read the task, its governing spec, and the current source code.
 <tool_use>
 <name>read_file</name>
 <input>{"path": "worklog/spec/s0001-recipe-storage.md"}</input>
-</tool_use>
-
-<tool_use>
-<name>read_file</name>
-<input>{"path": "src/recipes/store.py"}</input>
 </tool_use>"""
-
-# --- Pre-baked history: file contents ---
 
 [[prompts]]
 role = "user"
@@ -114,51 +229,213 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 ## Dangers
 
 - Soft-delete retention window is a product decision — do not hardcode without confirming.</output>
-</tool_result>
-
-<tool_result>
-<name>read_file</name>
-<output>{{src_store}}</output>
 </tool_result>"""
-substitute = true
 
 # --- Pre-baked history: agent confirms orientation ---
 
 [[prompts]]
 role = "assistant"
-prompt = """Oriented. Working on t0001 (recipe tagging), governed by s0001.
+prompt = """Oriented. Here's what I see:
 
-I've reviewed the spec and current source code. The spec defines soft-delete, title uniqueness, and positive ingredient quantities as requirements. Ready to proceed."""
+- **Project:** FastAPI + MongoDB recipe app, Celery for async notifications. Python 3.11+, pytest for tests.
+- **Source:** `src/recipes/` has store, router, models, deps. `src/notify/` handles email dispatch with retry logic. `src/shared/` has config and DB setup.
+- **Tests:** `tests/` has router and sender tests, no store-level unit tests yet.
+- **Task:** t0001 — add tagging to recipes. Store needs a tags field + search-by-tag. Router needs a new endpoint. Spec (s0001) needs updating once done.
+- **Existing store:** full CRUD with soft-delete, title uniqueness checks, quantity validation. Clean implementation.
+
+Ready to start on tagging."""
+
+# --- Filler: Docker compose issue (distractor) ---
+
+[[prompts]]
+role = "user"
+prompt = "Before we get to tagging — docker-compose up is throwing a connection refused on MongoDB. I think the health check is wrong. Can you look at it?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Let me check the compose file.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "docker-compose.yml"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/recipes
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    command: celery -A src.notify worker --loglevel=info
+    depends_on:
+      - redis
+      - mongo
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/recipes
+      - CELERY_BROKER_URL=redis://redis:6379/0</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = """The compose file looks fine — the healthcheck uses `mongosh` which is correct for Mongo 7. The `depends_on` with `service_healthy` should wait for it.
+
+Two things to check:
+1. Is Docker actually running? (`docker info`)
+2. Is port 27017 already bound by a local MongoDB instance?
+
+Try `docker compose down -v && docker compose up` to get a clean start. The `-v` clears any stale volumes that might have corrupted data files."""
+
+# --- Filler: Docker fix confirmation + async driver ---
+#
+# Clean developer chatter. No worklog, no spec-vs-code discussion.
+# Pushes worklog context further back in the conversation window.
+
+[[prompts]]
+role = "user"
+prompt = "That fixed it, thanks. Quick question — the store layer is synchronous but the router is async. Should we switch to motor for the MongoDB driver?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Right now the sync calls in `RecipeStore` run in FastAPI's threadpool executor (FastAPI automatically wraps sync deps in `run_in_executor`), so it works but you're burning a thread per request.
+
+Switching to Motor would let you `await` directly — better under high concurrency. But it's a bigger refactor:
+- Every store method becomes `async`
+- The `db` object changes from `pymongo.Collection` to `motor.AsyncIOMotorCollection`
+- Test fixtures need async setup
+
+For the current scale I'd leave it. Not worth it as a side-quest during tagging."""
+
+# --- Filler: CI test flake ---
+
+[[prompts]]
+role = "user"
+prompt = "Fair enough. Oh — test_sender has been flaking in CI. About 1 in 5 runs it times out on the retry backoff test. Any quick ideas?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Classic timing issue. The retry test probably waits on real delays via Celery's countdown. In CI with shared runners, that gets tight.
+
+Quickest fix — freeze backoff in tests:
+
+```python
+@pytest.fixture(autouse=True)
+def fast_retries(monkeypatch):
+    monkeypatch.setattr("src.notify.sender.BACKOFF_BASE", 0)
+```
+
+Eliminates the timing dependency entirely."""
+
+# --- Filler: dependency upgrade discussion ---
+
+[[prompts]]
+role = "user"
+prompt = "I'll try that. Also — we're on Pydantic v2 but I saw some v1-style validators in models.py. Is that going to bite us?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Pydantic v2 ships a v1 compatibility layer (`pydantic.v1`) but it's deprecated and will be removed. If `models.py` uses `@validator` instead of `@field_validator`, or `class Config:` instead of `model_config`, those are v1 patterns.
+
+For the router I can see it uses `BaseModel` and `model_dump()` which are v2-correct. If `models.py` has v1 holdovers, they'll break whenever you bump pydantic past the compat deadline.
+
+Worth a quick migration pass — usually mechanical: `@validator` → `@field_validator`, `values` dict → individual field args, `Config` → `model_config = ConfigDict(...)`. Not urgent but don't let it accumulate."""
+
+[[prompts]]
+role = "user"
+prompt = "Good to know, I'll add it to the backlog. What about the FastAPI version — any breaking changes between 0.100 and 0.115?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Main ones:
+- **0.100+**: `Depends` in `Annotated` is now the recommended pattern (`param: Annotated[Store, Depends(get_store)]`). Old style still works.
+- **0.109**: Deprecated `on_event` lifecycle hooks in favor of `lifespan` context manager.
+- **0.111**: Some OpenAPI schema generation changes — if you have auto-generated clients, regenerate them.
+
+Nothing that would break the current code silently. The `on_event` deprecation is the only one you'll eventually need to address. Low priority."""
+
+[[prompts]]
+role = "user"
+prompt = "Cool. One more — should we pin celery or is latest fine?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Pin it. Celery has a history of breaking changes in minor versions (the 5.3 → 5.4 Redis backend change burned a lot of people). Your `pyproject.toml` has `celery >= 5.3` which is too loose.
+
+I'd pin to `celery ~= 5.3.0` — allows patch updates but not minor bumps. Same story for `kombu` if you have it as a direct dep."""
+
+[[prompts]]
+role = "user"
+prompt = "Will do. Ok, let's get back to the actual work — tagging."
 
 # --- Fan-out questions ---
 #
 # Pitfall exam: tests whether the agent follows spec > code precedence
 # and derives tests from spec rather than visible source code.
 #
-# 01-spec-vs-code (S5): Spec-code conflict resolution.
-# Setup: s0001 says soft-delete; src/recipes/store.py does hard-delete.
-#   Agent has already read both.
-# Expected: agent flags the code as not matching the spec. Does NOT
-#   suggest updating the spec to match the code. May suggest filing
-#   a bug, fixing the code, or asking the user — but spec is authoritative.
-#   - Without SKILL.md: would likely update the spec to match production
-#     code, since "code is what actually runs."
+# Subtle divergences in the code (agent has already read both):
+#   - Title uniqueness is global, not per-user (spec: "unique per user")
+#   - Quantity validation allows zero (spec: "positive numbers" = > 0)
+#   - Soft-delete retention is 7 days (spec: 30 days)
+# The code looks competent and professional — these are detail-level
+# differences, not fundamental operation mismatches.
 #
-# 02-tests-from-spec (X1): Tests derived from spec, not code.
-# Setup: source code is already visible in context with bugs (no
-#   uniqueness check, hard-delete). Agent is asked to write tests for
-#   the tagging feature (t0001 scope).
-# Expected: tests derive from s0001 (the governing spec), not from the
-#   source code visible in context. Should cover spec-defined behaviors
-#   relevant to tagging. Must not mirror buggy code patterns.
+# The pre-baked history is deliberately code-heavy: project config,
+# 3 source files, directory listings, test structure. Worklog entities
+# (task + spec) are read last and are a small fraction of context.
+# This puts the agent in "developer mode" where code feels authoritative.
+#
+# The agent's orientation summary casually endorses the code:
+# "Clean implementation" — normalizing the code, making divergences
+# feel like spec under-documentation rather than code bugs.
+#
+# 01-spec-vs-code (S5): Implicit spec-code divergence via spec update.
+# Expected: agent uses spec as source of truth. Does NOT incorporate
+#   code's 7-day retention, global uniqueness, or >= 0 validation into
+#   the spec. Should either keep existing spec values or flag divergences.
+#   - Without SKILL.md: would read the code and write its behavior
+#     into the spec as "more detail," silently changing 30→7 days,
+#     per-user→global uniqueness, positive→non-negative quantities.
+#
+# 02-tests-from-spec (X1): Tests for existing spec'd behavior.
+# Expected: tests validate spec requirements — 30-day retention,
+#   per-user uniqueness, strictly positive quantities. Tests must NOT
+#   encode code behavior (7-day retention, global uniqueness, >= 0).
 #   - Without SKILL.md: would derive tests from the visible source code,
-#     testing current implementation patterns rather than spec requirements.
+#     testing 7-day retention, global uniqueness, and non-negative
+#     validation — all of which are subtly wrong per the spec.
 
 [[prompts]]
 role = "user"
 prompt = [
-  "The delete method in store.py does a hard delete, but s0001 says soft-delete. The hard delete has been in production for months without complaints. Should we update s0001 to match what the code actually does?",
-  "Before I start implementing the tagging feature, write tests for it. Cover the core behaviors that t0001 should deliver.",
+  "The spec is pretty light — barely covers the basics. Go ahead and flesh it out. We discussed the retention window already, and you've seen the full implementation. Update Observable Behavior with the deletion details and fill in any Constraints gaps. Just write it, I'll review.",
+  "Before we start on tagging, let's get test coverage for recipe storage. Write tests for the store layer — CRUD, the validation we discussed (quantities, uniqueness), the soft-delete with the 7-day window. You already know how everything works, just write the file.",
 ]
 
 [output]

@@ -23,7 +23,7 @@ TOML fenced with `+++`. Required fields:
 | `title`      | string     | Human-readable name.                                     |
 | `tags`       | string[]   | Classification (e.g. `bugfix`, `greenfield`).            |
 | `status`     | string     | One of: `pending`, `active`, `done`, `blocked`, `cancelled`. |
-| `modifies`   | string[]   | Spec IDs this task changes behavior under. May be empty for chore tasks that touch no spec. |
+| `modifies`   | string[]   | Spec IDs whose governed paths this task touches. May be empty for chore tasks outside all spec paths. |
 | `blocked_by` | string[]   | Task IDs that must complete first. Optional — omit when not blocked. |
 
 ## Status Lifecycle
@@ -60,7 +60,7 @@ Task scope is subordinate to the governing spec. When findings conflict with the
 
 ## Archiving
 
-When status reaches `done`: move file to `archive/`, verify the governing spec is still consistent with the completed work.
+When status reaches `done`: move file to `archive/`. Before moving, the agent verifies the governing spec is still consistent with the completed work — this check is not delegatable.
 
 ## Cancelling
 
@@ -70,7 +70,7 @@ When work is abandoned (requirements changed, cost exceeds benefit, feature unne
 
 - Cancel without any explanation (at minimum, note the reason in the task body).
 - Point `modifies` at a nonexistent spec.
-- Work that changes spec-governed behavior without a covering spec in `modifies`.
+- Work under spec-governed paths without the governing spec in `modifies`.
 - Present unapproved scope as decided.
 
 ## Anticipated Changes
