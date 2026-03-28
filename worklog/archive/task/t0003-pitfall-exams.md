@@ -2,7 +2,7 @@
 id = "t0003"
 title = "Pitfall exams for entity specs"
 tags = ["quality"]
-status = "pending"
+status = "done"
 modifies = ["s0014", "s0019"]
 +++
 
