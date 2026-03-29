@@ -1,5 +1,5 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/lib/parse.py — frontmatter parsing.
+"""Tests for plugin/skills/worklog/scripts/lib/parse.py — frontmatter parsing.
 
 Tests verify attributes via duck typing (e.g. result.id, result.type),
 not concrete class identity.

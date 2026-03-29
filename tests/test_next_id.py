@@ -1,5 +1,5 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/next_id.py — next available ID."""
+"""Tests for plugin/skills/worklog/scripts/next_id.py — next available ID."""
 
 import pathlib
 import shutil

@@ -15,7 +15,7 @@ Python `unittest` standard library. No external test runner dependency.
 
 ## Layout
 
-`tests/` mirrors `plugin/skills/worklog/script/`:
+`tests/` mirrors `plugin/skills/worklog/scripts/`:
 
 ```
 tests/

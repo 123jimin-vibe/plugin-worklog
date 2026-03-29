@@ -1,5 +1,5 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/lib/constants.py — parse_id and normalize_id."""
+"""Tests for plugin/skills/worklog/scripts/lib/constants.py — parse_id and normalize_id."""
 
 import pathlib
 import sys

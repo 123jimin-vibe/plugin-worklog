@@ -2,12 +2,12 @@
 id = "s0010"
 title = "Tooling"
 tags = ["tooling"]
-paths = ["plugin/skills/worklog/script/**"]
+paths = ["plugin/skills/worklog/scripts/**"]
 +++
 
 # Tooling
 
-Scripts that automate worklog operations, bundled with the plugin at `plugin/skills/worklog/script/`. Python. Accept `-w PATH` for worklog root (default: `./worklog`). Shared logic (parsing, discovery) lives under `lib/`.
+Scripts that automate worklog operations, bundled with the plugin at `plugin/skills/worklog/scripts/`. Python. Accept `-w PATH` for worklog root (default: `./worklog`). Shared logic (parsing, discovery) lives under `lib/`.
 
 ## Shared library
 

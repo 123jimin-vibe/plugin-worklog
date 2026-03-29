@@ -24,7 +24,7 @@ import sys
 
 _SCRIPT_ROOT = (
     pathlib.Path(__file__).resolve().parents[1]
-    / "plugin" / "skills" / "worklog" / "script"
+    / "plugin" / "skills" / "worklog" / "scripts"
 )
 
 
@@ -32,7 +32,7 @@ def load_module(relative_path, expected=None):
     """Load a module from the plugin script tree.
 
     Args:
-        relative_path: Path relative to plugin/skills/worklog/script/,
+        relative_path: Path relative to plugin/skills/worklog/scripts/,
             e.g. "lib/parse.py" or "validate.py".
         expected: Optional list of attribute names the module must expose.
 

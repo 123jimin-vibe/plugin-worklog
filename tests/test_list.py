@@ -1,5 +1,5 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/list.py — entity listing."""
+"""Tests for plugin/skills/worklog/scripts/list.py — entity listing."""
 
 import pathlib
 import shutil

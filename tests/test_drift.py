@@ -1,5 +1,5 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/drift.py — spec-code drift detection."""
+"""Tests for plugin/skills/worklog/scripts/drift.py — spec-code drift detection."""
 
 import pathlib
 import shutil

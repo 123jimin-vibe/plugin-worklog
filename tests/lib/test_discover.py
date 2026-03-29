@@ -1,5 +1,5 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/lib/discover.py — entity discovery.
+"""Tests for plugin/skills/worklog/scripts/lib/discover.py — entity discovery.
 
 Tests verify attributes via duck typing (e.g. store.entities, tag.name),
 not concrete class identity.

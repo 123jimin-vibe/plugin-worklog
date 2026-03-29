@@ -1,5 +1,5 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/search.py — entity querying."""
+"""Tests for plugin/skills/worklog/scripts/search.py — entity querying."""
 
 import pathlib
 import shutil

@@ -9,11 +9,11 @@ description: "Spec-driven development methodology via flat-file worklog. Trigger
 
 Specs define what the system is. Tasks change it. Decisions record why.
 
-Root: `worklog/`. If absent, create `worklog/{spec,task,decision,script}/` and `worklog/archive/task/`.
+Root: `worklog/`. If absent, create `worklog/{spec,task,decision}/` and `worklog/archive/task/`.
 
 ## Entities
 
-IDs: 4-digit per class (`s0001`, `t0001`, `d0001`). Scan existing files + archive when assigning. Filename: `{id}-kebab-name.md`. TOML frontmatter delimited by `+++`.
+IDs: prefix letter + digits (`s0001`, `t0012`, `d0001`). Use `next_id.py` to allocate — it scans active + archive. Filename: `{id}-kebab-name.md`. TOML frontmatter delimited by `+++`.
 
 ### Spec
 
@@ -120,15 +120,15 @@ spec.paths ───────────▶ source    (which files this spec
 
 ## Scripts
 
-`plugin/skills/worklog/script/`. Python. Accept `-w PATH` for worklog root (default: `./worklog`).
+`${CLAUDE_SKILL_DIR}/scripts/`. Python. All accept `-w PATH` for worklog root (default: `./worklog`).
 
-| Script | Purpose |
-|--------|---------|
-| `validate.py` | Dangling refs, invalid statuses, missing required fields, duplicate IDs, unknown tags |
-| `next_id.py <type>` | Next available ID (scans active + archive) |
-| `drift.py` | Spec-code drift report for all specs with `paths` |
-| `search.py` | Query entities by tag, status, or relationship |
-| `list.py` | List entities with optional grouping and sorting |
+| Script | Flags | Purpose |
+|--------|-------|---------|
+| `validate.py` | | Dangling refs, invalid statuses, missing required fields, duplicate IDs, unknown tags |
+| `next_id.py` | `<type>` | Next available ID (scans active + archive) |
+| `drift.py` | | Spec-code drift report for all specs with `paths` |
+| `search.py` | `--tag TAG`, `--status STATUS`, `--modifies ID`, `--relates-to ID`, `--type TYPE` | Query entities by tag, status, or relationship |
+| `list.py` | `--type TYPE`, `--group-by {type,status,tag}`, `--sort {id,title}`, `--archived` | List entities with optional grouping and sorting |
 
 ## Workflows
 

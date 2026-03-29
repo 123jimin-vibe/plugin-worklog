@@ -1,5 +1,5 @@
 # @worklog s0017
-"""Tests for plugin/skills/worklog/script/validate.py — worklog validation."""
+"""Tests for plugin/skills/worklog/scripts/validate.py — worklog validation."""
 
 import pathlib
 import shutil
