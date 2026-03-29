@@ -28,7 +28,7 @@ paths = ["src/auth/**", "src/middleware/session*"]
 +++
 ```
 
-Required sections: behavior, constraints, anticipated changes, dangers. Mark unapproved items `TODO`.
+Required sections: behavior, constraints, anticipated changes, dangers. Mark unapproved or planned items `TODO`; remove the marker when the user approves.
 
 `paths` — glob patterns for governed source files. Prefer broad globs (`src/auth/**`), not individual files. Omit for cross-cutting or conceptual specs.
 
@@ -36,7 +36,7 @@ No status field — specs are always current. No dates — git tracks history.
 
 **Not implementation details.** Describe *what the system does and why*, not *how the code is structured*. No API signatures, class names, file paths, version numbers, or directory layouts in spec body.
 
-**Structural vs. behavioral updates.** Structural edits (typos, wording, `paths`, section reorganization) are free. Behavioral changes (what the system does) require user approval. Discussion != approval.
+**Structural vs. behavioral updates.** Structural edits (typos, wording, `paths`, section reorganization) do not require user approval. Behavioral changes (what the system does) require user approval. Discussing a change does not constitute approval — wait for explicit confirmation.
 
 **Precedence.** Spec is authoritative over source code and tests. Code diverging from spec = bug in the code. Tests derive from the spec. If the spec seems wrong, ask the user — never silently override.
 
@@ -59,11 +59,11 @@ blocked_by = ["t0003"]
 
 `modifies` — spec IDs whose governed paths this task touches. Empty only for chores outside all spec paths.
 
-**Status lifecycle:** `pending` → `active` → `done` → archived. Also: `blocked` (returns to `active` when unblocked), `cancelled` (requires explanation; decision record recommended if non-trivial context).
+**Status lifecycle:** `pending` → `active` → `done` (then move file to archive). Also: `blocked` (returns to `active` when unblocked), `cancelled` (requires explanation; decision record recommended if non-trivial context).
 
-**Archiving.** When done, move to `worklog/archive/task/`. Before moving, verify the governing spec is still consistent with the completed work.
+**Archiving.** When done, move to `worklog/archive/task/`. Before moving, verify the specs in `modifies` are still consistent with the completed work.
 
-**Stubs.** If a task delivers stubs rather than complete implementations, the governing spec must retain TODO markers. Stubs must never be presented as complete.
+**Stubs.** If a task delivers stubs rather than complete implementations, the specs in `modifies` must retain TODO markers. Stubs must never be presented as complete.
 
 **Rules:**
 
@@ -79,15 +79,12 @@ blocked_by = ["t0003"]
 **Forbidden:**
 
 - Implementation without a covering spec.
-- Implementation before tests.
-- Modifying a spec's observable behavior without user approval.
 - Tests that verify implementation structure instead of spec behavior.
 - Behavioral changes disguised as refactoring.
 - Regression test written after the fix (must fail before fix).
 - Distorting code to route around a bug instead of fixing or reporting it.
 - Fixing only the observed failure without evaluating whether it's a general problem.
 - Implementation details in specs (see Spec above).
-- Test agent reading source files or receiving implementation details from the parent agent.
 
 ### Decision
 
@@ -102,13 +99,13 @@ supersedes = []
 +++
 ```
 
-Body: context → choice → rationale → consequences. Never edit after creation — supersede with a new decision. Trivial fixes (typos, formatting) are acceptable. Never archived (unless superseded).
+Body: context → choice → rationale → consequences. Do not edit a decision's substance after creation — supersede it with a new decision instead. Trivial fixes (typos, formatting) are the only acceptable edits. Decisions remain in the active directory permanently; archive only when superseded.
 
-Create when: non-trivial choice, design flaw discovered, requirement changed, cost/benefit abandonment. Reserve for choices that affect observable behavior or constrain future work. For small projects, inline in the task body is acceptable.
+Create when: non-trivial choice made, design flaw discovered, requirement changed, feature abandoned after cost/benefit analysis. Reserve for choices that affect observable behavior or constrain future work. For small projects, recording the decision directly in the task body instead of a separate file is acceptable.
 
 ### Relationships
 
-All forward-only. Reverse lookups via grep — never stored.
+Relationships are stored only on the referencing entity. To find what references a given entity, use grep.
 
 ```
 task ──modifies──────▶ spec       (which specs this task changes)
