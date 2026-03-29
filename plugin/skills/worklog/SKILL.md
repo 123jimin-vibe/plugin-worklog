@@ -28,11 +28,19 @@ paths = ["src/auth/**", "src/middleware/session*"]
 +++
 ```
 
-`paths` — glob patterns for source files this spec governs (used for drift detection). Omit for cross-cutting or conceptual specs. **TODO:** drift detection for specs without `paths` (AI inference or derived from task/commit history).
+Required sections: behavior, constraints, anticipated changes, dangers. Mark unapproved items `TODO`.
 
-No status field — specs are always current. No dates — git tracks history. Body uses TODO markers for unfinished items; tasks mark them done.
+`paths` — glob patterns for governed source files. Prefer broad globs (`src/auth/**`), not individual files. Omit for cross-cutting or conceptual specs.
 
-**Not implementation details.** Describe *what the system does and why*, not *how the code is structured*. `paths` values must be glob patterns (`src/auth/**`), not individual files (`src/auth/login.ts`). See also Forbidden.
+No status field — specs are always current. No dates — git tracks history.
+
+**Not implementation details.** Describe *what the system does and why*, not *how the code is structured*. No API signatures, class names, file paths, version numbers, or directory layouts in spec body.
+
+**Structural vs. behavioral updates.** Structural edits (typos, wording, `paths`, section reorganization) are free. Behavioral changes (what the system does) require user approval. Discussion != approval.
+
+**Precedence.** Spec is authoritative over source code and tests. Code diverging from spec = bug in the code. Tests derive from the spec. If the spec seems wrong, ask the user — never silently override.
+
+**Drift detection.** Compare spec's last git commit against changes to its `paths` globs. Non-empty diff = potential drift.
 
 ### Task
 
@@ -49,9 +57,37 @@ blocked_by = ["t0003"]
 +++
 ```
 
-Statuses: `pending` → `active` → `done` | `blocked`. Move to `worklog/archive/task/` when done. If a task delivers stubs rather than complete implementations, the governing spec must retain TODO markers for the real implementation — stubs must never be presented as complete.
+`modifies` — spec IDs whose governed paths this task touches. Empty only for chores outside all spec paths.
 
-**TODO:** task type field (`implementation`, `investigation`, `bugfix`, `chore`, `hotfix`) — explicit field vs. inferred from relationships/body.
+**Status lifecycle:** `pending` → `active` → `done` → archived. Also: `blocked` (returns to `active` when unblocked), `cancelled` (requires explanation; decision record recommended if non-trivial context).
+
+**Archiving.** When done, move to `worklog/archive/task/`. Before moving, verify the governing spec is still consistent with the completed work.
+
+**Stubs.** If a task delivers stubs rather than complete implementations, the governing spec must retain TODO markers. Stubs must never be presented as complete.
+
+**Rules:**
+
+- **Tests before implementation.** Tests derive from spec, not code.
+- **Test isolation.** Test agent receives the spec only — no function names, signatures, or implementation details. Test agent must not read source files under the spec's `paths`. If the spec is insufficient to write tests, that is a spec deficiency — surface it to the user.
+- **Survey before building.** Check in-repo code and dependencies first. Reimplementing existing functionality is forbidden.
+- **Approval = explicit confirmation.** To modify a spec's observable behavior, the user must explicitly confirm. When in doubt, ask.
+- **Surface ambiguity.** When scope is unclear, ask — don't assume.
+- **Escalate when stuck.** No spiraling into rewrites, no bailing silently, no effort-vs-value judgment without user input.
+- **No antipatterns.** Injection, unbounded allocations, N+1 queries, bare catch, insecure defaults are never acceptable.
+- **Session resume.** Re-orient from worklog state, not prior session context. The worklog is your memory.
+
+**Forbidden:**
+
+- Implementation without a covering spec.
+- Implementation before tests.
+- Modifying a spec's observable behavior without user approval.
+- Tests that verify implementation structure instead of spec behavior.
+- Behavioral changes disguised as refactoring.
+- Regression test written after the fix (must fail before fix).
+- Distorting code to route around a bug instead of fixing or reporting it.
+- Fixing only the observed failure without evaluating whether it's a general problem.
+- Implementation details in specs (see Spec above).
+- Test agent reading source files or receiving implementation details from the parent agent.
 
 ### Decision
 
@@ -61,16 +97,18 @@ Immutable record of *why* a choice was made.
 +++
 id = "d0001"
 title = "No recursion in macros"
-status = "accepted"
-tags = ["methodology"]
 relates_to = ["s0007"]
 supersedes = []
 +++
 ```
 
-Body: context → options considered → decision → consequences. Never edit after acceptance — supersede with a new decision. Never archived.
+Body: context → choice → rationale → consequences. Never edit after creation — supersede with a new decision. Trivial fixes (typos, formatting) are acceptable. Never archived (unless superseded).
 
-## Relationships
+Create when: non-trivial choice, design flaw discovered, requirement changed, cost/benefit abandonment. Reserve for choices that affect observable behavior or constrain future work. For small projects, inline in the task body is acceptable.
+
+### Relationships
+
+All forward-only. Reverse lookups via grep — never stored.
 
 ```
 task ──modifies──────▶ spec       (which specs this task changes)
@@ -80,40 +118,17 @@ decision ──supersedes──▶ decision (replaces a prior decision)
 spec.paths ───────────▶ source    (which files this spec governs)
 ```
 
-All forward-only. Reverse lookups via grep — never stored.
+## Scripts
 
-## Precedence
+`plugin/skills/worklog/script/`. Python. Accept `-w PATH` for worklog root (default: `./worklog`).
 
-1. **Spec over source code.** Code diverging from spec = bug in the code.
-2. **Spec over tests.** Tests derive from the spec.
-3. **Spec suspected wrong → ask user.** Never silently override a spec.
-
-## Rules
-
-- **Tests before implementation.** Tests derive from spec, not code. **TODO:** should tests be written before task creation (pre-task gate) or as the first step within a task? The former enforces spec→test→code more strictly; the latter is more practical when test shape isn't clear upfront.
-- **Test isolation.** When a separate agent writes tests, it receives the **spec** as its sole input — not function names, signatures, internal structure, or behavioral enumerations derived from reading the code. The parent agent must not compensate for spec gaps by front-loading implementation knowledge into the prompt. The test agent must not read source files under the spec's `paths`. If the spec is insufficient to write tests from, that is a spec deficiency — surface it to the user instead of reading the implementation.
-- **Survey before building.** Check in-repo code and dependencies before implementing anything. Reimplementing existing functionality is forbidden.
-- **Approval means explicit confirmation.** Discussion, questions, and brainstorming do not constitute approval. To modify a spec's observable behavior, the user must explicitly confirm the proposed change. When in doubt, ask.
-- **Surface ambiguity.** When scope is unclear (N items, concurrency, security level), ask the user — don't assume degenerate or maximal case.
-- **Escalate when stuck.** Surface difficulty to the user. No spiraling into rewrites, no bailing silently, no effort-vs-value judgment without user input.
-- **Record decisions.** Non-trivial choices get a decision record. For small projects, inline in the task body is acceptable.
-- **No antipatterns.** Injection, unbounded allocations, N+1 queries, bare catch, insecure defaults are never acceptable — satisfying the task does not override defensive concerns.
-- **Session resume.** Re-orient from worklog state (specs, task statuses, decisions), not prior session context. The worklog is your memory.
-
-## Forbidden
-
-- Implementation without a covering spec.
-- Implementation before tests.
-- Modifying a spec's observable behavior without user approval.
-- Tests that verify implementation structure instead of spec behavior.
-- Behavioral changes disguised as refactoring.
-- Regression test written after the fix (must fail before fix to prove it captures the bug).
-- Distorting code to route around a bug instead of fixing or reporting it.
-- Fixing only the observed failure without evaluating whether it's a general problem.
-- Implementation details in specs: API signatures, function names, field names, file/directory layouts, version numbers, or concrete file paths in prose. These drift immediately and create false authority. (`paths` frontmatter uses globs for drift detection — that is the only place file references belong.)
-- Test agent reading source files or receiving implementation details (function names, signatures, internal structure) from the parent agent. Tests must be derivable from the spec alone.
-
-**TODO:** enforcement mechanism. Rules above are instructions only — no hooks or gates enforce them yet. v1 lesson: validation that requires deliberate invocation gets skipped.
+| Script | Purpose |
+|--------|---------|
+| `validate.py` | Dangling refs, invalid statuses, missing required fields, duplicate IDs, unknown tags |
+| `next_id.py <type>` | Next available ID (scans active + archive) |
+| `drift.py` | Spec-code drift report for all specs with `paths` |
+| `search.py` | Query entities by tag, status, or relationship |
+| `list.py` | List entities with optional grouping and sorting |
 
 ## Workflows
 
@@ -126,33 +141,6 @@ All forward-only. Reverse lookups via grep — never stored.
 | **Chore** | task | Rarely touches specs |
 | **Hotfix** | task → decision | Compressed process; post-mortem mandatory |
 
-Ceremony scales with project size. Small projects (<10 specs): spec + single task is sufficient. Skip decision records for tooling, config, and dependency choices — note them inline in the task body. Reserve decision records for choices that affect observable behavior or constrain future work.
-
-**TODO:** when does detailed design (module boundaries, internal interfaces) happen? Must be after spec but before tests — tests need to know what to import. But locking design too early over-constrains implementation.
-
-## Drift Detection
-
-Detect source files that changed after the governing spec was last touched:
-
-```bash
-spec_commit=$(git log -1 --format=%H -- worklog/spec/s0001-auth.md)
-git diff "$spec_commit"..HEAD -- src/auth/** src/middleware/session*
-```
-
-Non-empty diff = potential drift. `paths` in spec frontmatter provides the file mapping; git history provides the watermark. Nothing stored in the spec.
-
-## Scripts
-
-`worklog/script/`. Python. Accept `-w PATH` for worklog root (default: `./worklog`).
-
-| Script | Purpose |
-|--------|---------|
-| `validate.py` | Dangling refs, invalid statuses, missing required fields |
-| `drift.py` | Spec-code drift report for all specs with `paths` |
-| `next-id.py <type>` | Next available ID (scans active + archive) |
-
-**TODO:** scripts not yet implemented.
-
-**TODO:** test ↔ spec traceability — no design yet for linking test files/cases back to the spec they verify.
+Ceremony scales with project size. Small projects (<10 specs): spec + single task is sufficient. Reserve decision records for choices that affect observable behavior or constrain future work.
 
 </skill>
