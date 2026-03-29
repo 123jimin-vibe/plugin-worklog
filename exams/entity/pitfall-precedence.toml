@@ -6,7 +6,8 @@ temperature = 0.0
 max_tokens = 4096
 
 [vars]
-skill = ["../../plugin/skills/worklog/SKILL.md", "../../plugin/skills/worklog/SKILL.old.md"]
+skill = "../../plugin/skills/worklog/SKILL.md"
+# Also test: skill = "../../plugin/skills/worklog/SKILL.old.md"
 project = "context.md"
 src_store = "fixtures/src-recipes-store.py"
 src_router = "fixtures/src-recipes-router.py"
