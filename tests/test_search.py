@@ -13,7 +13,7 @@ from tests.helpers import make_worklog, write_entity, write_tags
 
 _SCRIPT_PATH = (
     pathlib.Path(__file__).resolve().parents[1]
-    / "plugin" / "skills" / "worklog" / "script" / "search.py"
+    / "plugin" / "skills" / "worklog" / "scripts" / "search.py"
 )
 _script_available = _SCRIPT_PATH.is_file()
 _missing_reason = "search.py not found"

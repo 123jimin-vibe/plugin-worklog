@@ -13,7 +13,7 @@ from tests.helpers import make_worklog, write_entity, write_tags
 
 _SCRIPT_PATH = (
     pathlib.Path(__file__).resolve().parents[1]
-    / "plugin" / "skills" / "worklog" / "script" / "validate.py"
+    / "plugin" / "skills" / "worklog" / "scripts" / "validate.py"
 )
 _script_available = _SCRIPT_PATH.is_file()
 _missing_reason = "validate.py not found"

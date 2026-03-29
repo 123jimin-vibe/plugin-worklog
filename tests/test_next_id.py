@@ -13,7 +13,7 @@ from tests.helpers import make_worklog, write_entity
 
 _SCRIPT_PATH = (
     pathlib.Path(__file__).resolve().parents[1]
-    / "plugin" / "skills" / "worklog" / "script" / "next_id.py"
+    / "plugin" / "skills" / "worklog" / "scripts" / "next_id.py"
 )
 _script_available = _SCRIPT_PATH.is_file()
 _missing_reason = "next_id.py not found"

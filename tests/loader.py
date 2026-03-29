@@ -48,6 +48,11 @@ def load_module(relative_path, expected=None):
         return None, False, f"{relative_path} not loadable"
 
     try:
+        # Add script root to sys.path so `from lib.x import y` resolves.
+        script_root_str = str(_SCRIPT_ROOT)
+        if script_root_str not in sys.path:
+            sys.path.insert(0, script_root_str)
+
         mod = importlib.util.module_from_spec(spec)
         # Register before exec so dataclasses and relative imports work.
         sys.modules[module_name] = mod
