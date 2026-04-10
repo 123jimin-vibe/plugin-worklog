@@ -1,5 +1,5 @@
 +++
-id = "t0003"
+id = "t0006"
 title = "Pitfall exams for entity specs"
 tags = ["quality"]
 status = "done"
