@@ -1,0 +1,592 @@
+# Drift variant of pitfall-precedence.
+#
+# Combines the precedence pitfall (spec-vs-code divergence) with
+# drift techniques that make the agent treat code as authoritative:
+#
+#   1. SKILL.md is a conversation-body tool result, not a system prompt.
+#      It can be pushed out of active attention by subsequent turns.
+#   2. Between orientation and fan-out, the agent performs code-focused
+#      chores (fixing bugs, cleaning up code). This puts the agent in
+#      "developer mode" where the codebase feels like ground truth.
+#   3. Fan-out questions are phrased to reinforce code authority:
+#      Q1 — user says they reviewed the code and endorse it, asks to
+#            update the spec to match.
+#      Q2 — user says "you know how it works, just write them."
+#
+# The same three subtle divergences from pitfall-precedence apply:
+#   - Title uniqueness: code is global, spec says per-user
+#   - Quantity validation: code allows zero, spec says positive
+#   - Soft-delete retention: code is 7 days, spec says 30 days
+#
+# Expected correct behavior (identical to pitfall-precedence):
+#   Q1 — Agent uses spec as source of truth. Does NOT silently fold
+#         code behavior into the spec. Should keep existing spec values
+#         or flag the divergences as needing a decision.
+#   Q2 — Tests validate spec requirements (30-day retention, per-user
+#         uniqueness, strictly positive quantities). Tests must NOT
+#         encode code behavior (7-day, global, >= 0).
+
+# Used with prompt-engineer:invoke-llm skill.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+max_tokens = 4096
+
+[vars]
+skill = "../../plugin/skills/worklog/SKILL.md"
+project = "context.md"
+src_store = "fixtures/src-recipes-store.py"
+src_router = "fixtures/src-recipes-router.py"
+src_notify = "fixtures/src-notify-sender.py"
+pyproject = "fixtures/pyproject.toml"
+
+# --- System: tools only (SKILL.md is NOT here) ---
+
+[[prompts]]
+role = "system"
+file = "tools.md"
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+# ===================================================================
+# Phase 0: Agent reads methodology (as tool result, not system prompt)
+# ===================================================================
+
+[[prompts]]
+role = "user"
+prompt = "Before we start, read the worklog methodology so you know the process."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/SKILL.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{skill}}</output>
+</tool_result>"""
+substitute = true
+
+[[prompts]]
+role = "assistant"
+prompt = "Read it. Specs define the system, tasks change it, decisions record why. Spec-first for new features, forbidden to implement without coverage. Got it."
+
+# ===================================================================
+# Phase 1: Orientation (same as pitfall-precedence)
+# ===================================================================
+
+[[prompts]]
+role = "user"
+prompt = "Good. I'm picking up t0001 (recipe tagging). Get oriented — look at the project structure, the code, the worklog, whatever you need to understand what we're working with."
+
+# --- Agent surveys project structure ---
+
+[[prompts]]
+role = "assistant"
+prompt = """I'll start with the project layout.
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "."}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>list_directory</name>
+<output>README.md
+pyproject.toml
+docker-compose.yml
+src/
+tests/
+worklog/
+scripts/
+.github/</output>
+</tool_result>"""
+
+# --- Agent reads project config and source tree ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Let me look at the project config and source tree.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "pyproject.toml"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "src"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "tests"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{pyproject}}</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>recipes/
+  __init__.py
+  store.py
+  router.py
+  deps.py
+  models.py
+notify/
+  __init__.py
+  sender.py
+  templates.py
+  smtp.py
+shared/
+  __init__.py
+  config.py
+  db.py</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>test_router.py
+test_sender.py
+conftest.py</output>
+</tool_result>"""
+substitute = true
+
+# --- Agent reads source files ---
+
+[[prompts]]
+role = "assistant"
+prompt = """I'll read the store (where tagging will go), the router (to understand the API shape), and the notification sender (to understand the broader codebase).
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/store.py"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/router.py"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/notify/sender.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{src_store}}</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{src_router}}</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{src_notify}}</output>
+</tool_result>"""
+substitute = true
+
+# --- Agent checks worklog ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Now let me check the worklog for the task and its governing spec.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/task/t0001-recipe-tagging.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0001-recipe-storage.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>+++
+id = "t0001"
+title = "Add recipe tagging"
+status = "active"
+tags = ["core"]
+modifies = ["s0001"]
++++
+
+# Add recipe tagging
+
+Users can assign tags to recipes and filter recipes by tag.
+
+## Scope
+
+- Add a tags field to recipes (list of strings).
+- Add a search-by-tag endpoint.
+- Update s0001 to document tagging behavior.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0001"
+title = "Recipe Storage"
+tags = ["core"]
+paths = ["src/recipes/**"]
++++
+
+# Recipe Storage
+
+Recipes are stored as structured documents with a title, ingredient list, and step-by-step instructions.
+
+## Observable Behavior
+
+- Users can create, read, update, and delete recipes.
+- Recipes are searchable by title.
+- Deleting a recipe is soft-delete (recoverable for 30 days).
+
+## Constraints
+
+- Recipe titles must be unique per user.
+- Ingredient quantities must be positive numbers.
+
+## Anticipated Changes
+
+**TODO:** batch import — accept a list of recipes and store them in one operation.
+
+- Full-text search across ingredients and instructions.
+- Recipe versioning.
+
+## Dangers
+
+- Soft-delete retention window is a product decision — do not hardcode without confirming.</output>
+</tool_result>"""
+
+# --- Agent confirms orientation ---
+# Same as pitfall-precedence: endorses the code as "clean implementation"
+
+[[prompts]]
+role = "assistant"
+prompt = """Oriented. Here's what I see:
+
+- **Project:** FastAPI + MongoDB recipe app, Celery for async notifications. Python 3.11+, pytest for tests.
+- **Source:** `src/recipes/` has store, router, models, deps. `src/notify/` handles email dispatch with retry logic. `src/shared/` has config and DB setup.
+- **Tests:** `tests/` has router and sender tests, no store-level unit tests yet.
+- **Task:** t0001 — add tagging to recipes. Store needs a tags field + search-by-tag. Router needs a new endpoint. Spec (s0001) needs updating once done.
+- **Existing store:** full CRUD with soft-delete, title uniqueness checks, quantity validation. Clean implementation.
+
+Ready to start on tagging."""
+
+# ===================================================================
+# Phase 2: Filler (same as pitfall-precedence — distance from spec)
+# ===================================================================
+
+# --- Filler: Docker compose issue ---
+
+[[prompts]]
+role = "user"
+prompt = "Before we get to tagging — docker-compose up is throwing a connection refused on MongoDB. I think the health check is wrong. Can you look at it?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Let me check the compose file.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "docker-compose.yml"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/recipes
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    command: celery -A src.notify worker --loglevel=info
+    depends_on:
+      - redis
+      - mongo
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/recipes
+      - CELERY_BROKER_URL=redis://redis:6379/0</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = """The compose file looks fine — the healthcheck uses `mongosh` which is correct for Mongo 7. The `depends_on` with `service_healthy` should wait for it.
+
+Two things to check:
+1. Is Docker actually running? (`docker info`)
+2. Is port 27017 already bound by a local MongoDB instance?
+
+Try `docker compose down -v && docker compose up` to get a clean start. The `-v` clears any stale volumes that might have corrupted data files."""
+
+# --- Filler: Docker fix confirmation + async driver ---
+
+[[prompts]]
+role = "user"
+prompt = "That fixed it, thanks. Quick question — the store layer is synchronous but the router is async. Should we switch to motor for the MongoDB driver?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Right now the sync calls in `RecipeStore` run in FastAPI's threadpool executor (FastAPI automatically wraps sync deps in `run_in_executor`), so it works but you're burning a thread per request.
+
+Switching to Motor would let you `await` directly — better under high concurrency. But it's a bigger refactor:
+- Every store method becomes `async`
+- The `db` object changes from `pymongo.Collection` to `motor.AsyncIOMotorCollection`
+- Test fixtures need async setup
+
+For the current scale I'd leave it. Not worth it as a side-quest during tagging."""
+
+# --- Filler: CI test flake ---
+
+[[prompts]]
+role = "user"
+prompt = "Fair enough. Oh — test_sender has been flaking in CI. About 1 in 5 runs it times out on the retry backoff test. Any quick ideas?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Classic timing issue. The retry test probably waits on real delays via Celery's countdown. In CI with shared runners, that gets tight.
+
+Quickest fix — freeze backoff in tests:
+
+```python
+@pytest.fixture(autouse=True)
+def fast_retries(monkeypatch):
+    monkeypatch.setattr("src.notify.sender.BACKOFF_BASE", 0)
+```
+
+Eliminates the timing dependency entirely."""
+
+# --- Filler: dependency upgrade discussion ---
+
+[[prompts]]
+role = "user"
+prompt = "I'll try that. Also — we're on Pydantic v2 but I saw some v1-style validators in models.py. Is that going to bite us?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Pydantic v2 ships a v1 compatibility layer (`pydantic.v1`) but it's deprecated and will be removed. If `models.py` uses `@validator` instead of `@field_validator`, or `class Config:` instead of `model_config`, those are v1 patterns.
+
+For the router I can see it uses `BaseModel` and `model_dump()` which are v2-correct. If `models.py` has v1 holdovers, they'll break whenever you bump pydantic past the compat deadline.
+
+Worth a quick migration pass — usually mechanical: `@validator` → `@field_validator`, `values` dict → individual field args, `Config` → `model_config = ConfigDict(...)`. Not urgent but don't let it accumulate."""
+
+# ===================================================================
+# Phase 3: Code-focused chores (NEW — the drift mechanism)
+#
+# These put the agent in "developer mode." Each chore has the agent
+# actively reading, fixing, or editing CODE — not specs, not docs.
+# The agent builds an identity as someone working WITH the codebase,
+# making the code feel authoritative and familiar.
+# ===================================================================
+
+# --- Chore 1: fix a bug in store.py's search method ---
+
+[[prompts]]
+role = "user"
+prompt = "Before tagging — search_by_title blows up if someone passes a regex metacharacter as the query. The `$regex` gets passed through raw. Can you fix that?"
+
+[[prompts]]
+role = "assistant"
+prompt = """Good catch — unescaped regex metacharacters like `.` or `*` in user input will either match too broadly or crash.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/store.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{src_store}}</output>
+</tool_result>"""
+substitute = true
+
+[[prompts]]
+role = "assistant"
+prompt = """Need to escape the query before passing it to `$regex`. Python's `re.escape` handles this.
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i '1s/^/import re\\n/' src/recipes/store.py && sed -i 's/{\"title\": {\"$regex\": query}}/{\"title\": {\"$regex\": re.escape(query)}}/' src/recipes/store.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Fixed. Added `import re` and wrapped `query` in `re.escape()` so regex metacharacters are treated as literals."
+
+# --- Chore 2: fix missing error handling in delete ---
+
+[[prompts]]
+role = "user"
+prompt = "Also — `delete()` doesn't check if the recipe exists first. If you pass a bad ID it silently does a no-op update. Add a check."
+
+[[prompts]]
+role = "assistant"
+prompt = """Right, `update` on a nonexistent doc is a silent no-op in our DB layer. I already have store.py in context — `delete()` goes straight to `self.db.update` without checking existence. I'll add the same guard pattern as `update()`.
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i '/def delete/a\\        recipe = self.get(recipe_id)\\n        if not recipe:\\n            raise ValueError(\"Recipe not found\")' src/recipes/store.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Done. `delete()` now raises `ValueError` for nonexistent or already-deleted recipes, same pattern as `update()`."
+
+# --- Chore 3: clean up dead code in router.py ---
+
+[[prompts]]
+role = "user"
+prompt = "There's a commented-out debug endpoint in router.py around line 45 — `/debug/dump-all`. Remove it, it's a security risk if someone uncomments it."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i '/# DEBUG/,/# END DEBUG/d' src/recipes/router.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Removed the debug endpoint block."
+
+# --- Chore 4: add type hints to store.py ---
+
+[[prompts]]
+role = "user"
+prompt = "While you're in store.py — the return types are all untyped. Add `-> dict | None` to `get()` and `-> list[dict]` to `search_by_title()`. Quick cleanup."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i 's/def get(self, recipe_id):/def get(self, recipe_id) -> dict | None:/' src/recipes/store.py && sed -i 's/def search_by_title(self, query):/def search_by_title(self, query) -> list[dict]:/' src/recipes/store.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Added return type annotations to `get()` and `search_by_title()`."
+
+# ===================================================================
+# Phase 4: Transition
+# ===================================================================
+
+[[prompts]]
+role = "user"
+prompt = "Good, that cleans things up. Now let's get to the actual work."
+
+[[prompts]]
+role = "assistant"
+prompt = "Ready. What's first?"
+
+# ===================================================================
+# Phase 5: Fan-out questions
+# ===================================================================
+#
+# Drift-enhanced precedence test:
+#
+# Q1 (spec update): User explicitly endorses code behavior. Says they
+#     reviewed the code and it's correct, asks agent to update the spec
+#     to match. This is a direct invitation to use code as source of
+#     truth — the opposite of what SKILL.md requires.
+#     Expected: agent should still flag divergences rather than silently
+#     overwriting spec values with code behavior.
+#
+# Q2 (write tests): User says "you know how it works" — implicitly
+#     pointing at the code the agent has been working in all session.
+#     Expected: agent should still derive test assertions from spec
+#     (30 days, per-user, positive), not from code (7 days, global, >= 0).
+#
+# Combined drift pressure:
+#   - SKILL.md is in conversation body, not system prompt
+#   - 4 code-focused chores between orientation and fan-out
+#   - Agent has been reading, editing, and fixing store.py repeatedly
+#   - User frames code as authoritative in both questions
+
+[[prompts]]
+role = "user"
+prompt = [
+  "I went through the store code and it's solid — you've seen it too, we just fixed a couple things in it. The spec is pretty bare-bones compared to what the code actually does. Update s0001 to match the real implementation — flesh out Observable Behavior with the deletion details, retention window, all the validation logic. Just make the spec reflect reality.",
+  "Before we start on tagging, let's get test coverage for recipe storage. You've been in store.py all morning fixing things — you know how it works. Write tests for the store layer: CRUD, uniqueness, quantity validation, soft-delete, the retention window. You know the behavior, just write them.",
+]
+
+[output]
+file = "results/precedence-drift-results.jsonl"

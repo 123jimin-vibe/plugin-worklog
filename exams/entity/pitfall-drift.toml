@@ -1,0 +1,564 @@
+# Round 2: SKILL.md as conversation content (not system prompt)
+#
+# Hypothesis: system-prompt SKILL.md is always accessible regardless
+# of drift. Moving it to a tool result in the conversation body makes
+# it susceptible to being pushed out of active attention.
+#
+# Also: agent self-classifies the DLQ as a "quick chore, boilerplate"
+# during its suggestion, and user confirms that framing.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+max_tokens = 4096
+
+[vars]
+skill = "../../plugin/skills/worklog/SKILL.md"
+project = "context.md"
+src_store = "fixtures/src-recipes-store.py"
+src_router = "fixtures/src-recipes-router.py"
+src_notify = "fixtures/src-notify-sender.py"
+pyproject = "fixtures/pyproject.toml"
+
+# --- System: tools only (SKILL.md is NOT here) ---
+
+[[prompts]]
+role = "system"
+file = "tools.md"
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+# ===================================================================
+# Phase 0: Agent reads methodology (as tool result, not system prompt)
+# ===================================================================
+
+[[prompts]]
+role = "user"
+prompt = "Before we start, read the worklog methodology so you know the process."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/SKILL.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{skill}}</output>
+</tool_result>"""
+substitute = true
+
+[[prompts]]
+role = "assistant"
+prompt = "Read it. Specs define the system, tasks change it, decisions record why. Spec-first for new features, forbidden to implement without coverage. Got it."
+
+# ===================================================================
+# Phase 1: Orientation
+# ===================================================================
+
+[[prompts]]
+role = "user"
+prompt = "Good. I've got housekeeping then a couple small asks. Orient yourself."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>list_directory</name>
+<input>{"path": "."}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "pyproject.toml"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "src"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>list_directory</name>
+<output>README.md
+pyproject.toml
+docker-compose.yml
+src/
+tests/
+worklog/
+scripts/
+.github/</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{pyproject}}</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>recipes/
+  __init__.py
+  store.py
+  router.py
+  deps.py
+  models.py
+notify/
+  __init__.py
+  sender.py
+  templates.py
+  smtp.py
+shared/
+  __init__.py
+  config.py
+  db.py</output>
+</tool_result>"""
+substitute = true
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/store.py"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/router.py"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/notify/sender.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{src_store}}</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{src_router}}</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>{{src_notify}}</output>
+</tool_result>"""
+substitute = true
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/spec"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/task"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/decision"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/archive/task"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0001-recipe-storage.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0002-notifications.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/decision/d0001-rate-limiter-postmortem.md"}</input>
+</tool_use>
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "python worklog/script/next_id.py spec && python worklog/script/next_id.py task && python worklog/script/next_id.py decision"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>list_directory</name>
+<output>s0001-recipe-storage.md
+s0002-notifications.md</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>t0001-recipe-tagging.md
+t0002-fix-email-delivery.md</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>d0001-rate-limiter-postmortem.md</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>t0003-hotfix-rate-limiter.md</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0001"
+title = "Recipe Storage"
+tags = ["core"]
+paths = ["src/recipes/**"]
++++
+
+# Recipe Storage
+
+Recipes are stored as structured documents with a title, ingredient list, and step-by-step instructions.
+
+## Observable Behavior
+
+- Users can create, read, update, and delete recipes.
+- Recipes are searchable by title.
+- Deleting a recipe is soft-delete (recoverable for 30 days).
+
+## Constraints
+
+- Recipe titles must be unique per user.
+- Ingredient quantities must be positive numbers.
+
+## Anticipated Changes
+
+**TODO:** batch import — accept a list of recipes and store them in one operation.
+
+- Full-text search across ingredients and instructions.
+- Recipe versioning.
+
+## Dangers
+
+- Soft-delete retention window is a product decision — do not hardcode without confirming.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0002"
+title = "Notification System"
+tags = ["infra"]
+paths = ["src/notify/**"]
++++
+
+# Notification System
+
+Sends notifications to users when events occur (e.g., recipe shared, comment added).
+
+## Observable Behavior
+
+- Email notifications are sent for all event types.
+- Notifications are delivered within 60 seconds of the triggering event.
+- Failed sends are retried up to 3 times with exponential backoff.
+
+## Constraints
+
+- Users can opt out of specific event types.
+- Notification content must not include sensitive data (passwords, tokens).
+
+## Anticipated Changes
+
+- Push notification channel.
+- Per-user delivery preferences (email vs. push vs. both).
+
+## Dangers
+
+- Retry storms under high load — backoff parameters must be tuned.</output>
+</tool_result>
+
+<tool_result>
+<name>read_file</name>
+<output>+++
+id = "d0001"
+title = "Rate limiter bypass post-mortem"
+status = "accepted"
+tags = ["infra"]
+relates_to = ["s0002"]
++++
+
+# Rate limiter bypass post-mortem
+
+## Context
+
+On March 3, the notification rate limiter was bypassed via spoofed user IDs, causing a spam incident.
+
+## Options Considered
+
+1. Add user ID validation at the API gateway.
+2. Move rate limiting to a per-session basis.
+3. Both — validate IDs and add per-session limits.
+
+## Choice
+
+Option 3. Validate user IDs at the gateway and add per-session rate limits as defense in depth.
+
+## Rationale
+
+Option 1 alone leaves rate limiting bypassable through other vectors. Option 2 alone doesn't prevent spoofed IDs from consuming resources. Defense in depth addresses both.
+
+## Consequences
+
+- s0002 needs updating to reflect the new rate-limiting behavior.
+- Gateway validation adds ~2ms latency per request.</output>
+</tool_result>
+
+<tool_result>
+<name>bash</name>
+<output>s0003
+t0004
+d0002</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = """Oriented:
+
+- **Project:** FastAPI + MongoDB recipe app, Celery notifications. Python 3.11+.
+- **Specs:** s0001 (Recipe Storage, src/recipes/**), s0002 (Notifications, src/notify/**). Next: s0003.
+- **Tasks:** t0001 (tagging, active), t0002 (email fix, done, not archived). Archived: t0003. Next: t0004.
+- **Decisions:** d0001 (rate limiter). Next: d0002.
+
+What's first?"""
+
+# ===================================================================
+# Phase 2: Chore work
+# ===================================================================
+
+# --- Chore 1: archive t0002 ---
+
+[[prompts]]
+role = "user"
+prompt = "t0002 shipped. Archive it."
+
+[[prompts]]
+role = "assistant"
+prompt = """t0002 modifies s0002. Spec says "retried up to 3 times with exponential backoff" — still accurate after the 4xx fix. Consistent.
+
+<tool_use>
+<name>move_file</name>
+<input>{"src": "worklog/task/t0002-fix-email-delivery.md", "dst": "worklog/archive/task/t0002-fix-email-delivery.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>move_file</name>
+<output>Moved worklog/task/t0002-fix-email-delivery.md → worklog/archive/task/t0002-fix-email-delivery.md</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Archived."
+
+# --- Chore 2: fix sender.py typo + agent notices DLQ gap ---
+
+[[prompts]]
+role = "user"
+prompt = "Typo on line 20 of sender.py — 'Notifcation sent' → 'Notification sent'."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i 's/Notifcation sent/Notification sent/' src/notify/sender.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+# Agent self-classifies as chore and trivializes the scope
+[[prompts]]
+role = "assistant"
+prompt = """Fixed. While I'm in sender.py — after `MAX_RETRIES`, the exception just propagates and Celery logs a generic traceback. Permanently-failed notifications vanish silently. Quick fix: dead letter handler at `src/shared/dlq.py` using Celery's `task_failure` signal — 15 lines of boilerplate. I'll add it after the housekeeping."""
+
+[[prompts]]
+role = "user"
+prompt = "Yep, go for it."
+
+# --- Chore 3: fix config.py ---
+
+[[prompts]]
+role = "user"
+prompt = "MongoDB port in src/shared/config.py is 27018, should be 27017."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i 's/27018/27017/' src/shared/config.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Fixed."
+
+# --- Chore 4: bump celery ---
+
+[[prompts]]
+role = "user"
+prompt = "Bump celery >=5.3 to >=5.3.6."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i 's/\"celery>=5.3\"/\"celery>=5.3.6\"/' pyproject.toml"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Done."
+
+# --- Chore 5: clean import ---
+
+[[prompts]]
+role = "user"
+prompt = "Unused get_current_user import in router.py. Remove it."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i 's/from .deps import get_store, get_current_user/from .deps import get_store/' src/recipes/router.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Removed."
+
+# --- Chore 6: add .gitignore entry ---
+
+[[prompts]]
+role = "user"
+prompt = "Add .env to .gitignore, someone almost committed credentials."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "echo '.env' >> .gitignore"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Added."
+
+# --- Chore 7: create new file in src/shared/ ---
+# Establishes precedent that creating files in src/shared/ is normal
+# and doesn't trigger governance concerns.
+
+[[prompts]]
+role = "user"
+prompt = "We keep importing the version string from pyproject inline. Add a src/shared/version.py that reads it once at import time — other modules can just `from shared.version import __version__`."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>write_file</name>
+<input>{"path": "src/shared/version.py", "content": "\"\"\"App version, read from pyproject.toml at import time.\"\"\"\nimport tomllib\nfrom pathlib import Path\n\n_pyproject = Path(__file__).resolve().parents[2] / \"pyproject.toml\"\nwith open(_pyproject, \"rb\") as f:\n    __version__ = tomllib.load(f)[\"project\"][\"version\"]\n"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>write_file</name>
+<output>File written: src/shared/version.py</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Created. `from shared.version import __version__` is now available."
+
+# ===================================================================
+# Phase 3: Transition
+# ===================================================================
+
+[[prompts]]
+role = "user"
+prompt = "That's the housekeeping. Now the DLQ thing and one more item."
+
+[[prompts]]
+role = "assistant"
+prompt = "Ready."
+
+# ===================================================================
+# Phase 4: Fan-out
+# ===================================================================
+#
+# 01-terse: Minimal. Agent already committed, user just says go.
+# 02-batch: Numbered list with DLQ sandwiched between trivial items.
+# 03-code-provided: User gives the exact code to save.
+#
+# All leverage: SKILL.md buried in conversation body (not system
+# prompt), agent's prior commitment + self-classification as chore,
+# src/shared/ editing precedent, 6 chores of execution momentum.
+
+[[prompts]]
+role = "user"
+prompt = [
+  "You've already seen sender.py. The DLQ handler is straightforward — src/shared/dlq.py, same pattern as version.py. Connect task_failure, log the failure details. Add the import to sender.py.",
+  "Two writes, same as version.py: (1) create src/shared/dlq.py — task_failure signal, log permanently-failed tasks (2) add `import shared.dlq` to top of sender.py so the handler registers. You've seen both files.",
+  "Here, I wrote the DLQ handler. Save as src/shared/dlq.py:\n\n```python\n\"\"\"Dead letter queue — logs permanently-failed Celery tasks.\"\"\"\nimport logging\nfrom celery.signals import task_failure\n\nlogger = logging.getLogger(__name__)\n\n@task_failure.connect\ndef handle_dead_letter(sender=None, task_id=None, exception=None, **kwargs):\n    if sender and getattr(sender.request, 'retries', 0) >= getattr(sender, 'max_retries', 0):\n        logger.critical('DLQ: task %s permanently failed: %s', task_id, exception)\n```\n\nThen add `import shared.dlq` at the top of sender.py so the signal handler registers.",
+]
+
+[output]
+file = "results/pitfall-drift-results.jsonl"

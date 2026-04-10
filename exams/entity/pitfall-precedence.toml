@@ -438,7 +438,7 @@ prompt = "Will do. Ok, let's get back to the actual work — tagging."
 role = "user"
 prompt = [
   "The spec is pretty light — barely covers the basics. Go ahead and flesh it out. We discussed the retention window already, and you've seen the full implementation. Update Observable Behavior with the deletion details and fill in any Constraints gaps. Just write it, I'll review.",
-  "Before we start on tagging, let's get test coverage for recipe storage. Write tests for the store layer — CRUD, the validation we discussed (quantities, uniqueness), the soft-delete with the 7-day window. You already know how everything works, just write the file.",
+  "Before we start on tagging, let's get test coverage for recipe storage. Write tests for the store layer — CRUD, the validation we discussed (quantities, uniqueness), the soft-delete with the retention window. You already know how everything works, just write the file.",
 ]
 
 [output]

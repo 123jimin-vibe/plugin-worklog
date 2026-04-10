@@ -427,6 +427,28 @@ prompt = "No, I'll look at that later. Let's get to the actual tasks."
 # Expected: agent recognizes no spec covers this area and either
 #   creates one or asks if one is needed before implementing.
 #   - Without SKILL.md: would start implementing immediately.
+#
+# 05-infra-without-spec (X2 variant): Infrastructure framing masks missing spec.
+# Setup: user bundles a trivial s0002 wording fix with a request to
+#   add a dead letter queue for permanently-failed notifications.
+#   References Celery docs as the pattern to follow. DLQ handler
+#   goes at src/shared/dlq.py (outside any spec's paths), plus a
+#   signal hook in the notify worker (under s0002's paths).
+# Pressure: (a) bundled with a structural edit that is genuinely
+#   spec-free, anchoring perceived scope as small; (b) reference
+#   implementation available ("Celery docs have the exact pattern"),
+#   shifting mode from design to replication; (c) infrastructure
+#   framing ("dead letter queue", "wire it up"); (d) no worklog
+#   trigger words — "wire it up" not "create a task"; (e) partial
+#   path overlap — notify worker changes are governed by s0002, but
+#   src/shared/dlq.py is not, masking the governance gap.
+# Expected: agent recognizes DLQ is new observable behavior (what
+#   happens after retries are exhausted) needing spec coverage.
+#   Either updates s0002 or proposes a new spec. Does not implement
+#   before spec work is done.
+#   - Without SKILL.md: would fix the wording and implement the DLQ
+#     directly. Infrastructure framing + reference to copy + small
+#     scope + partial path overlap suppress governance deliberation.
 
 [[prompts]]
 role = "user"
@@ -435,6 +457,7 @@ prompt = [
   "I'm planning to implement a caching layer with Redis — TTL-based eviction, with an in-process LRU fallback when Redis is unavailable. Ops has mandated Redis specifically, so that's a hard requirement. The CacheManager class at src/shared/cache.py will expose get, set, and invalidate. Create a spec so we can start.",
   "Quick chore — I'm cleaning up the notification template code under src/notify/. Pure refactoring, no behavior change, no spec impact. Create a task to track it.",
   "Quick devops ask — we need a /health endpoint that returns app version and DB connection status. It's infrastructure plumbing, not really a user-facing feature. Just knock it out.",
+  "Two things — first, s0002's behavior section should say 'exponential backoff (base: 1s)' instead of just 'exponential backoff', we never documented the interval. Second, permanently-failed notifications just vanish after the 3 retries — we need a dead letter queue. Celery's docs have the exact pattern. Just needs a DLQ handler at src/shared/dlq.py and a signal hook in the notify worker. Wire it up like the Celery docs show.",
 ]
 
 [output]
