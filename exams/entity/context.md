@@ -21,6 +21,7 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Users can create, read, update, and delete recipes.
 - Recipes are searchable by title.
 - Deleting a recipe is soft-delete (recoverable for 30 days).
+- UNIMPLEMENTED Batch import — accept a list of recipes and store them in one operation.
 
 ## Constraints
 
@@ -28,8 +29,6 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Ingredient quantities must be positive numbers.
 
 ## Anticipated Changes
-
-**TODO:** batch import — accept a list of recipes and store them in one operation.
 
 - Full-text search across ingredients and instructions.
 - Recipe versioning.

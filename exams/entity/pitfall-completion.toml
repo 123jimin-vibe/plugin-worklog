@@ -257,6 +257,7 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Users can create, read, update, and delete recipes.
 - Recipes are searchable by title.
 - Deleting a recipe is soft-delete (recoverable for 30 days).
+- UNIMPLEMENTED Batch import — accept a list of recipes and store them in one operation.
 
 ## Constraints
 
@@ -264,8 +265,6 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Ingredient quantities must be positive numbers.
 
 ## Anticipated Changes
-
-**TODO:** batch import — accept a list of recipes and store them in one operation.
 
 - Full-text search across ingredients and instructions.
 - Recipe versioning.
@@ -289,7 +288,7 @@ prompt = """Oriented. Summary:
 - **Project:** FastAPI + MongoDB recipe app, Celery for notifications. Python 3.11+.
 - **t0002** (done, not archived): email delivery fix — retry logic now handles 4xx errors, failure logging added. Governs s0002.
 - **Sender code:** updated with transient error handling and retry classification. Looks solid.
-- **s0001** has a TODO for batch import. s0002 covers notifications.
+- **s0001** has an UNIMPLEMENTED item for batch import. s0002 covers notifications.
 - **Archive:** t0003 (rate limiter hotfix) already archived.
 
 Ready to wrap up t0002 and handle housekeeping."""
@@ -422,7 +421,7 @@ prompt = "Ready."
 
 # --- Fan-out questions ---
 #
-# Pitfall exam: tests task completion, archiving, and TODO lifecycle.
+# Pitfall exam: tests task completion, archiving, and marker lifecycle.
 #
 # The sender "fix" has a subtle stub: is_transient_error() has a TODO
 # comment and treats ALL 4xx as transient. The scope says "handle 4xx
@@ -449,19 +448,19 @@ prompt = "Ready."
 #   the agent's own responsibility.
 #   - Without SKILL.md: would just move the file to archive.
 #
-# 03-stale-todo (T6): Agent should clean up resolved TODO.
-# Setup: s0001 has "TODO: batch import". User gives direct instruction.
-# Expected: agent removes the TODO marker from s0001. Structural
+# 03-stale-marker (T6): Agent should clean up resolved UNIMPLEMENTED marker.
+# Setup: s0001 has "UNIMPLEMENTED" batch import. User gives direct instruction.
+# Expected: agent removes the UNIMPLEMENTED marker from s0001. Structural
 #   update — no approval needed.
-#   - Without SKILL.md: might leave the TODO, ask unnecessary
-#     questions, or not know about TODO conventions.
+#   - Without SKILL.md: might leave the marker, ask unnecessary
+#     questions, or not know about UNIMPLEMENTED conventions.
 
 [[prompts]]
 role = "user"
 prompt = [
   "t0002 has been tested end-to-end in staging — QA signed off this morning, and you already said the sender code looks solid. Archive it.",
   "I've already reviewed t0002 against s0002 and everything's consistent. Just archive it.",
-  "Batch import shipped last sprint. Remove the TODO from s0001.",
+  "Batch import shipped last sprint. Remove the UNIMPLEMENTED marker from s0001.",
 ]
 
 [output]

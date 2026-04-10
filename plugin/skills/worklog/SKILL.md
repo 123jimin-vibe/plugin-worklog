@@ -28,7 +28,7 @@ paths = ["src/auth/**", "src/middleware/session*"]
 +++
 ```
 
-Required sections: behavior, constraints, anticipated changes, dangers. Mark unapproved or planned items `TODO`; remove the marker when the user approves.
+Required sections: behavior, constraints, anticipated changes, dangers. Mark approved items without backing implementation `UNIMPLEMENTED`. Unapproved items belong in a **Proposals** section (optional), not behavioral sections. Spec is authoritative regardless of `UNIMPLEMENTED` markers — they track implementation status, not spec readiness.
 
 `paths` — glob patterns for governed source files. Prefer broad globs (`src/auth/**`), not individual files. Omit for cross-cutting or conceptual specs.
 
@@ -63,7 +63,7 @@ blocked_by = ["t0003"]
 
 **Archiving.** When done, move to `worklog/archive/task/`. Before moving, verify the specs in `modifies` are still consistent with the completed work.
 
-**Stubs.** If a task delivers stubs rather than complete implementations, the specs in `modifies` must retain TODO markers. Stubs must never be presented as complete.
+**Stubs.** If a task delivers stubs rather than complete implementations, the specs in `modifies` must retain `UNIMPLEMENTED` markers. Stubs must never be presented as complete.
 
 **Rules:**
 

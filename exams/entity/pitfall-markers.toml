@@ -1,0 +1,286 @@
+# Used with prompt-engineer:invoke-llm skill.
+#
+# Tests S8 (UNIMPLEMENTED misread as draft). Agent encounters a spec
+# with UNIMPLEMENTED markers and must treat it as authoritative.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+max_tokens = 4096
+
+[vars]
+skill = "../../plugin/skills/worklog/SKILL.md"
+project = "context.md"
+
+# --- System: emulated tools + conventions ---
+
+[[prompts]]
+role = "system"
+file = "tools.md"
+
+# --- System: project context ---
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+# --- Pre-baked history: agent reads methodology ---
+
+[[prompts]]
+role = "user"
+prompt = "Read the worklog methodology before we start."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/SKILL.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{skill}}</output>
+</tool_result>"""
+substitute = true
+
+[[prompts]]
+role = "assistant"
+prompt = "Read it. Specs are authoritative. UNIMPLEMENTED marks approved items not yet built. Ready."
+
+# --- Pre-baked history: agent orients ---
+
+[[prompts]]
+role = "user"
+prompt = "Orient yourself."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/spec"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/task"}</input>
+</tool_use>
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "python worklog/script/next_id.py task"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>list_directory</name>
+<output>s0001-recipe-storage.md
+s0002-notifications.md
+s0003-recipe-collections.md</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>t0001-recipe-tagging.md
+t0002-fix-email-delivery.md</output>
+</tool_result>
+
+<tool_result>
+<name>bash</name>
+<output>t0004</output>
+</tool_result>"""
+
+# --- Pre-baked history: agent reads the UNIMPLEMENTED spec ---
+
+[[prompts]]
+role = "assistant"
+prompt = """I see a new spec (s0003). Let me read it.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0003-recipe-collections.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0003"
+title = "Recipe Collections"
+tags = ["core"]
+paths = ["src/collections/**"]
++++
+
+# Recipe Collections
+
+Users can organize recipes into named collections for meal planning and sharing.
+
+## Observable Behavior
+
+- UNIMPLEMENTED Users can create a named collection.
+- UNIMPLEMENTED Users can add recipes to a collection.
+- UNIMPLEMENTED Users can list their collections with recipe counts.
+- UNIMPLEMENTED Users can remove a recipe from a collection.
+
+## Constraints
+
+- UNIMPLEMENTED Collection names must be unique per user.
+- UNIMPLEMENTED A recipe can appear in multiple collections.
+
+## Anticipated Changes
+
+- Sharing collections with other users.
+- Reordering recipes within a collection.
+- Collection descriptions and cover images.
+
+## Dangers
+
+- Orphaned collection entries if a recipe is hard-deleted.
+- Collection count queries could become expensive without denormalization.</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = """Oriented.
+
+- **Specs:** s0001 (Recipe Storage), s0002 (Notifications), s0003 (Recipe Collections — all items UNIMPLEMENTED, nothing built yet).
+- **Tasks:** t0001 (tagging, active), t0002 (email fix, done). Next: t0004.
+- s0003 is a greenfield spec — behaviors are approved but no implementation exists.
+
+Ready."""
+
+# --- Filler: casual chat about the feature ---
+
+[[prompts]]
+role = "user"
+prompt = "We created s0003 last week. The team reviewed it and everyone's happy with the scope. I want to start building it."
+
+[[prompts]]
+role = "assistant"
+prompt = "Good — the spec has clear behaviors and constraints. The collection feature is self-contained with `src/collections/**` as the governed path. Want me to create a task?"
+
+[[prompts]]
+role = "user"
+prompt = "Yeah, but first — a couple of quick things."
+
+# --- Filler: chores to build momentum ---
+
+[[prompts]]
+role = "user"
+prompt = "t0002 is done but still in the active directory. Archive it."
+
+[[prompts]]
+role = "assistant"
+prompt = """I need to verify the governing spec first.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0002-notifications.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0002"
+title = "Notification System"
+tags = ["infra"]
+paths = ["src/notify/**"]
++++
+
+# Notification System
+
+Sends notifications to users when events occur (e.g., recipe shared, comment added).
+
+## Observable Behavior
+
+- Email notifications are sent for all event types.
+- Notifications are delivered within 60 seconds of the triggering event.
+- Failed sends are retried up to 3 times with exponential backoff.
+
+## Constraints
+
+- Users can opt out of specific event types.
+- Notification content must not include sensitive data (passwords, tokens).
+
+## Anticipated Changes
+
+- Push notification channel.
+- Per-user delivery preferences (email vs. push vs. both).
+
+## Dangers
+
+- Retry storms under high load — backoff parameters must be tuned.</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = """Spec s0002 is consistent with t0002's work (4xx error handling fix aligns with retry behavior). Safe to archive.
+
+<tool_use>
+<name>move_file</name>
+<input>{"src": "worklog/task/t0002-fix-email-delivery.md", "dst": "worklog/archive/task/t0002-fix-email-delivery.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>move_file</name>
+<output>Moved worklog/task/t0002-fix-email-delivery.md to worklog/archive/task/t0002-fix-email-delivery.md</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Archived t0002."
+
+[[prompts]]
+role = "user"
+prompt = "OK, back to collections."
+
+# --- Fan-out questions ---
+#
+# S8 (UNIMPLEMENTED misread as draft): tests whether the agent treats
+# a spec with UNIMPLEMENTED markers as authoritative or as "incomplete."
+#
+# Pressure mechanism: every behavioral item in s0003 is marked
+# UNIMPLEMENTED. This makes the spec *look* like a draft. The agent's
+# training associates such markers with "work in progress" or
+# "needs more thought." The temptation is to suggest "fleshing out"
+# or "finalizing" the spec before proceeding.
+#
+# The user has explicitly stated the team reviewed and approved s0003.
+# UNIMPLEMENTED means approved-but-not-built, per SKILL.md. The spec
+# is authoritative regardless of markers.
+#
+# 01-create-task (S8): User asks to create a task for collections.
+# Expected: write_file for worklog/task/t0004-recipe-collections.md
+#   - Frontmatter: id = "t0004", modifies = ["s0003"], status = "pending"
+#   - Agent proceeds directly — no hedging about the spec being
+#     "incomplete," no suggestion to "finalize" or "flesh out" s0003.
+#   - Without understanding UNIMPLEMENTED: agent suggests the spec
+#     needs more detail before implementation can begin, or asks
+#     "should we flesh out the spec first?"
+#
+# 02-write-tests (S8): User asks to write tests for collections.
+# Expected: agent derives tests from s0003's behavioral items.
+#   - Tests validate the four UNIMPLEMENTED behaviors and two constraints.
+#   - Agent treats spec as the authoritative source for test design.
+#   - Does NOT say "the spec is still in draft" or "we should finalize
+#     the spec before writing tests."
+#   - Without understanding UNIMPLEMENTED: agent hesitates, says the
+#     spec "doesn't seem ready" or "has items still being decided."
+
+[[prompts]]
+role = "user"
+prompt = [
+  "Create a task for implementing recipe collections. We'll tackle the full spec scope.",
+  "Before we implement, let's write tests for recipe collections based on s0003. Cover the behaviors and constraints.",
+]
+
+[output]
+file = "results/pitfall-markers-results.jsonl"

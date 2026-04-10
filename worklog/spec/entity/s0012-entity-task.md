@@ -42,7 +42,7 @@ any status → cancelled → (deleted or kept with decision)
 
 ## Body
 
-Free-form markdown below frontmatter. Used for scope description, findings (investigation), and notes accumulated during work. Mark unapproved or planned items with `TODO`.
+Free-form markdown below frontmatter. Used for scope description, findings (investigation), and notes accumulated during work.
 
 ## Creation
 

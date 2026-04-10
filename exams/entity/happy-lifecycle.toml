@@ -130,6 +130,7 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Users can create, read, update, and delete recipes.
 - Recipes are searchable by title.
 - Deleting a recipe is soft-delete (recoverable for 30 days).
+- UNIMPLEMENTED Batch import — accept a list of recipes and store them in one operation.
 
 ## Constraints
 
@@ -137,8 +138,6 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Ingredient quantities must be positive numbers.
 
 ## Anticipated Changes
-
-**TODO:** batch import — accept a list of recipes and store them in one operation.
 
 - Full-text search across ingredients and instructions.
 - Recipe versioning.
@@ -220,16 +219,16 @@ Governing specs read: s0001 (Recipe Storage), s0002 (Notifications). Ready."""
 # 03-close-out: Tests full task completion sequence.
 # Expected: write_file to set t0001 status = "done", then move_file to archive.
 #   - s0001 consistency: user confirms it's updated.
-#   - Batch import TODO stays — user says "unrelated" (separate scope).
+#   - Batch import UNIMPLEMENTED marker stays — user says "unrelated" (separate scope).
 #   - Without SKILL.md: would mark done but skip archive, skip spec check,
-#     or remove the TODO.
+#     or remove the UNIMPLEMENTED marker.
 
 [[prompts]]
 role = "user"
 prompt = [
   "t0002 is done and I've verified it's consistent with s0002. Archive it.",
   "I want to start implementing recipe tagging (t0001 scope). What's the first thing I should do?",
-  "t0001 is done — tagging is fully implemented, tested, and s0001 has been updated to document the new behavior. The batch import TODO in s0001 is unrelated. Close out t0001.",
+  "t0001 is done — tagging is fully implemented, tested, and s0001 has been updated to document the new behavior. The batch import UNIMPLEMENTED item in s0001 is unrelated. Close out t0001.",
 ]
 
 [output]

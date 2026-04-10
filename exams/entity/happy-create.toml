@@ -146,26 +146,26 @@ Ready."""
 # correctly. Without SKILL.md, the LLM produces a fundamentally different
 # (wrong) answer, not just a differently formatted one.
 #
-# 01-governance-task: Tests paths→governance inference + TODO awareness.
+# 01-governance-task: Tests paths→governance inference + UNIMPLEMENTED marker awareness.
 # Expected: write_file for worklog/task/t0004-batch-import.md (or similar).
 #   - Frontmatter: id = "t0004", modifies = ["s0001"], status = "pending".
 #   - "I'm about to start" = work not yet begun, so status is pending.
 #   - Key reasoning: src/recipes/** is governed by s0001 (via paths), so
-#     modifies must include s0001. s0001 has a TODO for batch import.
+#     modifies must include s0001. s0001 has an UNIMPLEMENTED item for batch import.
 #   - Without SKILL.md: creates a standalone task without modifies. No
-#     paths→governance knowledge, no TODO awareness.
+#     paths→governance knowledge, no UNIMPLEMENTED marker awareness.
 #
 # 02-greenfield-setup: Tests spec-first workflow + multi-entity creation.
 # Expected: TWO write_file calls — spec first, then task.
 #   - Spec: worklog/spec/s0003-user-accounts.md
-#     id = "s0003", paths = ["src/accounts/**"], TODO for password requirements.
+#     id = "s0003", paths = ["src/accounts/**"], UNIMPLEMENTED marker for password requirements.
 #     Observable behavior only (registration, login, sessions).
 #   - Task: worklog/task/t0004-user-accounts.md (or similar)
 #     id = "t0004", modifies = ["s0003"], status = "pending".
 #   - Key reasoning: greenfield workflow = spec before task. Task references
-#     the just-created spec. TBD items become TODO markers, not omissions.
+#     the just-created spec. TBD items become UNIMPLEMENTED markers, not omissions.
 #   - Without SKILL.md: creates a task or design doc directly. No spec-first
-#     workflow, no paths, no TODO convention.
+#     workflow, no paths, no UNIMPLEMENTED convention.
 #
 # 03-decision-plus-task: Tests decision→task flow + spec-edit restraint.
 # Expected: TWO write_file calls — decision + task.
@@ -182,7 +182,7 @@ Ready."""
 [[prompts]]
 role = "user"
 prompt = [
-  "I'm about to start implementing batch import for recipes — the code will go under src/recipes/. There's a TODO for it in s0001. Create a task to track this.",
+  "I'm about to start implementing batch import for recipes — the code will go under src/recipes/. There's an UNIMPLEMENTED item for it in s0001. Create a task to track this.",
   "New feature: user accounts. Code goes under src/accounts/. We want registration, login, and session management as a single deliverable, but password requirements are still TBD. Set up the worklog so we're ready to start implementing.",
   "We've agreed to implement d0001's recommendations: gateway validation and per-session rate limits for notifications. Record the decision and create a task for the implementation. We'll update s0002 once the work is done and reviewed.",
 ]

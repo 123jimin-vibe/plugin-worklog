@@ -20,8 +20,8 @@ Consumers: exam design (s0014), SKILL.md authoring (s0018), methodology refineme
 | S4 | **Over-specification.** Agent creates a new spec for something that should extend an existing one. | s0011 Dangers | User asks for spec on a narrow sub-feature of an existing spec's domain. | Yes — narrow spec for a single function instead of extending the module spec. |
 | S5 | **Code > spec precedence.** Agent treats code behavior as authoritative when it conflicts with the spec. | SKILL.md Precedence | Agent reads source code that diverges from spec; follows the code. | No. |
 | S6 | **Speculative behavioral detail.** Agent adds behavioral requirements to a spec that nobody asked for or decided. Each added detail becomes a binding implementation constraint because spec is authoritative over code. Agent treats spec-writing like documentation (more detail = better) rather than legislation. | s0011 Updating (behavioral = approval) | Agent "fleshes out" a spec based on what seems reasonable, or imports behaviors from similar systems seen in training data. | Yes — arbitrary constraints and edge-case handling added during spec creation, discovered only when implementation hits them. |
-| S7 | **New spec without TODO markers.** Agent creates a spec for unbuilt features with behaviors stated as established facts. Nothing is implemented but the spec reads as current — no signal about what needs building, drift detection sees no gap. | SKILL.md Spec (mark planned items TODO) | Spec-writing feels like describing what the system *will* do; agent writes in present tense without distinguishing "exists" from "should exist." | Yes — greenfield specs with all behaviors stated as current, no indication of implementation status. |
-| S8 | **TODO misread as draft.** Agent interprets TODO markers as "spec is not finalized" rather than "behavior is approved but not yet implemented." Leads to hedging, re-asking for approval on already-approved items, or treating the spec as non-authoritative. | SKILL.md Precedence (spec authoritative regardless of TODO) | TODO is universally associated with "work in progress" in programming; agent imports this connotation and treats marked specs as tentative. | Yes — agent asked to "finalize" specs that were already approved, hedged language around TODO-marked behaviors. |
+| S7 | **New spec without UNIMPLEMENTED markers.** Agent creates a spec for unbuilt features with behaviors stated as established facts. Nothing is implemented but the spec reads as current — no signal about what needs building, drift detection sees no gap. | s0011 Required Sections (mark approved unbuilt items UNIMPLEMENTED) | Spec-writing feels like describing what the system *will* do; agent writes in present tense without distinguishing "exists" from "should exist." | Yes — greenfield specs with all behaviors stated as current, no indication of implementation status. |
+| S8 | **UNIMPLEMENTED misread as draft.** Agent interprets `UNIMPLEMENTED` markers as "spec is not finalized" rather than "behavior is approved but not yet built." Leads to hedging, re-asking for approval on already-approved items, or treating the spec as non-authoritative. | SKILL.md Precedence (spec authoritative regardless of markers) | Marker text triggers "work in progress" associations; agent treats marked specs as tentative. | Yes — agent asked to "finalize" specs that were already approved, hedged language around marked behaviors. |
 
 ## Task pitfalls
 
@@ -29,9 +29,9 @@ Consumers: exam design (s0014), SKILL.md authoring (s0018), methodology refineme
 |---|---|---|---|---|
 | T1 | **Status not maintained.** Agent starts working without setting status to active, or finishes without setting done. | s0012 lifecycle | Agent focuses on implementation, forgets lifecycle bookkeeping. | Yes — plan archived as "active," stale plans in active directory. |
 | T2 | **Empty modifies when work touches spec-governed files.** Chore/refactor under spec's `paths` but agent sets modifies = [] because "no behavior change." | s0012 Forbidden | Renaming, cleanup, or refactoring that touches governed paths. | No. |
-| T3 | **Stubs presented as complete.** Agent marks task done when implementation uses mock data, placeholder returns, or TODO comments. | SKILL.md stubs rule | User scaffolded endpoints; agent completes the task based on shape, not substance. | Yes — SKILL.md presented stub scripts as functional. |
+| T3 | **Stubs presented as complete.** Agent marks task done when implementation uses mock data, placeholder returns, or stub comments. | SKILL.md stubs rule | User scaffolded endpoints; agent completes the task based on shape, not substance. | Yes — SKILL.md presented stub scripts as functional. |
 | T4 | **Archive without spec verification.** Agent moves task to archive without checking that the governing spec is still consistent. | s0012 Archiving | Agent just does move_file, doesn't read or verify the spec. | No. |
-| T6 | **TODO markers left stale.** Agent completes work that resolves a spec TODO but doesn't remove the marker. | s0012 observed failure | Agent focuses on code, doesn't circle back to update spec. | Yes — implemented items remain as TODOs in specs. |
+| T6 | **UNIMPLEMENTED markers left stale.** Agent completes work that resolves an `UNIMPLEMENTED` item but doesn't remove the marker. | s0012 observed failure | Agent focuses on code, doesn't circle back to update spec. | Yes — implemented items still marked as unimplemented in specs. |
 
 ## Decision pitfalls
 
@@ -73,10 +73,10 @@ Severity = damage × persistence. Persistence depends on visibility: a pitfall t
 | S3 | High | Spec update contradicts a related spec. Need to read both specs to notice. |
 | X2 | High | Implementation without covering spec. Drift detection blind. |
 | D1 | High | Non-trivial edit instead of supersede. Alters historical record silently. |
-| T6 | High | Stale TODO markers. Completed work remains marked TODO, spawning redundant tasks. |
+| T6 | High | Stale UNIMPLEMENTED markers. Completed work still marked unimplemented, spawning redundant tasks. |
 | S6 | Must | Speculative requirements silently bind implementation. Extra detail in a spec looks thorough, not harmful — low visibility until implementation. |
-| S7 | High | Missing TODO means no implementation status signal. Drift detection blind to unbuilt features. Visible on careful reading. |
-| S8 | High | TODO-as-draft undermines spec authority. Agent hedges or re-gates already-approved work. Medium visibility — user notices hedging. |
+| S7 | High | Missing UNIMPLEMENTED markers means no implementation status signal. Drift detection blind to unbuilt features. Visible on careful reading. |
+| S8 | High | UNIMPLEMENTED-as-draft undermines spec authority. Agent hedges or re-gates already-approved work. Medium visibility — user notices hedging. |
 | S1 | Better | Impl details in spec body. Readable, but maintenance burden compounds. |
 | T2 | Better | Empty modifies on governed work. Governance gap, retroactively correctable. |
 | T4 | Better | Archive without verifying spec consistency. Catchable on next read. |

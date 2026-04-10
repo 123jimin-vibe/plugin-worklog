@@ -1,0 +1,236 @@
+# Used with prompt-engineer:invoke-llm skill.
+#
+# Tests S6 (speculative behavioral detail) and S7 (missing UNIMPLEMENTED markers).
+# Both pitfalls manifest during spec creation.
+
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0.0
+max_tokens = 4096
+
+[vars]
+skill = "../../plugin/skills/worklog/SKILL.md"
+project = "context.md"
+
+# --- System: emulated tools + conventions ---
+
+[[prompts]]
+role = "system"
+file = "tools.md"
+
+# --- System: project context ---
+
+[[prompts]]
+role = "system"
+prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
+substitute = true
+
+# --- Pre-baked history: agent reads methodology ---
+
+[[prompts]]
+role = "user"
+prompt = "Before we start, read the worklog methodology."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/SKILL.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{skill}}</output>
+</tool_result>"""
+substitute = true
+
+[[prompts]]
+role = "assistant"
+prompt = "Read it. Specs define the system, tasks change it. Spec is authoritative over code. Got it."
+
+# --- Pre-baked history: agent orients ---
+
+[[prompts]]
+role = "user"
+prompt = "Get oriented — look at the project, the specs, whatever you need."
+
+[[prompts]]
+role = "assistant"
+prompt = """I'll survey the worklog structure.
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/spec"}</input>
+</tool_use>
+
+<tool_use>
+<name>list_directory</name>
+<input>{"path": "worklog/task"}</input>
+</tool_use>
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "python worklog/script/next_id.py spec"}</input>
+</tool_use>
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "python worklog/script/next_id.py task"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>list_directory</name>
+<output>s0001-recipe-storage.md
+s0002-notifications.md</output>
+</tool_result>
+
+<tool_result>
+<name>list_directory</name>
+<output>t0001-recipe-tagging.md
+t0002-fix-email-delivery.md</output>
+</tool_result>
+
+<tool_result>
+<name>bash</name>
+<output>s0003</output>
+</tool_result>
+
+<tool_result>
+<name>bash</name>
+<output>t0004</output>
+</tool_result>"""
+
+# --- Pre-baked history: agent reads existing spec (sets detail precedent) ---
+
+[[prompts]]
+role = "assistant"
+prompt = """Let me read the existing specs to understand the project's domain.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/spec/s0001-recipe-storage.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>+++
+id = "s0001"
+title = "Recipe Storage"
+tags = ["core"]
+paths = ["src/recipes/**"]
++++
+
+# Recipe Storage
+
+Recipes are stored as structured documents with a title, ingredient list, and step-by-step instructions.
+
+## Observable Behavior
+
+- Users can create, read, update, and delete recipes.
+- Recipes are searchable by title.
+- Deleting a recipe is soft-delete (recoverable for 30 days).
+
+## Constraints
+
+- Recipe titles must be unique per user.
+- Ingredient quantities must be positive numbers.
+
+## Anticipated Changes
+
+- Batch import — accept a list of recipes and store them in one operation.
+- Full-text search across ingredients and instructions.
+- Recipe versioning.
+
+## Dangers
+
+- Soft-delete retention window is a product decision — do not hardcode without confirming.</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = """Oriented.
+
+- **Specs:** s0001 (Recipe Storage — CRUD, soft-delete, search by title), s0002 (Notifications). Next: s0003.
+- **Tasks:** t0001 (tagging, active), t0002 (email fix, done). Next: t0004.
+- s0001 has detailed behaviors, constraints, and anticipated changes. Good reference for the spec format.
+
+Ready."""
+
+# --- Filler: brief chat to push SKILL.md further back ---
+
+[[prompts]]
+role = "user"
+prompt = "Quick question — do we have any specs for the shared utilities under src/shared/?"
+
+[[prompts]]
+role = "assistant"
+prompt = "No. The shared directory (config, db) isn't covered by any spec's `paths`. s0001 covers `src/recipes/**` and s0002 covers `src/notify/**`. The shared code is ungoverned."
+
+[[prompts]]
+role = "user"
+prompt = "Fine, we'll deal with that later. Let's create some new specs."
+
+[[prompts]]
+role = "assistant"
+prompt = "Ready. Next spec ID is s0003."
+
+# --- Fan-out questions ---
+#
+# S6 (speculative behavioral detail): tests whether the agent adds
+# behavioral requirements the user didn't mention. The user gives a
+# brief, clear description. The correct spec contains ONLY what the
+# user stated. Any additional behavioral items in Observable Behavior
+# or Constraints that the user didn't describe are S6 failures.
+#
+# Pressure mechanism: the agent has just read s0001, which has detailed
+# behaviors and constraints. This sets a precedent for thoroughness.
+# The agent's training instinct is to "flesh out" the spec with what
+# a collection feature "obviously" needs (removal, listing, sharing,
+# uniqueness, ordering, etc.). Each added item becomes a binding
+# implementation constraint because spec is authoritative.
+#
+# Expected (S6 question):
+#   - write_file for worklog/spec/s0003-recipe-collections.md
+#   - Observable Behavior contains ONLY:
+#     * UNIMPLEMENTED Users can create named collections.
+#     * UNIMPLEMENTED Users can add recipes to a collection.
+#   - No additional behaviors (remove, list, share, reorder, etc.)
+#   - Additional ideas may appear in Proposals or Anticipated Changes,
+#     NOT in behavioral sections.
+#   - Constraints should not invent requirements (no uniqueness rules,
+#     size limits, etc. the user didn't mention).
+#   - Without SKILL.md: agent writes a thorough CRUD spec with removal,
+#     listing, sharing, ordering, uniqueness constraints — all presented
+#     as decided behavior.
+#
+# S7 (missing UNIMPLEMENTED markers): tests whether the agent marks
+# behavioral items as UNIMPLEMENTED when creating a greenfield spec.
+# Nothing is implemented — every behavioral item should be marked.
+#
+# Pressure mechanism: spec-writing feels like describing what the
+# system will do. Writing in present tense without markers feels
+# natural. The agent has just read s0001 which has NO UNIMPLEMENTED
+# markers (because s0001's behaviors are already implemented).
+#
+# Expected (S7 question):
+#   - write_file for worklog/spec/s0003-recipe-ratings.md
+#   - ALL behavioral items in Observable Behavior and Constraints
+#     are marked UNIMPLEMENTED.
+#   - This is a greenfield feature — nothing exists in code yet.
+#   - Without SKILL.md: behaviors stated as current facts, no markers.
+
+[[prompts]]
+role = "user"
+prompt = [
+  "Create a spec for recipe collections. Users can create named collections and add recipes to them. Code will go under src/collections/. Just write it, I'll review.",
+  "Create a spec for recipe ratings. Users can rate recipes 1-5 stars. The average rating is shown on each recipe. Code goes under src/ratings/.",
+]
+
+[output]
+file = "results/pitfall-spec-authoring-results.jsonl"

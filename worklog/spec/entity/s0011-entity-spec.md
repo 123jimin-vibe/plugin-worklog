@@ -26,23 +26,25 @@ TOML fenced with `+++`. Required fields:
 
 `paths` is used by drift detection. Optional — omit when spec governs no source files (e.g. methodology, workflow). Prefer broad globs (`src/auth/**`) over enumerating individual files. When a source file is governed by a spec, annotate it with a `@worklog` comment (e.g. `// @worklog s0001`) to create a reverse link.
 
-<!-- TODO: `@worklog` markers saw low adoption in bfc (1 of ~40 files). Needs enforcement to be viable: (1) automated injection via post-commit hook or script; (2) a `which-spec <file>` query tool for discoverability without source modification; (3) validation script flagging governed files missing markers. -->
+<!-- NOTE: `@worklog` markers saw low adoption in bfc (1 of ~40 files). Needs enforcement to be viable: (1) automated injection via post-commit hook or script; (2) a `which-spec <file>` query tool for discoverability without source modification; (3) validation script flagging governed files missing markers. -->
 
 ## Required Sections
 
 1. Top-level heading matching `title`.
 2. Body describing observable behavior — inputs, outputs, observable effects, ordering guarantees. Written from a consumer's perspective, not implementation.
 3. **Constraints** — invariants, limits, and rules that must always or never hold.
-4. **Anticipated Changes** — known future work or likely evolution. Informational only — must be promoted to a `TODO` or task before work begins.
+4. **Anticipated Changes** — known future work or likely evolution. Informational only — must be promoted to a behavioral section (marked `UNIMPLEMENTED`) or a task before work begins.
 5. **Dangers** — risks, pitfalls, or failure modes to watch for.
 
-Sections beyond these are discretionary. Unapproved or planned items must be marked `TODO`.
+Optional section: **Proposals** — items discussed but not approved by the user. Distinct from Anticipated Changes (which are observations about likely evolution, not items from conversation). When approved, promote to a behavioral section marked `UNIMPLEMENTED`.
+
+Sections beyond these are discretionary. Approved items without backing implementation must be marked `UNIMPLEMENTED`. Unapproved items belong in Proposals, not behavioral sections.
 
 ## Creation
 
 1. Survey existing specs for overlap — default to extending an existing spec rather than creating a new one.
-2. Draft: observable behavior, constraints, dangers. Mark uncertain items with `TODO`.
-3. User reviews. Revise until approved. Remove `TODO` from approved items.
+2. Draft: observable behavior, constraints, dangers.
+3. User reviews. Approved items without implementation are marked `UNIMPLEMENTED`. Unapproved items move to Proposals or are removed.
 
 ## Updating
 

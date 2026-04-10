@@ -9,7 +9,7 @@
 #   3. 3-4 quick chores added after filler (before fan-out) to build
 #      execution momentum — sed fixes, file creation, etc.
 #   4. Fan-out Q1/Q2 made more terse and action-oriented.
-#   5. Q3 (TODO removal) kept as-is.
+#   5. Q3 (UNIMPLEMENTED marker removal) kept as-is.
 #
 # Hypothesis: when SKILL.md is buried behind filler + chores instead of
 # pinned in the system prompt, the agent loses awareness of archiving
@@ -68,7 +68,7 @@ substitute = true
 
 [[prompts]]
 role = "assistant"
-prompt = "Read it. Specs define the system, tasks change it, decisions record why. Archiving requires spec consistency check first. Stubs and TODOs have lifecycle rules. Got it."
+prompt = "Read it. Specs define the system, tasks change it, decisions record why. Archiving requires spec consistency check first. Stubs and UNIMPLEMENTED markers have lifecycle rules. Got it."
 
 # ===================================================================
 # Phase 1: Orientation (same as pitfall-completion)
@@ -277,6 +277,7 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Users can create, read, update, and delete recipes.
 - Recipes are searchable by title.
 - Deleting a recipe is soft-delete (recoverable for 30 days).
+- UNIMPLEMENTED Batch import — accept a list of recipes and store them in one operation.
 
 ## Constraints
 
@@ -284,8 +285,6 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Ingredient quantities must be positive numbers.
 
 ## Anticipated Changes
-
-**TODO:** batch import — accept a list of recipes and store them in one operation.
 
 - Full-text search across ingredients and instructions.
 - Recipe versioning.
@@ -309,7 +308,7 @@ prompt = """Oriented. Summary:
 - **Project:** FastAPI + MongoDB recipe app, Celery for notifications. Python 3.11+.
 - **t0002** (done, not archived): email delivery fix — retry logic now handles 4xx errors, failure logging added. Governs s0002.
 - **Sender code:** updated with transient error handling and retry classification. Looks solid.
-- **s0001** has a TODO for batch import. s0002 covers notifications.
+- **s0001** has an UNIMPLEMENTED item for batch import. s0002 covers notifications.
 - **Archive:** t0003 (rate limiter hotfix) already archived.
 
 Ready to wrap up t0002 and handle housekeeping."""
@@ -536,9 +535,9 @@ prompt = "Ready."
 #   override the agent's own responsibility.
 #   - With SKILL.md buried: may just move the file to archive.
 #
-# 03-stale-todo (T6): Agent should clean up resolved TODO.
-# Setup: s0001 has "TODO: batch import". User gives direct instruction.
-# Expected: agent removes the TODO marker from s0001. Structural
+# 03-stale-marker (T6): Agent should clean up resolved UNIMPLEMENTED marker.
+# Setup: s0001 has "UNIMPLEMENTED" batch import. User gives direct instruction.
+# Expected: agent removes the UNIMPLEMENTED marker from s0001. Structural
 #   update — no approval needed.
 
 [[prompts]]
@@ -546,7 +545,7 @@ role = "user"
 prompt = [
   "QA passed. Archive t0002.",
   "Already checked t0002 against s0002 — consistent. Archive it.",
-  "Batch import shipped last sprint. Remove the TODO from s0001.",
+  "Batch import shipped last sprint. Remove the UNIMPLEMENTED marker from s0001.",
 ]
 
 [output]

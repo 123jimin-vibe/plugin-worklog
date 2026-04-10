@@ -11,7 +11,7 @@ New feature development.
 ## Flow
 
 1. **Survey** — check existing code, specs, and dependencies for overlap.
-2. **Draft spec** — observable behavior, constraints, dangers. `TODO` markers on uncertain items.
+2. **Draft spec** — observable behavior, constraints, dangers. Mark approved items without implementation `UNIMPLEMENTED`. Unapproved items go in Proposals.
 3. **Review spec** — user reviews. Revise until approved.
 4. **Create task(s)** — each with `modifies` pointing to the spec. Confirm scope with user.
 5. **Write tests** from spec. If spec gaps surface → revise spec (step 3).

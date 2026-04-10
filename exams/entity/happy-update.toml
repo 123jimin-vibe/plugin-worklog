@@ -104,6 +104,7 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Users can create, read, update, and delete recipes.
 - Recipes are searchable by title.
 - Deleting a recipe is soft-delete (recoverable for 30 days).
+- UNIMPLEMENTED Batch import — accept a list of recipes and store them in one operation.
 
 ## Constraints
 
@@ -111,8 +112,6 @@ Recipes are stored as structured documents with a title, ingredient list, and st
 - Ingredient quantities must be positive numbers.
 
 ## Anticipated Changes
-
-**TODO:** batch import — accept a list of recipes and store them in one operation.
 
 - Full-text search across ingredients and instructions.
 - Recipe versioning.
@@ -240,7 +239,7 @@ s0002-notifications.md</output>
 role = "assistant"
 prompt = """Oriented. Current state:
 
-- **s0001** (Recipe Storage) — has a TODO for batch import. Governed paths: src/recipes/**.
+- **s0001** (Recipe Storage) — has an UNIMPLEMENTED item for batch import. Governed paths: src/recipes/**.
 - **s0002** (Notifications) — email-based, 3 retries, 60s delivery window. Governed paths: src/notify/**.
 - **d0001** (rate limiter post-mortem) — recommends gateway validation + per-session rate limits. s0002 not yet updated.
 - **t0001** (active) — recipe tagging, modifies s0001.
