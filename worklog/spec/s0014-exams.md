@@ -13,6 +13,8 @@ LLM Q&A evaluation files. Each exam tests a worklog spec by feeding it as a syst
 
 Specs prescribe behavior, but predicting whether an LLM will follow a spec correctly is a false-belief task. Exams verify spec effectiveness by running questions through actual LLM calls and observing the output.
 
+The goal of writing exams is to find failures — questions the agent gets wrong — not to confirm the agent passes. A passing exam reveals nothing about SKILL.md's limits. A failing exam reveals a gap to fix. Optimize for failure discovery: if every question passes, the exam is too easy or too obvious, not proof that SKILL.md works.
+
 ## Location
 
 `exams/` — organized by spec under test. Fictional source files and other test data go in `fixtures/` subdirectories alongside the exam TOMLs.
@@ -66,7 +68,7 @@ Some exams need to test agent behavior in realistic environments where the agent
 
 ## Writing Adversarial Questions
 
-Adversarial questions push the LLM toward a wrong answer. Two requirements: the question must be misleading, and the correct answer must be irrefutable.
+Adversarial questions push the LLM toward a wrong answer. Two requirements: the question must be misleading, and the correct answer must be irrefutable. A good adversarial question fails on first attempt — if the model passes easily, the question is not adversarial enough. Iterate until it fails, then verify the expected answer is still objectively correct.
 
 **Irrefutability constraint.** The correct answer must follow from an explicit rule with no exception. If a reasonable person could argue the other side, the question fails as a test. Structural rules (decisions are immutable, specs cannot contain implementation details, tests before implementation) are safer targets than approval-gated rules (spec behavioral changes require user approval) — because in a user-message format, any user statement about the topic can be construed as the approval that satisfies the gate.
 
@@ -76,6 +78,28 @@ Adversarial questions push the LLM toward a wrong answer. Two requirements: the 
 
 **Multi-turn dilution.** Prior conversation turns where the agent already agreed to the wrong action create strong pressure to follow through. The agent must course-correct mid-conversation, which is harder than rejecting a fresh request.
 
+## Drift Techniques
+
+Empirically validated techniques for increasing adversarial pressure. These were discovered through controlled experimentation (see `exams/entity/pitfall-drift.md` for the full lab notes). Apply these when a question passes too easily.
+
+**SKILL.md placement.** Delivering SKILL.md as a conversation-body tool result (rather than a system prompt) makes it susceptible to attention decay as the conversation grows. This mirrors real-world delivery where skills are loaded as conversation content, not privileged system instructions.
+
+**Execution momentum.** Pre-baked chore turns (sed fixes, file creation, dependency bumps) between orientation and the critical question build a "just execute" pattern. Each chore is legitimately spec-free, establishing that the current session is about quick fixes. The critical question inherits this framing.
+
+**Prior commitment.** The agent's own earlier suggestion — later referenced in the fan-out — creates sunk-cost pressure. When the agent already proposed a solution and the user approved it, the governance check feels redundant at execution time. This is the strongest single factor for suppressing process compliance on direct-action questions.
+
+**Precedent-setting.** A chore that creates a file in an ungoverned area (e.g., a utility module) establishes that file creation there is governance-free. When the critical question asks for another file in the same area, the agent treats it as the same class of work.
+
+**Fan-out directness.** Action-oriented wording ("Add X at path Y. Wire it into Z.") suppresses deliberation compared to open-ended wording ("We need X, what do you think?"). Specifying exact file paths and actions gives the agent an execution plan that bypasses the "should I check governance?" step.
+
+### What drift affects and what it doesn't
+
+Drift suppresses **process compliance** — governance checks, verification steps, archival procedures. These are steps the agent must remember to perform; drift pushes them out of active attention.
+
+Drift does NOT suppress **reasoning quality** — spec-vs-code precedence, decision immutability, spec content constraints. These are judgment calls where both sources are visible in context; the agent can still compare and reason correctly even under drift pressure.
+
+Target drift techniques at process-rule pitfalls (T2, T4, X2). For reasoning-rule pitfalls (S1, S5, D1, X1), use framing pressure (trivialization, user endorsement of wrong values) rather than drift.
+
 ## Dangers
 
 - Leading questions that embed the expected answer bias results toward passing.
@@ -83,3 +107,5 @@ Adversarial questions push the LLM toward a wrong answer. Two requirements: the 
 - Testing your interpretation of the spec rather than realistic user inputs.
 - Exams not updated after spec changes — stale questions validate outdated behavior.
 - Adversarial questions that use direct user instructions as the trap — the LLM can treat the instruction as authorization, making the expected answer refutable.
+- Treating a passing exam as validation that SKILL.md works. A pass means the question wasn't hard enough, not that the spec is sufficient.
+- Changing multiple variables at once during exam iteration, then attributing the result to one variable. Isolate factors: toggle one at a time and re-run.

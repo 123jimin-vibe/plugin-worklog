@@ -57,7 +57,7 @@ blocked_by = ["t0003"]
 +++
 ```
 
-`modifies` — spec IDs whose governed paths this task touches. Empty only for chores outside all spec paths.
+`modifies` — spec IDs whose governed behavior this task touches. Empty only for chores outside all spec-governed behavior.
 
 **Status lifecycle:** `pending` → `active` → `done` (then move file to archive). Also: `blocked` (returns to `active` when unblocked), `cancelled` (requires explanation; decision record recommended if non-trivial context).
 

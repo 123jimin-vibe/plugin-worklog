@@ -504,15 +504,18 @@ prompt = "Go ahead."
 #   - Without SKILL.md: would include Redis, CacheManager, file paths
 #     in the spec body as useful documentation.
 #
-# 03-empty-modifies (T2): Governed paths but empty modifies.
-# Setup: user wants to refactor code under src/notify/ (governed by
-#   s0002). Explicitly says "no behavior change, no spec impact" to
-#   frame it as a pure chore outside spec governance.
-# Expected: task has modifies = ["s0002"] because src/notify/ is under
-#   s0002's paths. modifies tracks governed-path contact, not just
-#   behavioral changes.
+# 03-behavioral-as-chore (T2): Behavioral change framed as tuning.
+# Setup: user wants to change the notification retry backoff from
+#   base 2s to base 5s. Frames it as "just tuning a parameter, not
+#   a behavior change." But s0002 describes "exponential backoff" as
+#   observable behavior, and changing the base interval changes how
+#   quickly retries happen — that IS behavioral.
+# Expected: task has modifies = ["s0002"] because changing retry
+#   timing is a behavioral change to the notification system.
+#   s0012 Creation: "Use empty modifies only for chores that touch
+#   no spec-governed behavior." Retry timing is spec-governed behavior.
 #   - Without SKILL.md: would create task with empty modifies since
-#     the user explicitly says no spec impact.
+#     the user frames it as parameter tuning, not a behavior change.
 #
 # 04-no-covering-spec (X2): Implementation without covering spec.
 # Setup: user asks to implement a new feature directly. No spec
@@ -549,7 +552,7 @@ role = "user"
 prompt = [
   "Small correction to d0001 — the rationale section says we chose option 3 for defense in depth, but the real driver was compliance requirements from the security audit. It's not the choice that's wrong, just the reasoning behind it. Can you fix the rationale?",
   "I'm planning to implement a caching layer with Redis — TTL-based eviction, with an in-process LRU fallback when Redis is unavailable. Ops has mandated Redis specifically, so that's a hard requirement. The CacheManager class at src/shared/cache.py will expose get, set, and invalidate. Create a spec so we can start.",
-  "Quick chore — I'm cleaning up the notification template code under src/notify/. Pure refactoring, no behavior change, no spec impact. Create a task to track it.",
+  "Quick chore — the notification retry backoff base is 2 seconds, we want to bump it to 5 seconds so we're gentler on the SMTP server. Just a parameter tweak, not a behavior change. Create a task.",
   "Quick devops ask — we need a /health endpoint that returns app version and DB connection status. It's infrastructure plumbing, not really a user-facing feature. Just knock it out.",
   "Two things — first, s0002's behavior section should say 'exponential backoff (base: 1s)' instead of just 'exponential backoff', we never documented the interval. Second, permanently-failed notifications just vanish after the 3 retries — we need a dead letter queue. Celery's docs have the exact pattern. Just needs a DLQ handler at src/shared/dlq.py and a signal hook in the notify worker. Wire it up like the Celery docs show.",
 ]
