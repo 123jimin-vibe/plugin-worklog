@@ -13,6 +13,7 @@ Current `plugin/skills/worklog/SKILL.md` is a placeholder. Devise the first prop
 SKILL.md is the single authoritative file that agents receive. It must be:
 
 - Consistent with s0001 (methodology), s0011–s0013 (entities), s0014–s0016 (supporting entities).
+- Informed by s0019 (agent pitfalls) — every Must/High severity pitfall should have a covering rule.
 - Concise — context-file-effectiveness research shows verbose context hurts agent performance.
 - Complete enough that an agent can operate from SKILL.md alone without reading individual specs.
 
@@ -58,3 +59,25 @@ Old SKILL.md had 9 top-level sections. New structure collapses to 4 by co-locati
 - **Relationships / Precedence / Drift** — folded into the entity subsection they bind (Spec for precedence and drift, each entity for its own links).
 - **Rules / Forbidden** — distributed into the entity they most naturally govern (mostly Task). Reduces cross-referencing when an agent asks "how do I handle a task."
 - **Workflows** — kept as top-level but table-only; key constraints already stated under entities.
+
+## Changes already applied
+
+These SKILL.md edits were made during the UNIMPLEMENTED marker migration:
+
+- `TODO` marker → `UNIMPLEMENTED` (spec line 31, stubs rule line 66).
+- Added Proposals section mention (line 31).
+- Added "Spec is authoritative regardless of UNIMPLEMENTED markers" (line 31).
+
+## Remaining pitfall gaps
+
+Rules missing from SKILL.md, mapped to s0019 pitfalls. Each needs a covering rule added:
+
+| Pitfall | Gap | Proposed rule |
+|---------|-----|---------------|
+| S3 | No "check related specs" rule | Before updating a spec, check specs with overlapping tags or paths for contradictions. |
+| S4 | No "prefer extending" rule | Default to extending an existing spec rather than creating a new one. |
+| S6 | Approval rule doesn't cover spec creation | Write only what the user described or approved. Every behavioral item in a spec is a binding requirement — do not add speculative detail. Unapproved ideas go in Proposals. |
+| T1 | No "maintain status" rule | Set status to active when starting work, done when finishing. |
+| T6 | No "remove markers" rule | When implementation completes an UNIMPLEMENTED item, remove the marker from the spec. |
+| X4 | No "don't modify specs inline" rule | Do not modify spec behavioral content during task implementation without going through the approval flow. |
+| X6 | No "use worklog as planning" rule | Use task and spec files as the planning medium. Do not duplicate planning in external tools. |
