@@ -117,7 +117,7 @@ spec.paths ───────────▶ source    (which files this spec
 
 ## Scripts
 
-`${CLAUDE_SKILL_DIR}/scripts/`. Python. All accept `-w PATH` for worklog root (default: `./worklog`).
+`${CLAUDE_SKILL_DIR}/scripts/`. Python. All accept `-w PATH` for worklog root (default: `./worklog`). Invoke scripts directly — do not `ls` the scripts directory or verify its contents; this section is authoritative.
 
 | Script | Flags | Purpose |
 |--------|-------|---------|
