@@ -29,6 +29,14 @@ TOML configs for the prompt-engineer:invoke-llm skill. The system prompt referen
 - Comment intention and expected answer inline.
 - Ground questions in realistic user inputs.
 
+## Evaluation Reference
+
+The testee (the LLM under test) sees SKILL.md as its instructions — that is the artifact being evaluated. The tester (the person or system grading answers) evaluates correctness against this project's worklog specs (`worklog/spec/`), never SKILL.md.
+
+If the testee produces an answer that is wrong per the specs but consistent with SKILL.md, that is a SKILL.md deficiency, not a testee failure. If the testee produces an answer that is wrong per SKILL.md but correct per the specs, that is still a testee failure — the testee should follow SKILL.md as given.
+
+Expected answers in exam comments must be grounded in spec rules with citations. When a spec is internally inconsistent (two sections contradict), the expected answer is not irrefutable — fix the spec before using it as an exam criterion.
+
 ## Relationships
 
 | Direction | Relationship         | Target |

@@ -14,13 +14,6 @@ src_router = "fixtures/src-recipes-router.py"
 src_notify = "fixtures/src-notify-sender.py"
 pyproject = "fixtures/pyproject.toml"
 
-# --- System: SKILL.md (the spec under test) ---
-
-[[prompts]]
-role = "system"
-prompt = "{{skill}}"
-substitute = true
-
 # --- System: emulated tools + conventions ---
 
 [[prompts]]
@@ -33,6 +26,31 @@ file = "tools.md"
 role = "system"
 prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
 substitute = true
+
+# --- Pre-baked history: agent reads methodology ---
+
+[[prompts]]
+role = "user"
+prompt = "Before we start, read the worklog methodology."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/SKILL.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{skill}}</output>
+</tool_result>"""
+substitute = true
+
+[[prompts]]
+role = "assistant"
+prompt = "Read it. Specs define what the system does, tasks change it. Spec is authoritative over code. Got it."
 
 # --- Pre-baked history: user kicks off orientation ---
 
@@ -395,7 +413,77 @@ I'd pin to `celery ~= 5.3.0` — allows patch updates but not minor bumps. Same 
 
 [[prompts]]
 role = "user"
-prompt = "Will do. Ok, let's get back to the actual work — tagging."
+prompt = "Will do. Before tagging, let me throw a few store.py cleanups at you."
+
+# --- Chores: code-focused + value normalization ---
+
+[[prompts]]
+role = "user"
+prompt = "The regex in search_by_title isn't escaped — a title with `.` or `*` would break it. Fix it."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i 's/\\$regex.*query/\\$regex: re.escape(query)/' src/recipes/store.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Fixed — queries are now regex-escaped."
+
+[[prompts]]
+role = "user"
+prompt = "The delete method doesn't check if the recipe exists before soft-deleting. Add a 404 guard."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i '/def delete/,/update_one/{s/self.collection.update_one/result = self.collection.find_one({\"id\": recipe_id})\\n        if not result:\\n            raise ValueError(\"Recipe not found\")\\n        self.collection.update_one/}' src/recipes/store.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Added existence check before soft-delete."
+
+[[prompts]]
+role = "user"
+prompt = "Quick recap — what's the current validation and business logic in the store? I want to make sure we're on the same page before tagging."
+
+[[prompts]]
+role = "assistant"
+prompt = """From store.py:
+
+- **CRUD:** create/read/update/delete, MongoDB-backed.
+- **Title uniqueness:** enforced globally — `create()` raises ValueError if title exists.
+- **Quantity validation:** rejects negative values (`quantity < 0`). Zero allowed.
+- **Soft-delete:** sets `deleted_at` timestamp. 7-day retention window, background purge.
+- **Search:** regex title search via `search_by_title()`.
+
+That's the current state."""
+
+[[prompts]]
+role = "user"
+prompt = "That matches. OK, now the tagging work."
+
+[[prompts]]
+role = "assistant"
+prompt = "Ready."
 
 # --- Fan-out questions ---
 #

@@ -14,13 +14,6 @@ src_router = "fixtures/src-recipes-router.py"
 src_notify = "fixtures/src-notify-sender.py"
 pyproject = "fixtures/pyproject.toml"
 
-# --- System: SKILL.md (the spec under test) ---
-
-[[prompts]]
-role = "system"
-prompt = "{{skill}}"
-substitute = true
-
 # --- System: emulated tools + conventions ---
 
 [[prompts]]
@@ -33,6 +26,31 @@ file = "tools.md"
 role = "system"
 prompt = "You are working on the following project. This is the current worklog state:\n\n{{project}}"
 substitute = true
+
+# --- Pre-baked history: agent reads methodology ---
+
+[[prompts]]
+role = "user"
+prompt = "Read the worklog methodology before we start."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>read_file</name>
+<input>{"path": "worklog/SKILL.md"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>{{skill}}</output>
+</tool_result>"""
+substitute = true
+
+[[prompts]]
+role = "assistant"
+prompt = "Read it. Specs, tasks, decisions. Spec-first for new features. Got it."
 
 # --- Pre-baked history: user asks to orient ---
 
@@ -383,7 +401,83 @@ Want me to check what's configured?"""
 
 [[prompts]]
 role = "user"
-prompt = "No, I'll look at that later. Let's get to the actual tasks."
+prompt = "No, I'll look at that later. Quick housekeeping first."
+
+# --- Chores: execution momentum ---
+
+[[prompts]]
+role = "user"
+prompt = "Add .env to .gitignore."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "echo '.env' >> .gitignore"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Done."
+
+[[prompts]]
+role = "user"
+prompt = "Bump celery pin from >=5.3 to >=5.3.6, security fix."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i 's/\"celery>=5.3\"/\"celery>=5.3.6\"/' pyproject.toml"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Bumped."
+
+[[prompts]]
+role = "user"
+prompt = "Unused get_current_user import in router.py — remove it."
+
+[[prompts]]
+role = "assistant"
+prompt = """<tool_use>
+<name>bash</name>
+<input>{"command": "sed -i 's/from .deps import get_store, get_current_user/from .deps import get_store/' src/recipes/router.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output></output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Removed."
+
+[[prompts]]
+role = "user"
+prompt = "Good. Now the actual tasks."
+
+[[prompts]]
+role = "assistant"
+prompt = "Go ahead."
 
 # --- Fan-out questions ---
 #

@@ -23,7 +23,7 @@ TOML fenced with `+++`. Required fields:
 | `title`      | string     | Human-readable name.                                     |
 | `tags`       | string[]   | Classification (e.g. `bugfix`, `greenfield`).            |
 | `status`     | string     | One of: `pending`, `active`, `done`, `blocked`, `cancelled`. |
-| `modifies`   | string[]   | Spec IDs whose governed paths this task touches. May be empty for chore tasks outside all spec paths. |
+| `modifies`   | string[]   | Spec IDs whose governed behavior this task touches. May be empty for chore tasks outside all spec-governed behavior. |
 | `blocked_by` | string[]   | Task IDs that must complete first. Optional — omit when not blocked. |
 
 ## Status Lifecycle
@@ -70,7 +70,7 @@ When work is abandoned (requirements changed, cost exceeds benefit, feature unne
 
 - Cancel without any explanation (at minimum, note the reason in the task body).
 - Point `modifies` at a nonexistent spec.
-- Work under spec-governed paths without the governing spec in `modifies`.
+- Change spec-governed behavior without the governing spec in `modifies`.
 - Present unapproved scope as decided.
 
 ## Anticipated Changes
