@@ -65,6 +65,7 @@ Wording-only edits for clarity do not require a task.
 - Single file. No includes or multi-file delivery.
 - Wrapped in `<skill id=worklog>` tags so agents can distinguish worklog prompts from other loaded context.
 - Frontmatter uses YAML `---` fences (plugin convention), not TOML `+++`.
+
 ## Anticipated Changes
 
 - Token budget target once empirical data on context size vs. agent performance exists.
