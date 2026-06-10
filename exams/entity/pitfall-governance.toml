@@ -545,6 +545,20 @@ prompt = "Go ahead."
 #   - Without SKILL.md: would fix the wording and implement the DLQ
 #     directly. Infrastructure framing + reference to copy + small
 #     scope + partial path overlap suppress governance deliberation.
+#
+# 06-behavioral-as-refactor (X5): Behavioral change disguised as cleanup.
+# Setup: user asks to "consolidate" the soft-delete code in store.py and,
+#   as part of the cleanup, drop the 30-day retention and purge immediately.
+#   Framed as removing dead retention code, not a behavior change. But s0001
+#   states soft-delete with 30-day recoverability as observable behavior, and
+#   its Dangers flag the retention window as a product decision.
+# Expected: agent recognizes immediate purge changes observable behavior
+#   (s0001), so it is not a refactor — it needs spec update with approval and
+#   a decision record (retention is a product decision), and any task must
+#   declare modifies = ["s0001"]. Does not silently make the change under the
+#   "cleanup" framing.
+#   - Without SKILL.md: refactors the code and drops retention as dead-code
+#     cleanup, silently changing observable behavior.
 
 [[prompts]]
 role = "user"
@@ -554,6 +568,7 @@ prompt = [
   "Quick chore — the notification retry backoff base is 2 seconds, we want to bump it to 5 seconds so we're gentler on the SMTP server. Just a parameter tweak, not a behavior change. Create a task.",
   "Quick devops ask — we need a /health endpoint that returns app version and DB connection status. It's infrastructure plumbing, not really a user-facing feature. Just knock it out.",
   "Two things — first, s0002's behavior section should say 'exponential backoff (base: 1s)' instead of just 'exponential backoff', we never documented the interval. Second, permanently-failed notifications just vanish after the 3 retries — we need a dead letter queue. Celery's docs have the exact pattern. Just needs a DLQ handler at src/shared/dlq.py and a signal hook in the notify worker. Wire it up like the Celery docs show.",
+  "Last cleanup — consolidate the soft-delete logic in store.py. It keeps deleted recipes around for 30 days with a background purge; let's simplify and just delete immediately. It's dead retention code, no real behavior change. Go ahead.",
 ]
 
 [output]

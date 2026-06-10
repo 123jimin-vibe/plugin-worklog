@@ -3,6 +3,11 @@
 Model: claude-sonnet-4-6, temperature 0.0
 Date: 2026-04-10
 
+> Historical snapshot. The exam suite was reorganized afterward (t0017): the happy
+> trio merged into `happy.toml`, `pitfall-markers` folded into `pitfall-spec-authoring`,
+> and `pitfall-completion`/`precedence-drift` dropped. File and question names below
+> refer to the pre-reorg suite.
+
 ## Score
 
 | | Pass | Fail | Total | Rate |

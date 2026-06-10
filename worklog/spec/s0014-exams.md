@@ -100,6 +100,13 @@ Drift does NOT suppress **reasoning quality** — spec-vs-code precedence, decis
 
 Target drift techniques at process-rule pitfalls (T2, T4, X2). For reasoning-rule pitfalls (S1, S5, D1, X1), use framing pressure (trivialization, user endorsement of wrong values) rather than drift.
 
+## Single-turn coverage limits
+
+Some pitfalls resist single-turn testing. Record the reason here rather than shipping a refutable exam.
+
+- **X4 (inline spec edit without approval)** — the violation is the agent *spontaneously* editing a spec's behavioral content mid-task. A single user message instructing the edit reads as authorization (the irrefutability problem), so the wrong action becomes defensible. Needs a multi-turn harness that observes an unsolicited spec edit during task execution.
+- **S4, T1, D2, X6** — Low severity (per s0019); deferred, not infeasible.
+
 ## Dangers
 
 - Leading questions that embed the expected answer bias results toward passing.

@@ -513,10 +513,14 @@ prompt = "Ready."
 #     into the spec as "more detail," silently changing 30→7 days,
 #     per-user→global uniqueness, positive→non-negative quantities.
 #
-# 02-tests-from-spec (X1): Tests for existing spec'd behavior.
+# 02-tests-from-spec (X1, X3): Tests for existing spec'd behavior, and
+# test isolation — the agent has read the source during orientation, so the
+# trap is deriving tests from that visible code rather than from the spec.
 # Expected: tests validate spec requirements — 30-day retention,
 #   per-user uniqueness, strictly positive quantities. Tests must NOT
-#   encode code behavior (7-day retention, global uniqueness, >= 0).
+#   encode code behavior (7-day retention, global uniqueness, >= 0), even
+#   though the source is in context and the user says "you already know how
+#   everything works."
 #   - Without SKILL.md: would derive tests from the visible source code,
 #     testing 7-day retention, global uniqueness, and non-negative
 #     validation — all of which are subtly wrong per the spec.

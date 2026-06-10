@@ -1,4 +1,11 @@
 # Used with prompt-engineer:invoke-llm skill.
+#
+# Happy-path exam (merged from happy-create, happy-update, happy-lifecycle).
+# SKILL.md is a system prompt — the clean, no-drift condition. One shared
+# orientation feeds the fan-out. Questions favor workflows prone to
+# OVER-correction (over-gating, re-asking on clear instructions) plus the
+# core happy-path rules (spec-first, tests-first, close-out). A pass here
+# confirms the rules don't make the agent hesitate on legitimate work.
 
 [generation]
 model = "claude-sonnet-4-6"
@@ -34,13 +41,13 @@ substitute = true
 
 [[prompts]]
 role = "user"
-prompt = "I have some spec and decision questions. Orient yourself — read the specs, the decision record, and the active task."
+prompt = "I have a batch of worklog questions coming. Orient yourself first — read the specs, the decision, the active and done tasks, and check the archive and next IDs."
 
 # --- Pre-baked history: agent reads entities ---
 
 [[prompts]]
 role = "assistant"
-prompt = """I'll read the relevant entities.
+prompt = """I'll read the relevant entities and get oriented.
 
 <tool_use>
 <name>read_file</name>
@@ -63,18 +70,23 @@ prompt = """I'll read the relevant entities.
 </tool_use>
 
 <tool_use>
-<name>list_directory</name>
-<input>{"path": "worklog/spec"}</input>
+<name>read_file</name>
+<input>{"path": "worklog/task/t0002-fix-email-delivery.md"}</input>
 </tool_use>
 
 <tool_use>
 <name>list_directory</name>
-<input>{"path": "worklog/decision"}</input>
+<input>{"path": "worklog/archive/task"}</input>
 </tool_use>
 
 <tool_use>
 <name>bash</name>
 <input>{"command": "python worklog/script/next_id.py spec"}</input>
+</tool_use>
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "python worklog/script/next_id.py task"}</input>
 </tool_use>
 
 <tool_use>
@@ -213,19 +225,38 @@ Users can assign tags to recipes and filter recipes by tag.
 </tool_result>
 
 <tool_result>
-<name>list_directory</name>
-<output>s0001-recipe-storage.md
-s0002-notifications.md</output>
+<name>read_file</name>
+<output>+++
+id = "t0002"
+title = "Fix email delivery bug"
+status = "done"
+tags = ["infra"]
+modifies = ["s0002"]
++++
+
+# Fix email delivery bug
+
+Email notifications were silently dropped when the SMTP server returned a transient 4xx error. The retry logic only handled 5xx errors.
+
+## Scope
+
+- Fix retry logic to handle 4xx transient errors.
+- Add logging for all delivery failures.</output>
 </tool_result>
 
 <tool_result>
 <name>list_directory</name>
-<output>d0001-rate-limiter-postmortem.md</output>
+<output>t0003-hotfix-rate-limiter.md</output>
 </tool_result>
 
 <tool_result>
 <name>bash</name>
 <output>s0003</output>
+</tool_result>
+
+<tool_result>
+<name>bash</name>
+<output>t0004</output>
 </tool_result>
 
 <tool_result>
@@ -239,49 +270,64 @@ s0002-notifications.md</output>
 role = "assistant"
 prompt = """Oriented. Current state:
 
-- **s0001** (Recipe Storage) — has an UNIMPLEMENTED item for batch import. Governed paths: src/recipes/**.
-- **s0002** (Notifications) — email-based, 3 retries, 60s delivery window. Governed paths: src/notify/**.
-- **d0001** (rate limiter post-mortem) — recommends gateway validation + per-session rate limits. s0002 not yet updated.
+- **s0001** (Recipe Storage) — CRUD, soft-delete (30 days), search by title. Has an UNIMPLEMENTED item for batch import. Governs src/recipes/**.
+- **s0002** (Notifications) — email, 3 retries, 60s window. Governs src/notify/**.
+- **d0001** — rate limiter post-mortem; recommends gateway validation + per-session limits. s0002 not yet updated.
 - **t0001** (active) — recipe tagging, modifies s0001.
-- Next IDs: s0003, d0002.
+- **t0002** (done, not yet archived) — email delivery fix, modifies s0002.
+- **Archive:** t0003 (rate limiter hotfix). Next IDs: s0003, t0004, d0002.
 
 Ready."""
 
 # --- Fan-out questions ---
 #
-# Design constraint: each question must require SKILL.md knowledge to answer
-# correctly. Without SKILL.md, the LLM produces a fundamentally different answer.
+# Each question must require SKILL.md knowledge to answer correctly, and each
+# targets a place where a too-cautious agent fails by over-gating or re-asking.
 #
-# 01-structural-update: Tests structural vs behavioral spec update distinction.
-# Expected: write_file to update s0002's Constraints section directly.
-#   - "observable behavior doesn't change" = structural update.
-#   - Structural updates are free — no user approval needed.
-#   - Without SKILL.md: might ask for approval, or not know the
-#     structural/behavioral distinction.
+# 01-greenfield-setup: spec-first workflow + multi-entity + UNIMPLEMENTED for TBD.
+# Expected: TWO write_file calls — spec s0003 (paths ["src/accounts/**"],
+#   behaviors marked UNIMPLEMENTED, password rules as UNIMPLEMENTED/Proposals
+#   since TBD), then task t0004 (modifies ["s0003"], status pending). Acts on
+#   the clear instruction; does NOT stall asking to approve each behavior.
+#   - Without SKILL.md: a task or design doc directly, no spec-first, no markers.
+#   (This question regressed when the S6 rule overcorrected — it is the canary
+#    for over-caution.)
 #
-# 02-behavioral-draft: Tests behavioral change approval gate.
-# Expected: agent presents a draft of the spec update but does NOT write_file.
-#   - "Draft the spec update" = present for review, not commit directly.
-#   - Behavioral change (new rate-limiting behavior) requires explicit approval.
-#   - Without SKILL.md: would write_file directly, editing s0002 without approval.
+# 02-structural-update (S2): add an undocumented constraint; behavior unchanged.
+# Expected: direct write_file to s0002 Constraints. Structural edit — no approval
+#   needed. Does NOT ask for permission.
+#   - Without SKILL.md: asks for approval, or misses the structural/behavioral line.
 #
-# 03-decision-then-update: Tests decision→spec-change flow.
-# Expected: TWO write_file calls — decision d0002, then updated s0001.
-#   - Decision: id = "d0002", relates_to = ["s0001"]. Records the retention
-#     window change and rationale.
-#   - Spec update: change "30 days" to "90 days" in s0001.
-#   - User gives explicit approval ("I'm approving the behavioral change")
-#     and explicit instruction to record a decision. Agent should not ask again.
-#   - Without SKILL.md: would edit s0001 directly without a decision record.
-#     No awareness that behavioral spec changes warrant a decision.
+# 03-behavioral-draft: behavioral change requested as a DRAFT.
+# Expected: presents the draft, does NOT write_file. Behavioral change needs
+#   approval, and the user said "draft."
+#   - Without SKILL.md: writes s0002 directly.
+#
+# 04-decision-then-update: explicit approval + record a decision.
+# Expected: TWO write_file calls — decision d0002 (relates_to ["s0001"]) then
+#   updated s0001 (30→90 days). User explicitly approved; agent must NOT re-ask.
+#   - Without SKILL.md: edits s0001 with no decision record.
+#
+# 05-tests-first (X1): how to start an active task.
+# Expected: write tests first, derived from spec s0001 (not from source). t0001
+#   is already active — no status change needed.
+#   - Without SKILL.md: "start coding" / "set status active."
+#
+# 06-close-out (T6): finish + archive, leave the unrelated marker.
+# Expected: write_file t0001 status "done", then move_file to archive/task/.
+#   The batch-import UNIMPLEMENTED marker in s0001 stays (user said unrelated).
+#   - Without SKILL.md: marks done but skips archive, or strips the marker.
 
 [[prompts]]
 role = "user"
 prompt = [
+  "New feature: user accounts. Code goes under src/accounts/. We want registration, login, and session management as a single deliverable, but password requirements are still TBD. Set up the worklog so we're ready to start implementing.",
   "s0002's Constraints section doesn't mention that notification templates are immutable after send — you can't retroactively edit a delivered notification's content. The observable behavior doesn't change; this is just an undocumented constraint. Add it.",
   "d0001's recommendation to add gateway validation and per-session limits — we want s0002 to reflect this new behavior. Draft the spec update.",
   "We've decided the soft-delete retention window in s0001 should be 90 days, not 30. The Dangers section already warns about hardcoding this. Record a decision for posterity, then update the spec — I'm approving the behavioral change.",
+  "I want to start implementing recipe tagging (t0001 scope). What's the first thing I should do?",
+  "t0001 is done — tagging is fully implemented, tested, and s0001 has been updated to document the new behavior. The batch import UNIMPLEMENTED item in s0001 is unrelated. Close out t0001.",
 ]
 
 [output]
-file = "results/happy-update-results.jsonl"
+file = "results/happy-results.jsonl"

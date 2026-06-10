@@ -22,3 +22,12 @@ Questions grading:
 - **Script invocation** — correct plugin script path from a fresh context.
 
 Re-run the full suite; update results/skill-revision-comparison.md.
+
+## Status note (deferred)
+
+Deferred per user decision (kept pending). The exam targets above depend on rules from
+t0007/t0009/t0010/t0011, which are unwritten — expected answers can't be grounded in spec
+citations (s0014) for rules that don't exist yet, and guessing the wording would itself be
+the S6 trap. Author these once those rule tasks land; they slot into the reorganized 6-file
+suite from t0017 (write-back/spec-register → pitfall-governance or pitfall-spec-authoring;
+script-invocation → a happy/governance question).
