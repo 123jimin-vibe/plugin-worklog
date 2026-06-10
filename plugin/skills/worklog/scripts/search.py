@@ -14,8 +14,8 @@ def _select_entities(store, args):
         return {"spec": store.specs, "task": store.tasks,
                 "decision": store.decisions}[args.type]
 
-    # status/modifies imply tasks, relates-to implies decisions.
-    if args.status or args.modifies:
+    # status/modifies/blocked-by imply tasks, relates-to implies decisions.
+    if args.status or args.modifies or args.blocked_by:
         return store.tasks
     if args.relates_to:
         return store.decisions
@@ -37,6 +37,9 @@ def _apply_filters(entities, args):
     if args.relates_to:
         norm = normalize_id(args.relates_to)
         filters.append(lambda e: norm in e.fields.get("relates_to", []))
+    if args.blocked_by:
+        norm = normalize_id(args.blocked_by)
+        filters.append(lambda e: norm in e.fields.get("blocked_by", []))
 
     for e in entities:
         if all(f(e) for f in filters):
@@ -52,11 +55,17 @@ def main(argv=None):
     parser.add_argument("--type", choices=["spec", "task", "decision"],
                         help="Filter to entity type.")
     parser.add_argument("--relates-to", help="Filter to decisions related to a given spec ID.")
+    parser.add_argument("--blocked-by", dest="blocked_by",
+                        help="Filter to tasks waiting on a given task ID.")
+    parser.add_argument("--archived", action="store_true",
+                        help="Include archived entities (default: exclude).")
     args = parser.parse_args(argv)
 
     store = discover_entities(pathlib.Path(args.w))
     results = sorted(_apply_filters(_select_entities(store, args), args),
                      key=lambda e: e.id)
+    if not args.archived:
+        results = [e for e in results if not e.archived]
 
     if not results:
         print("(none)")

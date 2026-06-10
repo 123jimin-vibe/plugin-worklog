@@ -9,6 +9,41 @@ from lib.constants import ID_PATTERN, REQUIRED_FIELDS, TASK_STATUSES
 from lib.discover import discover_entities, load_tags
 
 
+def _detect_blocked_by_cycles(tasks, errors):
+    """Append an error for each circular blocked_by chain among *tasks*."""
+    # Adjacency restricted to existing task nodes; dangling refs are reported
+    # elsewhere and must not crash the traversal.
+    nodes = {t.id for t in tasks}
+    adj = {
+        t.id: [r for r in t.fields.get("blocked_by", []) if r in nodes]
+        for t in tasks
+    }
+
+    WHITE, GRAY, BLACK = 0, 1, 2
+    color = {n: WHITE for n in nodes}
+    path = []
+    seen_cycles = set()
+
+    def visit(u):
+        color[u] = GRAY
+        path.append(u)
+        for v in adj.get(u, []):
+            if color[v] == GRAY:
+                cycle = path[path.index(v):] + [v]
+                key = frozenset(cycle)
+                if key not in seen_cycles:
+                    seen_cycles.add(key)
+                    errors.append(f"blocked_by cycle: {' -> '.join(cycle)}")
+            elif color[v] == WHITE:
+                visit(v)
+        path.pop()
+        color[u] = BLACK
+
+    for n in sorted(nodes):
+        if color[n] == WHITE:
+            visit(n)
+
+
 def _validate_entity(entity, known_tags, id_index, errors):
     """Run all checks on a single entity, appending to *errors*."""
     eid = entity.id
@@ -35,6 +70,15 @@ def _validate_entity(entity, known_tags, id_index, errors):
     status = entity.fields.get("status")
     if status is not None and status not in TASK_STATUSES:
         errors.append(f"{path}: invalid status '{status}'")
+
+    # Archived tasks must be terminal (done or cancelled).
+    if entity.archived and entity.type == "task" and status is not None:
+        if status not in ("done", "cancelled"):
+            errors.append(f"{path}: archived task has non-terminal status '{status}'")
+
+    # Cancelled tasks require an explanation in the body.
+    if entity.type == "task" and status == "cancelled" and not entity.body.strip():
+        errors.append(f"{path}: cancelled task has no explanation in its body")
 
     # Tags exist in index.
     if known_tags is not None:
@@ -89,6 +133,8 @@ def main(argv=None):
 
     for entity in all_entities:
         _validate_entity(entity, known_tags, id_index, errors)
+
+    _detect_blocked_by_cycles(store.tasks, errors)
 
     if errors:
         for err in errors:

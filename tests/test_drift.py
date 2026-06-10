@@ -161,8 +161,8 @@ class TestDriftPresent(unittest.TestCase):
 # ===================================================================
 
 @unittest.skipUnless(_script_available, _missing_reason)
-class TestDriftNoPathsField(unittest.TestCase):
-    """Specs without a paths field are silently skipped."""
+class TestDriftWorkingTreeChange(unittest.TestCase):
+    """Uncommitted changes to governed files count as drift."""
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
@@ -170,7 +170,46 @@ class TestDriftNoPathsField(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
-    def test_skipped(self):
+    def test_uncommitted_source_change(self):
+        worklog = _make_git_worklog(self.tmpdir)
+        root = self.tmpdir
+
+        src_dir = pathlib.Path(root) / "src" / "auth"
+        src_dir.mkdir(parents=True, exist_ok=True)
+        src_file = src_dir / "login.py"
+        src_file.write_text("# login v1\n")
+
+        _write_spec_with_paths(worklog, "s0001", "Auth", '["src/auth/**"]')
+
+        # Commit spec and source together — clean baseline.
+        _git(root, "add", "-A")
+        _git(root, "commit", "-m", "initial")
+
+        # Edit the source but do NOT commit.
+        src_file.write_text("# login v2 - uncommitted\n")
+
+        result = _run_drift(worklog)
+        self.assertEqual(result.returncode, 1,
+                         f"Expected drift exit 1.\n"
+                         f"stdout: {result.stdout}\nstderr: {result.stderr}")
+        self.assertIn("s0001", result.stdout)
+
+
+# ===================================================================
+# No paths field — reported as unmonitored on stderr
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestDriftNoPathsField(unittest.TestCase):
+    """Specs without a paths field are not drift, but are reported on stderr."""
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_reported_unmonitored(self):
         worklog = _make_git_worklog(self.tmpdir)
         root = self.tmpdir
 
@@ -180,9 +219,11 @@ class TestDriftNoPathsField(unittest.TestCase):
         _git(root, "commit", "-m", "initial")
 
         result = _run_drift(worklog)
+        # Not drift: clean exit, absent from the stdout drift list.
         self.assertEqual(result.returncode, 0)
-        # s0001 should not appear in drift output.
         self.assertNotIn("s0001", result.stdout)
+        # But surfaced on stderr so the gap is not silent.
+        self.assertIn("s0001", result.stderr)
 
 
 # ===================================================================
@@ -213,10 +254,13 @@ class TestDriftSpecNeverCommitted(unittest.TestCase):
         _write_spec_with_paths(worklog, "s0001", "New", '["src/**"]')
 
         result = _run_drift(worklog)
-        # Should not crash.
-        self.assertIn(result.returncode, (0, 1),
-                       f"Unexpected exit code {result.returncode}.\n"
-                       f"stderr: {result.stderr}")
+        # No baseline commit to diff against — not drift, but reported on stderr
+        # as unverifiable rather than silently passing.
+        self.assertEqual(result.returncode, 0,
+                         f"Unexpected exit code {result.returncode}.\n"
+                         f"stderr: {result.stderr}")
+        self.assertNotIn("s0001", result.stdout)
+        self.assertIn("s0001", result.stderr)
 
 
 # ===================================================================

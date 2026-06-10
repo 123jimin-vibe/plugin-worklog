@@ -65,7 +65,7 @@ blocked_by = ["t0003"]
 
 **Status lifecycle:** `pending` → `active` → `done` (then archive). Also: `blocked` → `active` when unblocked, `cancelled` (requires explanation; decision record recommended). Set `active` when starting, `done` when finishing.
 
-**Archiving.** Move to `worklog/archive/task/` (prefer `git mv`). Before moving, verify specs in `modifies` are consistent with completed work. Not delegatable, not skippable, even if user claims to have reviewed.
+**Archiving.** Run `archive.py <task-id>` — it prints each spec in `modifies` with its drift so you verify consistency against the completed work, then moves the file on `--confirm` (`git mv` when tracked). Verifying is not delegatable, not skippable, even if the user claims to have reviewed.
 
 **Stubs.** If a task delivers stubs, specs in `modifies` must retain `UNIMPLEMENTED` markers. Never present stubs as complete.
 
@@ -127,11 +127,12 @@ spec.paths ───────────▶ source    (which files this spec
 
 | Script | Flags | Purpose |
 |--------|-------|---------|
-| `validate.py` | | Dangling refs, invalid statuses, missing fields, duplicate IDs, unknown tags |
+| `validate.py` | | Dangling refs, invalid statuses, missing fields, duplicate IDs, unknown tags, `blocked_by` cycles, archive/cancel rules |
 | `next_id.py` | `<type>` | Next available ID (scans active + archive) |
-| `drift.py` | | Spec-code drift report for all specs with `paths` |
-| `search.py` | `--tag TAG`, `--status STATUS`, `--modifies ID`, `--relates-to ID`, `--type TYPE` | Query entities |
+| `drift.py` | | Spec-code drift for specs with `paths` (uncommitted changes included); unverifiable/unmonitored specs to stderr |
+| `search.py` | `--tag TAG`, `--status STATUS`, `--modifies ID`, `--relates-to ID`, `--blocked-by ID`, `--type TYPE`, `--archived` | Query entities (excludes archive unless `--archived`) |
 | `list.py` | `--type TYPE`, `--group-by {type,status,tag}`, `--sort {id,title}`, `--archived` | List entities |
+| `archive.py` | `<task-id>`, `--confirm` | Archive a done/cancelled task: prints governing specs + drift, moves on `--confirm` |
 
 ## Workflows
 

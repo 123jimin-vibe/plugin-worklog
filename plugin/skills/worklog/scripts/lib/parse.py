@@ -22,6 +22,7 @@ class Entity:
     path: pathlib.Path
     archived: bool = False
     fields: dict = field(default_factory=dict)
+    body: str = ""
 
 
 def parse_frontmatter(path: str | pathlib.Path) -> Entity:
@@ -48,6 +49,10 @@ def parse_frontmatter(path: str | pathlib.Path) -> Entity:
     toml_text = parts[1]
     data = tomllib.loads(toml_text)
 
+    # Everything after the closing fence is the body.  Rejoin with "+++" so a
+    # literal fence inside the body survives the split.
+    body = "+++".join(parts[2:]).strip()
+
     entity_id = data.pop("id", None)
     if entity_id is None:
         raise KeyError(f"{path}: frontmatter missing required field 'id'")
@@ -68,4 +73,5 @@ def parse_frontmatter(path: str | pathlib.Path) -> Entity:
         tags=list(tags),
         path=path,
         fields=data,
+        body=body,
     )

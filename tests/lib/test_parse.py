@@ -267,5 +267,63 @@ class TestParseFrontmatterExtendedIds(unittest.TestCase):
         self.assertEqual(result.type, "decision")
 
 
+# ===================================================================
+# Body capture
+# ===================================================================
+
+@unittest.skipUnless(_module_available, _missing_reason)
+class TestParseFrontmatterBody(unittest.TestCase):
+    """The markdown body after the closing fence is captured."""
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_body_captured(self):
+        path = _write_file(self.tmpdir, "t0001-work.md", (
+            '+++\n'
+            'id = "t0001"\n'
+            'title = "Work"\n'
+            'tags = ["misc"]\n'
+            'status = "cancelled"\n'
+            'modifies = []\n'
+            '+++\n'
+            '\n'
+            'Abandoned: approach was wrong.\n'
+        ))
+        result = parse_frontmatter(path)
+        self.assertIn("Abandoned: approach was wrong.", result.body)
+
+    def test_empty_body_is_blank(self):
+        path = _write_file(self.tmpdir, "s0001-frontmatter-only.md", (
+            '+++\n'
+            'id = "s0001"\n'
+            'title = "Frontmatter only"\n'
+            'tags = ["misc"]\n'
+            '+++\n'
+        ))
+        result = parse_frontmatter(path)
+        self.assertEqual(result.body.strip(), "")
+
+    def test_body_with_literal_fence(self):
+        """A +++ inside the body does not truncate the captured body."""
+        path = _write_file(self.tmpdir, "s0002-fenced.md", (
+            '+++\n'
+            'id = "s0002"\n'
+            'title = "Fenced"\n'
+            'tags = ["misc"]\n'
+            '+++\n'
+            '\n'
+            'Example frontmatter:\n'
+            '+++\n'
+            'sample = true\n'
+            '+++\n'
+        ))
+        result = parse_frontmatter(path)
+        self.assertIn("sample = true", result.body)
+
+
 if __name__ == "__main__":
     unittest.main()

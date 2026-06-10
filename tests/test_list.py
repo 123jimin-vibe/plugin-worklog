@@ -187,6 +187,33 @@ class TestListGroupByTag(unittest.TestCase):
 
 
 # ===================================================================
+# Group by status with status-less entities
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestListGroupByStatusStatusless(unittest.TestCase):
+    """Specs and decisions have no status; they group under (no status)."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+        _populate(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_statusless_grouped_under_no_status(self):
+        result = _run_list(self.worklog, "--group-by", "status")
+        self.assertEqual(result.returncode, 0)
+        output = result.stdout
+        self.assertIn("(no status)", output)
+        # The spec and decision land in that group; tasks keep their statuses.
+        self.assertIn("s0001", output)
+        self.assertIn("d0001", output)
+        self.assertIn("pending", output.lower())
+
+
+# ===================================================================
 # Sort by title
 # ===================================================================
 

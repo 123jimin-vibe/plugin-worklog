@@ -224,12 +224,12 @@ class TestSearchModifiesExtendedId(unittest.TestCase):
 
 
 # ===================================================================
-# Archived entities in search
+# Archived entities — excluded by default, included with --archived
 # ===================================================================
 
 @unittest.skipUnless(_script_available, _missing_reason)
-class TestSearchIncludesArchived(unittest.TestCase):
-    """Archived entities appear in search results."""
+class TestSearchArchived(unittest.TestCase):
+    """Archived entities are excluded by default and opt-in via --archived."""
 
     def setUp(self):
         self.worklog = tempfile.mkdtemp()
@@ -250,21 +250,70 @@ class TestSearchIncludesArchived(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.worklog, ignore_errors=True)
 
-    def test_archived_task_in_tag_search(self):
+    def test_excluded_by_default(self):
         result = _run_search(self.worklog, "--tag", "misc")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("t0001", result.stdout)
+        self.assertNotIn("t0004", result.stdout)
+
+    def test_included_with_flag(self):
+        result = _run_search(self.worklog, "--tag", "misc", "--archived")
         self.assertEqual(result.returncode, 0)
         self.assertIn("t0004", result.stdout)
         self.assertIn("t0001", result.stdout)
 
-    def test_archived_task_in_status_search(self):
+    def test_status_search_excludes_archived_by_default(self):
         result = _run_search(self.worklog, "--status", "done")
+        self.assertEqual(result.returncode, 0)
+        self.assertNotIn("t0004", result.stdout)
+
+    def test_status_search_includes_archived_with_flag(self):
+        result = _run_search(self.worklog, "--status", "done", "--archived")
         self.assertEqual(result.returncode, 0)
         self.assertIn("t0004", result.stdout)
 
-    def test_archived_task_in_modifies_search(self):
-        result = _run_search(self.worklog, "--modifies", "s0001")
+
+# ===================================================================
+# Filter by blocked-by
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestSearchByBlockedBy(unittest.TestCase):
+    """--blocked-by ID returns the tasks waiting on that task."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Blocker", "tags": ["misc"],
+            "status": "active", "modifies": ["s0001"],
+        })
+        write_entity(self.worklog, "t0002", {
+            "id": "t0002", "title": "Waiting", "tags": ["misc"],
+            "status": "blocked", "modifies": ["s0001"], "blocked_by": ["t0001"],
+        })
+        write_entity(self.worklog, "t0003", {
+            "id": "t0003", "title": "Independent", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"],
+        })
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_blocked_by_t0001(self):
+        result = _run_search(self.worklog, "--blocked-by", "t0001")
         self.assertEqual(result.returncode, 0)
-        self.assertIn("t0004", result.stdout)
+        self.assertIn("t0002", result.stdout)
+        self.assertNotIn("t0003", result.stdout)
+
+    def test_blocked_by_short_id(self):
+        result = _run_search(self.worklog, "--blocked-by", "t1")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("t0002", result.stdout)
 
 
 # ===================================================================

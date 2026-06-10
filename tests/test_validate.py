@@ -545,5 +545,176 @@ class TestValidateMultipleErrors(unittest.TestCase):
         self.assertIn("wip", output)
 
 
+# ===================================================================
+# Archived task must be terminal (done or cancelled)
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestValidateArchivedNonTerminal(unittest.TestCase):
+    """A task in archive/ with a non-terminal status is reported."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_archived_active_task(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0004", {
+            "id": "t0004", "title": "Wrongly archived", "tags": ["misc"],
+            "status": "active", "modifies": ["s0001"],
+        }, subdir="archive/task")
+
+        result = _run_validate(self.worklog)
+        self.assertNotEqual(result.returncode, 0)
+        output = result.stdout + result.stderr
+        self.assertIn("t0004", output)
+
+    def test_archived_done_task_ok(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0004", {
+            "id": "t0004", "title": "Done", "tags": ["misc"],
+            "status": "done", "modifies": ["s0001"],
+        }, subdir="archive/task")
+
+        result = _run_validate(self.worklog)
+        self.assertEqual(result.returncode, 0,
+                         f"Expected exit 0, got {result.returncode}.\n"
+                         f"stdout: {result.stdout}\nstderr: {result.stderr}")
+
+
+# ===================================================================
+# Cancelled task requires an explanation in its body
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestValidateCancelledRequiresNote(unittest.TestCase):
+    """A cancelled task with an empty body is reported."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_cancelled_empty_body(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Abandoned", "tags": ["misc"],
+            "status": "cancelled", "modifies": ["s0001"],
+        })  # no body
+
+        result = _run_validate(self.worklog)
+        self.assertNotEqual(result.returncode, 0)
+        output = result.stdout + result.stderr
+        self.assertIn("t0001", output)
+
+    def test_cancelled_with_note_ok(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Abandoned", "tags": ["misc"],
+            "status": "cancelled", "modifies": ["s0001"],
+        }, body="Requirement dropped after upstream change.")
+
+        result = _run_validate(self.worklog)
+        self.assertEqual(result.returncode, 0,
+                         f"Expected exit 0, got {result.returncode}.\n"
+                         f"stdout: {result.stdout}\nstderr: {result.stderr}")
+
+
+# ===================================================================
+# blocked_by cycles
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestValidateBlockedByCycle(unittest.TestCase):
+    """Circular blocked_by chains are reported."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_self_loop(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Self blocked", "tags": ["misc"],
+            "status": "blocked", "modifies": ["s0001"],
+            "blocked_by": ["t0001"],
+        })
+
+        result = _run_validate(self.worklog)
+        self.assertNotEqual(result.returncode, 0)
+        output = (result.stdout + result.stderr).lower()
+        self.assertIn("cycle", output)
+        self.assertIn("t0001", output)
+
+    def test_mutual_cycle(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "A", "tags": ["misc"],
+            "status": "blocked", "modifies": ["s0001"],
+            "blocked_by": ["t0002"],
+        })
+        write_entity(self.worklog, "t0002", {
+            "id": "t0002", "title": "B", "tags": ["misc"],
+            "status": "blocked", "modifies": ["s0001"],
+            "blocked_by": ["t0001"],
+        })
+
+        result = _run_validate(self.worklog)
+        self.assertNotEqual(result.returncode, 0)
+        output = (result.stdout + result.stderr).lower()
+        self.assertIn("cycle", output)
+
+    def test_acyclic_chain_ok(self):
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "A", "tags": ["misc"],
+            "status": "blocked", "modifies": ["s0001"],
+            "blocked_by": ["t0002"],
+        })
+        write_entity(self.worklog, "t0002", {
+            "id": "t0002", "title": "B", "tags": ["misc"],
+            "status": "blocked", "modifies": ["s0001"],
+            "blocked_by": ["t0003"],
+        })
+        write_entity(self.worklog, "t0003", {
+            "id": "t0003", "title": "C", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"],
+        })
+
+        result = _run_validate(self.worklog)
+        self.assertEqual(result.returncode, 0,
+                         f"Expected exit 0, got {result.returncode}.\n"
+                         f"stdout: {result.stdout}\nstderr: {result.stderr}")
+
+
 if __name__ == "__main__":
     unittest.main()
