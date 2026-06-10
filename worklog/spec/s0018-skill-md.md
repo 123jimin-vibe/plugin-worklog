@@ -15,15 +15,16 @@ SKILL.md is a curated summary, not a concatenation of specs. It optimizes for ag
 
 Sections in order:
 
-1. **Worklog** — one-line philosophy and root directory.
-2. **Entities** — ID format, filename convention, frontmatter. One subsection per entity type covering fields, lifecycle, and key constraints.
-3. **Relationships** — forward-link table and the reverse-via-grep rule.
-4. **Precedence** — spec > code > tests, and the ask-user escalation.
-5. **Rules** — flat list of behavioral rules for agents.
-6. **Forbidden** — flat list of actions agents must never take.
-7. **Workflows** — summary table (name, flow, key constraint). No full flowcharts.
-8. **Drift Detection** — how to check, what triggers action.
-9. **Scripts** — table of available scripts with invocation patterns.
+1. **Worklog** — one-line philosophy, root directory, init instruction.
+2. **Entities** — ID format, filename convention, frontmatter fence. One subsection per entity type, each carrying the rules that govern it:
+   - **Spec** — fields, required sections, `UNIMPLEMENTED` markers, `paths`, precedence, drift detection.
+   - **Task** — fields, lifecycle, archiving, stubs, execution rules, forbidden list.
+   - **Decision** — fields, immutability, supersession.
+   - **Relationships** — forward-link table, reverse-via-grep rule.
+3. **Scripts** — table of scripts with flags and purpose.
+4. **Workflows** — summary table (name, flow, key constraint). No full flowcharts.
+
+Rules and forbidden lists are co-located with the entity they most naturally govern, not kept as separate top-level sections.
 
 ## Source Mapping
 
@@ -31,14 +32,15 @@ Each section traces to source specs:
 
 | SKILL.md section | Source specs |
 |------------------|-------------|
-| Entities | s0011, s0012, s0013 |
-| Relationships | s0001 |
-| Precedence | s0001 |
-| Rules | s0001, s0017 |
-| Forbidden | s0001, s0004–s0009 |
-| Workflows | s0004–s0009 |
-| Drift Detection | s0001 |
+| Worklog | s0001 |
+| Entities: Spec | s0011; s0001 (precedence, drift detection) |
+| Entities: Task | s0012; s0001, s0017 (rules); s0004–s0009 (forbidden) |
+| Entities: Decision | s0013 |
+| Entities: Relationships | s0001 |
 | Scripts | s0010 |
+| Workflows | s0004–s0009 |
+
+Rules across sections are additionally informed by s0019 — every Must/High severity pitfall carries a covering rule.
 
 When a source spec changes, the corresponding SKILL.md section must be reviewed.
 

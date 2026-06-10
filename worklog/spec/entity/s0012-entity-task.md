@@ -11,7 +11,7 @@ Atomic unit of work. Tracks what is being done, why, and what it affects.
 ## Location
 
 - Active: `worklog/task/`
-- Archived: `worklog/task/archive/`
+- Archived: `worklog/archive/task/`
 
 ## Frontmatter
 
@@ -60,7 +60,7 @@ Task scope is subordinate to the governing spec. When findings conflict with the
 
 ## Archiving
 
-When status reaches `done`: move file to `archive/`. Before moving, the agent verifies the governing spec is still consistent with the completed work — this check is not delegatable.
+When status reaches `done`: move file to `worklog/archive/task/`. Before moving, the agent verifies the governing spec is still consistent with the completed work — this check is not delegatable.
 
 ## Cancelling
 

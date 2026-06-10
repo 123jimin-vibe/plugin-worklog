@@ -1,5 +1,6 @@
 tag,description
 entity,"Entity format definitions (spec, task, decision)."
+guideline,"Non-enforcing guidance documents."
 methodology,"Specs that define how the worklog methodology works."
 quality,"Testing and quality assurance."
 research,"Background research and design rationale."
