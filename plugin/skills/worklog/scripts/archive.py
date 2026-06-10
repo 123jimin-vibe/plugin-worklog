@@ -7,8 +7,9 @@ task with no explanation), prints every spec the task(s) modify in full, and
 reports drift on their governed paths — so the spec text is in front of you
 before the tasks leave the active set. The move happens only with --confirm.
 
-With several task IDs the gate is atomic: if any task cannot be archived,
-nothing is moved. Specs shared across the batch are surfaced once.
+With several task IDs each is handled independently: a task that fails its gate
+is reported and left in place while the rest archive. The command exits non-zero
+if any task could not be archived. Specs shared across the batch are surfaced once.
 """
 
 import argparse
@@ -82,13 +83,14 @@ def main(argv=None):
         else:
             tasks.append(by_id[nid])
 
-    if errors:
-        for message in errors:
-            print(message, file=sys.stderr)
-        raise SystemExit(1)
+    # Each task is independent: report problems but archive the rest anyway.
+    for message in errors:
+        print(message, file=sys.stderr)
     for message in skips:
         print(message, file=sys.stderr)
     if not tasks:
+        if errors:
+            raise SystemExit(1)
         print("No tasks to archive.")
         raise SystemExit(0)
 
@@ -129,7 +131,7 @@ def main(argv=None):
 
     if not args.confirm:
         print("\nReport only. Re-run with --confirm to archive.")
-        raise SystemExit(0)
+        raise SystemExit(1 if errors else 0)
 
     # Move each task into archive/task, preserving git history when tracked.
     dest_dir = root / "archive" / "task"
@@ -146,9 +148,9 @@ def main(argv=None):
             shutil.move(str(task.path), str(dest))
         print(f"Archived {task.id} -> {dest}")
 
-    if move_errors:
-        for message in move_errors:
-            print(message, file=sys.stderr)
+    for message in move_errors:
+        print(message, file=sys.stderr)
+    if move_errors or errors:
         raise SystemExit(1)
 
 

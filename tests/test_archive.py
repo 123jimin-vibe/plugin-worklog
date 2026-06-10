@@ -262,17 +262,21 @@ class TestArchiveMultiple(unittest.TestCase):
         # The spec governing both tasks is surfaced a single time.
         self.assertEqual(result.stdout.count("GOVERNED-BEHAVIOR-SENTINEL"), 1)
 
-    def test_batch_is_atomic_when_one_is_not_ready(self):
+    def test_partial_success_when_one_is_not_ready(self):
         write_entity(self.worklog, "t0004", {
             "id": "t0004", "title": "Unfinished", "tags": ["misc"],
             "status": "pending", "modifies": ["s0001"],
         })
         result = _run_archive_ids(self.worklog, ["t0001", "t0004"], "--confirm")
+        # Non-zero because t0004 failed its gate.
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("t0004", result.stdout + result.stderr)
-        # Nothing moved — the good task stays put too.
-        self.assertTrue(_task_path(self.worklog, "t0001-first.md").exists())
-        self.assertFalse(_archived_path(self.worklog, "t0001-first.md").exists())
+        # ...but the ready task is archived regardless.
+        self.assertFalse(_task_path(self.worklog, "t0001-first.md").exists())
+        self.assertTrue(_archived_path(self.worklog, "t0001-first.md").exists())
+        # The unready task is left in place.
+        self.assertTrue(_task_path(self.worklog, "t0004-unfinished.md").exists())
+        self.assertFalse(_archived_path(self.worklog, "t0004-unfinished.md").exists())
 
     def test_duplicate_ids_archived_once(self):
         result = _run_archive_ids(self.worklog, ["t0001", "t0001"], "--confirm")
