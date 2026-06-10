@@ -31,7 +31,7 @@ Scripts that automate worklog operations, bundled with the plugin at `plugin/ski
 
 `list.py` — list entities with optional grouping and sorting. Under `--group-by status`, status-less entities (specs, decisions) group under `(no status)`. Prints `(none)` when no matches.
 
-`archive.py` — archive a `done` or `cancelled` task. Prints each spec in `modifies` in full with its drift classification (the archive-time consistency check), then moves the file into `archive/task/` on `--confirm` — `git mv` when tracked, plain move otherwise. Refuses non-terminal tasks and cancelled tasks without an explanation.
+`archive.py` — archive one or more `done` or `cancelled` tasks. Prints each spec in `modifies` in full with its drift classification (the archive-time consistency check), then moves the files into `archive/task/` on `--confirm` — `git mv` when tracked, plain move otherwise. Refuses non-terminal tasks and cancelled tasks without an explanation. With multiple IDs the gate is atomic — if any task cannot be archived, none are moved — and specs shared across the batch are surfaced once.
 
 ## Anticipated Changes
 

@@ -44,6 +44,13 @@ def _run_archive(worklog_root, task_id, *extra_args):
     )
 
 
+def _run_archive_ids(worklog_root, ids, *extra_args):
+    return subprocess.run(
+        [sys.executable, str(_SCRIPT_PATH), *ids, "-w", worklog_root, *extra_args],
+        capture_output=True, text=True,
+    )
+
+
 def _task_path(worklog, name):
     return pathlib.Path(worklog) / "task" / name
 
@@ -212,6 +219,66 @@ class TestArchiveCancelled(unittest.TestCase):
 # ===================================================================
 # Unknown task
 # ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestArchiveMultiple(unittest.TestCase):
+    """Multiple task IDs in one invocation."""
+
+    def setUp(self):
+        self.root = tempfile.mkdtemp()
+        self.worklog = _make_git_worklog(self.root)
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        }, body="GOVERNED-BEHAVIOR-SENTINEL: shared by the batch.")
+        for n, title in [("t0001", "First"), ("t0002", "Second"), ("t0003", "Third")]:
+            write_entity(self.worklog, n, {
+                "id": n, "title": title, "tags": ["misc"],
+                "status": "done", "modifies": ["s0001"],
+            })
+
+    def tearDown(self):
+        shutil.rmtree(self.root, ignore_errors=True)
+
+    def test_all_moved_with_confirm(self):
+        result = _run_archive_ids(
+            self.worklog, ["t0001", "t0002", "t0003"], "--confirm")
+        self.assertEqual(result.returncode, 0, f"stderr: {result.stderr}")
+        for n, title in [("t0001", "first"), ("t0002", "second"), ("t0003", "third")]:
+            self.assertFalse(_task_path(self.worklog, f"{n}-{title}.md").exists())
+            self.assertTrue(_archived_path(self.worklog, f"{n}-{title}.md").exists())
+
+    def test_report_only_lists_all_and_moves_nothing(self):
+        result = _run_archive_ids(self.worklog, ["t0001", "t0002", "t0003"])
+        self.assertEqual(result.returncode, 0, f"stderr: {result.stderr}")
+        for n in ("t0001", "t0002", "t0003"):
+            self.assertIn(n, result.stdout)
+        self.assertTrue(_task_path(self.worklog, "t0001-first.md").exists())
+        self.assertTrue(_task_path(self.worklog, "t0003-third.md").exists())
+
+    def test_shared_spec_printed_once(self):
+        result = _run_archive_ids(self.worklog, ["t0001", "t0002"])
+        self.assertEqual(result.returncode, 0, f"stderr: {result.stderr}")
+        # The spec governing both tasks is surfaced a single time.
+        self.assertEqual(result.stdout.count("GOVERNED-BEHAVIOR-SENTINEL"), 1)
+
+    def test_batch_is_atomic_when_one_is_not_ready(self):
+        write_entity(self.worklog, "t0004", {
+            "id": "t0004", "title": "Unfinished", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"],
+        })
+        result = _run_archive_ids(self.worklog, ["t0001", "t0004"], "--confirm")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("t0004", result.stdout + result.stderr)
+        # Nothing moved — the good task stays put too.
+        self.assertTrue(_task_path(self.worklog, "t0001-first.md").exists())
+        self.assertFalse(_archived_path(self.worklog, "t0001-first.md").exists())
+
+    def test_duplicate_ids_archived_once(self):
+        result = _run_archive_ids(self.worklog, ["t0001", "t0001"], "--confirm")
+        self.assertEqual(result.returncode, 0, f"stderr: {result.stderr}")
+        self.assertTrue(_archived_path(self.worklog, "t0001-first.md").exists())
+
 
 @unittest.skipUnless(_script_available, _missing_reason)
 class TestArchiveUnknownTask(unittest.TestCase):

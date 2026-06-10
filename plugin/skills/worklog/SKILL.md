@@ -132,7 +132,7 @@ spec.paths ───────────▶ source    (which files this spec
 | `drift.py` | | Spec-code drift for specs with `paths` (uncommitted changes included); unverifiable/unmonitored specs to stderr |
 | `search.py` | `--tag TAG`, `--status STATUS`, `--modifies ID`, `--relates-to ID`, `--blocked-by ID`, `--type TYPE`, `--archived` | Query entities (excludes archive unless `--archived`) |
 | `list.py` | `--type TYPE`, `--group-by {type,status,tag}`, `--sort {id,title}`, `--archived` | List entities |
-| `archive.py` | `<task-id>`, `--confirm` | Archive a done/cancelled task: prints governing specs + drift, moves on `--confirm` |
+| `archive.py` | `<task-id>...`, `--confirm` | Archive done/cancelled task(s): prints governing specs + drift, moves on `--confirm` (atomic across IDs) |
 
 ## Workflows
 
