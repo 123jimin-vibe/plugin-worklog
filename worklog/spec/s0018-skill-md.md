@@ -49,7 +49,7 @@ When a source spec changes, the corresponding SKILL.md section must be reviewed.
 - **Concise over complete.** Verbose context hurts agent performance. Prefer terse rules over explanatory prose.
 - **Actionable over informational.** Anticipated Changes and Dangers from specs are omitted — they inform spec authors, not working agents.
 - **Flat over nested.** Minimize heading depth. Agents scan better than they parse hierarchy.
-- **UNIMPLEMENTED markers propagate.** If a spec `UNIMPLEMENTED` item affects agent behavior, it appears in SKILL.md. Internal spec items (governance, tooling plans) stay in specs.
+- **`UNIMPLEMENTED` markers propagate.** If a spec `UNIMPLEMENTED` item affects agent behavior, it appears in SKILL.md. Internal spec items (governance, tooling plans) stay in specs.
 
 ## Updating
 

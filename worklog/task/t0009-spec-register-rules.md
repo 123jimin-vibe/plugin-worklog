@@ -2,7 +2,7 @@
 id = "t0009"
 title = "Spec authoring register rules and S6 rewording"
 tags = ["methodology"]
-status = "pending"
+status = "done"
 modifies = ["s0011", "s0018"]
 +++
 
@@ -20,3 +20,7 @@ Agents write specs in documentation register: narrative status sections, history
 - No metric proxies (token targets, banned-word lists) — agents optimize the metric instead of the writing.
 - No overcorrection-prone examples in rule text.
 - Verify: pitfall-spec-authoring and happy-create exams both pass.
+
+## Outcome
+
+s0011 gained the Register section (legislation register, one rule one place, no history/status/narration) and the redrafted creation rules; SKILL.md mirrors both. Measured across four revisions (results/skill-revision-comparison.md, 2026-06-12): the over-caution direction is fixed (happy greenfield canary passes at r4 — acts, marks everything, no re-asking) and S7 marker omission is fixed; no register narration appeared in any drafted spec. **S6 placement remains open**: invented items still land in behavioral sections despite four wording levers (incl. a reverted Proposals-definition attempt that regressed the canary). Conclusion recorded in the comparison doc: S6 needs structural enforcement, not more prose.

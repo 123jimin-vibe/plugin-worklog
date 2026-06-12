@@ -44,6 +44,9 @@ Forward-only. Reverse lookups via grep.
 - Record non-trivial decisions.
 - No antipatterns (injection, unbounded allocations, N+1, bare catch, insecure defaults).
 - Session resume from worklog state, not prior context.
+- Cold reader: everything written — code, comments, names, entities — is read without the author's session context.
+- Comments say what the code cannot (why, invariants, non-obvious constraints). Reference the governing spec or decision ID instead of restating its content; no task history or process narration in code.
+- Public names read unambiguously at their import sites: carry the domain in the name, prefer the governing spec's vocabulary.
 
 ## Workflows
 

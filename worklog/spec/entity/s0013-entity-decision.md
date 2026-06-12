@@ -38,6 +38,8 @@ Free-form markdown. Should cover:
 - **Rationale** — why this option over alternatives.
 - **Consequences** — expected impact, trade-offs accepted.
 
+The rationale records the reasons actually given — by the user or cited evidence. An immutable record must not invent motives.
+
 ## Creation
 
 1. Identify the choice being made and why it matters.

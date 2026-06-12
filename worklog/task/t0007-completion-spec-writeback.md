@@ -2,7 +2,7 @@
 id = "t0007"
 title = "Reframe task completion as spec write-back"
 tags = ["methodology"]
-status = "pending"
+status = "done"
 modifies = ["s0012", "s0018"]
 +++
 
@@ -20,3 +20,7 @@ Agents treat tasks/decisions as the durable record and leave specs describing th
 
 - Wording per s0021: measure tokens, no restatement across sections.
 - Run pitfall-completion and completion-drift exams for regressions.
+
+## Outcome
+
+Three measured iterations (results/skill-revision-comparison.md, 2026-06-12): s0012 + SKILL.md now define completion as a write-back asserting only verified delivery, with the two-step archive.py protocol and the "even if the user claims to have reviewed or already updated the specs" qualifier. Measured: r2 stopped blind archiving but laundered task wording into spec text; the verified-delivery + two-step wording (r3/r4) ended false spec writes and cured the user-claim trap (happy Q6 F→P, completion-drift Q2 honest "partially delivered" downgrades). Residual: under a pre-baked self-endorsement (drift exam Q1) the stub re-check still doesn't fire — recorded as the prior-commitment limit, exam-side neutralization landed in t0018.

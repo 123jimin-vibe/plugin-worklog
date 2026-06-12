@@ -40,11 +40,15 @@ Optional section: **Proposals** — items discussed but not approved by the user
 
 Sections beyond these are discretionary. Approved items without backing implementation must be marked `UNIMPLEMENTED`. Unapproved items belong in Proposals, not behavioral sections.
 
+## Register
+
+Spec prose is legislation, not documentation. Every sentence binds implementation; a sentence that adds no behavior, constraint, or danger is cut. One rule, one place — never restated in another section. No history, narration, or status prose in the body — git holds history, tasks hold work state. Concise is not vague: qualifiers that change behavior stay.
+
 ## Creation
 
 1. Survey existing specs for overlap — default to extending an existing spec rather than creating a new one.
-2. Draft: observable behavior, constraints, dangers.
-3. User reviews. Approved items without implementation are marked `UNIMPLEMENTED`. Unapproved items move to Proposals or are removed.
+2. Draft: observable behavior, constraints, dangers. Write what the user stated and its direct entailments — invent nothing. Test each behavioral item: would you ask the user to confirm it? Then it was not stated — Proposals, never behavioral sections; marking an inferred item `UNIMPLEMENTED` does not make it approved. Ask only when a needed behavior is genuinely undecided; stated items need no re-confirmation.
+3. User reviews. Approved items without implementation are marked `UNIMPLEMENTED` — in a spec for unbuilt work, that is every behavioral item. Unapproved items move to Proposals or are removed.
 
 ## Updating
 

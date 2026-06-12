@@ -35,10 +35,14 @@ def write_entity(root, entity_id, fields, body="", subdir=None):
     path = root / subdir / filename
     lines = ["+++"]
     for k, v in fields.items():
-        if isinstance(v, list):
+        if isinstance(v, bool):
+            lines.append(f"{k} = {str(v).lower()}")
+        elif isinstance(v, list):
             lines.append(f"{k} = {v}")
         elif isinstance(v, str):
             lines.append(f'{k} = "{v}"')
+        elif isinstance(v, int):
+            lines.append(f"{k} = {v}")
     lines.append("+++")
     if body:
         lines.append("")

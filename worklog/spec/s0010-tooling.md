@@ -9,6 +9,8 @@ paths = ["plugin/skills/worklog/scripts/**"]
 
 Scripts that automate worklog operations, bundled with the plugin at `plugin/skills/worklog/scripts/`. Python. Accept `-w PATH` for worklog root (default: `./worklog`). Shared logic (parsing, discovery) lives under `lib/`.
 
+At runtime, consuming agents invoke the scripts from the installed skill directory (`${CLAUDE_SKILL_DIR}/scripts/`); they never exist inside the consuming repository. Agents recurrently invent repo-local paths (`<repo>/scripts/`, `<repo>/worklog/scripts/` — s0019 X9), so SKILL.md must state the location as an invocation template plus that explicit negative.
+
 ## Shared library
 
 `lib/constants.py` — shared constants. Entity type mappings (`ID_PREFIX_TO_TYPE`, `TYPE_TO_PREFIX`, `TYPE_TO_BUCKET`), directory lists (`ENTITY_DIRS`, `ARCHIVE_DIRS`), task-specific statuses (`TASK_STATUSES`), required fields per entity type (`REQUIRED_FIELDS`), ID pattern and helpers (`ID_PATTERN`, `parse_id`, `normalize_id`). ID format is prefix letter + one or more digits (e.g. `s0001`). `normalize_id` converts shorthand like `s1` to canonical `s0001` form.
@@ -32,6 +34,8 @@ Scripts that automate worklog operations, bundled with the plugin at `plugin/ski
 `list.py` — list entities with optional grouping and sorting. Under `--group-by status`, status-less entities (specs, decisions) group under `(no status)`. Prints `(none)` when no matches.
 
 `archive.py` — archive one or more `done` or `cancelled` tasks. Prints each spec in `modifies` in full with its drift classification (the archive-time consistency check), then moves the files into `archive/task/` on `--confirm` — `git mv` when tracked, plain move otherwise. Refuses non-terminal tasks and cancelled tasks without an explanation. With multiple IDs each task is handled independently — a task that fails its gate is reported and left in place while the rest archive, and the command exits non-zero if any task could not be archived. Specs shared across the batch are surfaced once.
+
+`backlog.py` — unified priority view over open tasks and `UNIMPLEMENTED` spec items (s0016). Tasks rank by frontmatter `priority`; a marker inherits the lowest priority among covering open tasks; untriaged items are listed separately. Bare `UNIMPLEMENTED` tokens count as markers; backticked occurrences are mentions.
 
 ## Anticipated Changes
 

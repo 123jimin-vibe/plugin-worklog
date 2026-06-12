@@ -2,7 +2,7 @@
 id = "t0010"
 title = "Cold-reader rules for comments and naming"
 tags = ["methodology"]
-status = "pending"
+status = "done"
 modifies = ["s0001", "s0018"]
 +++
 
@@ -21,3 +21,7 @@ Add to s0001 key rules and SKILL.md task rules, under one shared principle — e
 
 - No concrete naming examples in rule text — agents latch onto the example's incidental scheme (casing, prefixes) as the rule.
 - Wording per s0021; existing exams as regression net.
+
+## Outcome
+
+s0001 Key Rules gained the shared cold-reader principle plus the comments and naming rules (no naming examples, per constraint); SKILL.md Task rules gained the matching two bullets. Covering rules for s0019 X7/X8. Dedicated exam questions deferred to t0018; the full-suite re-run showed no regressions attributable to these additions.

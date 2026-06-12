@@ -25,7 +25,7 @@ Branches:
 
 ## Forbidden
 
-- Behavioral changes introduced as part of a chore without going through spec/task lifecycle.
+- Behavioral changes introduced as part of a chore without going through spec/task lifecycle. New observable behavior is never a chore — escalate to greenfield.
 
 ## Anticipated Changes
 

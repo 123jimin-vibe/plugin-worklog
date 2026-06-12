@@ -80,6 +80,16 @@ def _validate_entity(entity, known_tags, id_index, errors):
     if entity.type == "task" and status == "cancelled" and not entity.body.strip():
         errors.append(f"{path}: cancelled task has no explanation in its body")
 
+    # Triage priority: tasks only, non-negative integer (s0016).
+    priority = entity.fields.get("priority")
+    if priority is not None:
+        if entity.type != "task":
+            errors.append(f"{path}: priority is only valid on tasks")
+        elif isinstance(priority, bool) or not isinstance(priority, int) or priority < 0:
+            errors.append(
+                f"{path}: invalid priority '{priority}' (must be a non-negative integer)"
+            )
+
     # Tags exist in index.
     if known_tags is not None:
         for tag in entity.tags:

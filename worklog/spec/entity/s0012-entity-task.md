@@ -25,6 +25,7 @@ TOML fenced with `+++`. Required fields:
 | `status`     | string     | One of: `pending`, `active`, `done`, `blocked`, `cancelled`. |
 | `modifies`   | string[]   | Spec IDs whose governed behavior this task touches. May be empty for chore tasks outside all spec-governed behavior. |
 | `blocked_by` | string[]   | Task IDs that must complete first. Optional — omit when not blocked. |
+| `priority`   | int        | Optional. Triage rank for the backlog view (s0016): non-negative, 0 most urgent. Absent = untriaged. |
 
 ## Status Lifecycle
 
@@ -60,7 +61,11 @@ Task scope is subordinate to the governing spec. When findings conflict with the
 
 ## Archiving
 
-When status reaches `done`: move file to `worklog/archive/task/`. Before moving, the agent verifies the governing spec is still consistent with the completed work — this check is not delegatable. The `archive.py` script (s0010) surfaces each governing spec and its drift, then performs the move on confirmation.
+Completion is a write-back, not a check. When status reaches `done`: fold the new current state into every spec in `modifies` — or confirm the existing wording already covers it — and remove `UNIMPLEMENTED` markers the work resolved. The write-back asserts only what the delivered work verifiably does, not what the task intended — re-read the governing spec and the delivered work; where delivery is stubbed or partial, the spec keeps or gains markers instead of asserting the behavior. Only then move the file to `worklog/archive/task/`.
+
+Archived tasks and decisions are history, not reference: future agents read specs, so state recorded only in a task body, a decision, or external docs is lost. A constraint introduced by a decision is also written into the spec; the decision keeps the why.
+
+The write-back is not delegatable and not skippable, even if the user claims to have reviewed or already updated the specs. The `archive.py` script (s0010) surfaces each governing spec and its drift — run it without `--confirm` first; confirm only after the write-back.
 
 ## Cancelling
 
@@ -77,7 +82,6 @@ When work is abandoned (requirements changed, cost exceeds benefit, feature unne
 
 - `type` field (greenfield, bugfix, refactor, investigation, chore, hotfix) for workflow classification.
 - `triggered_by` field for external references (issue tracker, security advisory).
-- Urgency marker to distinguish hotfix tasks from normal tasks.
 - Originated-from link back to investigation tasks that spawned follow-up work.
 
 ## Dangers

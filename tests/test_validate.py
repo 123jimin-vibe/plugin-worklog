@@ -716,5 +716,61 @@ class TestValidateBlockedByCycle(unittest.TestCase):
                          f"stdout: {result.stdout}\nstderr: {result.stderr}")
 
 
+# ===================================================================
+# Triage priority (s0016)
+# ===================================================================
+
+@unittest.skipUnless(_script_available, _missing_reason)
+class TestValidatePriority(unittest.TestCase):
+    """priority must be a non-negative integer and only appear on tasks."""
+
+    def setUp(self):
+        self.worklog = tempfile.mkdtemp()
+        make_worklog(self.worklog)
+        write_tags(self.worklog, ["misc"])
+        write_entity(self.worklog, "s0001", {
+            "id": "s0001", "title": "Spec", "tags": ["misc"],
+        })
+
+    def tearDown(self):
+        shutil.rmtree(self.worklog, ignore_errors=True)
+
+    def test_valid_priority_ok(self):
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Ranked", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"], "priority": 0,
+        })
+        result = _run_validate(self.worklog)
+        self.assertEqual(result.returncode, 0,
+                         f"stdout: {result.stdout}\nstderr: {result.stderr}")
+
+    def test_negative_priority_rejected(self):
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Ranked", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"], "priority": -1,
+        })
+        result = _run_validate(self.worklog)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("priority", result.stdout + result.stderr)
+
+    def test_non_integer_priority_rejected(self):
+        write_entity(self.worklog, "t0001", {
+            "id": "t0001", "title": "Ranked", "tags": ["misc"],
+            "status": "pending", "modifies": ["s0001"], "priority": "high",
+        })
+        result = _run_validate(self.worklog)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("priority", result.stdout + result.stderr)
+
+    def test_priority_on_non_task_rejected(self):
+        write_entity(self.worklog, "s0002", {
+            "id": "s0002", "title": "Ranked spec", "tags": ["misc"],
+            "priority": 1,
+        })
+        result = _run_validate(self.worklog)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("priority", result.stdout + result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()
