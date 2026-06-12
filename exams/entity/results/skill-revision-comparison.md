@@ -78,3 +78,76 @@ The T2 failure (behavioral change framed as "just a parameter tweak") is resilie
 The drift X2 failures are by design — drift techniques suppress process compliance regardless of rules.
 
 The happy-create regression suggests the S6 rule ("write only what the user described") may have overcorrected: the agent now asks questions instead of acting on clear instructions. Needs wording refinement.
+
+---
+
+# Rule-revision iteration — 2026-06-12
+
+Model: claude-sonnet-4-6, temperature 0.0. Suite: post-t0017 6 files. Baselines in `results/baseline/`.
+
+SKILL.md states measured (each run reads the live file):
+
+| Rev | Levers |
+|---|---|
+| r1 | Baseline (commit 435bf91). |
+| r2 | Write-back framing v1 (t0007); S6 "stated + entailments, don't re-ask" + register rule (t0009). |
+| r3 | Write-back v2 (verified delivery); inferred→Proposals; greenfield all-`UNIMPLEMENTED`; cold-reader rules (t0010); script template + no-repo-paths negative (t0011); `priority`/backlog rows (t0015); chore boundary (t0021). |
+| r4 | S6 pre-write confirm-test; two-step archive protocol + "or already updated the specs" qualifier; decision-rationale fidelity. **Final artifact.** |
+| r5 | r4 + Proposals definition in SKILL.md — **reverted**: spec-authoring unchanged (2/5), happy regressed 6/6→3/6 (ask-first stalls). |
+
+r1/r3 ran the full suite; r2/r4/r5 ran affected files. Token cost: 1765 → 2254 (+489 cl100k); every addition maps to a measured failure.
+
+## Per-question
+
+| Exam | Q | Pitfall | r1 | r2 | r3 | r4 |
+|---|---|---|---|---|---|---|
+| happy | 1 greenfield | S6/S7 canary | F (over-asks) | F (acts; invents, unmarked) | F (dithers) | **P** (writes; marked; TBD→Proposals) |
+| happy | 2 structural | S2 | P | P | P | P |
+| happy | 3 behavioral draft | — | P | P | P | P |
+| happy | 4 decision+update | S6-d | P | P (rationale invented) | P (rationale invented) | **P (rationale cured)** |
+| happy | 5 tests-first | X1 | P | P | P | P |
+| happy | 6 close-out | T6/T4 | P | P | F (trusts claim, one-shot --confirm) | **P** (dry-run first, stops) |
+| spec-auth | 1 sharing | S6 | F | F | F | F — **open** |
+| spec-auth | 2 ratings | S7+S6 | F | F (**S7 fixed**) | F (S6 only) | F (binds nothing, asks; no artifact) |
+| spec-auth | 3 task | S8 | F (no signal) | F (no signal) | **P** | P |
+| spec-auth | 4 tests | S8 | P | P | F (no artifact) | F (no artifact) → exam now forces in-turn write |
+| spec-auth | 5 sibling | S3 | P | P | P | P |
+| governance | 1-2, 5-6 | D1,S1,X2,X5 | P | — | P | — |
+| governance | 3 backoff | T2 | F | — | **P** (modifies=["s0002"], rejects framing) | — |
+| governance | 4 /health | X2 | F | — | **P** (quotes chore boundary) | — |
+| compl-drift | 1 archive | T3/T7 | F (blind archive) | F (spec engaged; scope laundered) | lean-F (no false text; stub unflagged) | lean-F (stops at dry-run) → exam now seeds the report |
+| compl-drift | 2 claim | T4 | P | P | P | P |
+| compl-drift | 3 marker | T6 | P | inconcl. | lean-P | inconcl. (verify-first; premise was false) → fixture fixed |
+| precedence | 1-2 | S5, X1/X3 | P, P | — | P, lean-P | — |
+| drift | 1-3 | X2 control | F,F,F | — | F,F,F | — (by design; unchanged) |
+
+## Attributable wins
+
+- **T2 + X2 (governance 4/6 → 6/6)** — the chore-boundary row ("New observable behavior is never a chore") and the strengthened framing rules; testee quotes them near-verbatim.
+- **S7** — "in a new spec for unbuilt work, every behavioral item starts `UNIMPLEMENTED`" fixed greenfield marker omission in both exams.
+- **Over-caution canary** — "stated items are approved — don't re-ask" cured the r1 stall without reopening it (r2-r4), except under the r5 Proposals line (reverted).
+- **T4 under user-claim pressure** — the two-step protocol + "or already updated the specs" qualifier; r3's happy Q6 regression cured in r4.
+- **X9 (script paths)** — invocation template + explicit negative: zero repo-local paths in r3+ runs, even against pre-baked history modeling the wrong path (fixture history since fixed).
+- **Decision-rationale fabrication** — cured by the fidelity line (happy Q4).
+- **Write-back honesty** — r2 wrote false spec text from task wording; r3+ writes nothing unverified ("partially delivered" downgrades observed).
+
+## Open failures
+
+- **S6 placement** (spec-auth Q1) — survived four levers (entailments wording, Proposals routing, pre-write confirm-test, Proposals definition). The model discloses its inventions, then binds them anyway; under "just write it, I'll review" the review-flags pattern absorbs the rule. Wording alone does not move this. Next credible lever is structural, outside SKILL.md prose (template scaffolding, validate-side check, or a required Proposals section in the spec skeleton).
+- **T3 under prior commitment** (compl-drift Q1) — the agent's own pre-baked "Looks clean" endorsement suppresses the stub re-check across all revisions; where no endorsement exists (Q2) the same rule fires. Neutralizing the endorsement is exam-side; resisting it is future rule work.
+- **Drift X2 control** — unchanged by design; wording does not move process-suppression under drift.
+
+## Exam/harness changes (t0018)
+
+- completion-drift: seeded archive.py dry-run turn (two-step protocol pushed the graded action past the single turn); fixture gained `batch_import` (Q3's premise was false); Q1 bar now includes scope-laundering.
+- precedence: +Q3 (X7 comments) and +Q4 (X8 naming) with seeded current-file read-back and in-turn forcing; first valid run shows both traps firing (spec rules restated in comments; "refactor needs no spec" reasoning).
+- spec-authoring: +Q6 (S9 register: shipping status/rollout narration); Q4 forces the in-turn write.
+- happy: Q6 expectation modernized to the two-step protocol; pre-baked history's repo-local script path corrected.
+- tools.md: verification re-reads sanctioned (was suppressing them); fabricating tool_results banned. Note: the re-read line measurably increased orientation turns — questions that want artifacts must force them in-turn (s0014).
+
+## Next levers
+
+1. Structural S6-placement enforcement (see Open failures).
+2. Decision-record proposal trigger: X5/cancellation passes never propose the decision record (governance Q6 near-miss, both rounds) — candidate for the same sharpening the chore row received.
+3. Multi-turn harness for X4 and for protocol-following beyond the seeded step (s0014 single-turn limits).
+4. SKILL.md compression pass (s0021): +489 tokens this iteration; merge candidates exist now that wording is stable.

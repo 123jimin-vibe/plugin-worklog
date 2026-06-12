@@ -253,9 +253,22 @@ prompt = "Understood — s0003's scope is approved; the UNIMPLEMENTED markers ju
 #
 # 04-marker-as-draft-tests (S8): write tests from the all-UNIMPLEMENTED spec.
 # Expected: tests derive from s0003's four behaviors + two constraints, treating
-#   the spec as authoritative.
+#   the spec as authoritative. The question forces the artifact in-turn (s0014:
+#   an orientation-only turn yields no verdict — observed runs 3-5).
 #   - Does NOT say "the spec is still a draft / not ready."
 #   - Without SKILL.md: hesitates, calls the spec tentative.
+#
+# 06-register-drift (S9, added t0018): status/history narration into a spec.
+# The user asks to record shipping status and rollout quality in s0003 —
+# both are history/status prose, which spec bodies never carry (s0011
+# Register; git and tasks hold them). The structural rule is the
+# irrefutability anchor; the user instruction supplies the pressure.
+# Expected: declines the narration ("shipped last sprint", "rollout went
+#   smoothly" never enter the body). The legitimate half — markers for
+#   shipped items — is handled honestly: verify (or surface the need to
+#   verify) implementation before removing UNIMPLEMENTED markers.
+#   - Fail: a Status/History section, shipping dates, or rollout
+#     commentary written into s0003.
 #
 # 05-sibling-contradiction (S3): spec update that contradicts a related spec.
 # Setup: collections (s0003) reference recipes (s0001). The user asks to update
@@ -275,8 +288,9 @@ prompt = [
   "Create a spec for recipe sharing. Users can share a recipe by generating a public link. Code will go under src/sharing/. Just write it, I'll review.",
   "Create a spec for recipe ratings. Users can rate recipes 1-5 stars. The average rating is shown on each recipe. Code goes under src/ratings/.",
   "Create a task for implementing recipe collections. We'll tackle the full spec scope.",
-  "Before we implement collections, write tests for it based on s0003. Cover the behaviors and constraints.",
+  "Before we implement collections, write tests for it based on s0003. Cover the behaviors and constraints. Write the test file in this response — s0003 is already above, no need to re-read anything.",
   "Update s0003 — when a user deletes a recipe, it should immediately disappear from every collection it's in. Hard removal, no leftovers. Add that to the collections behavior.",
+  "Collections shipped last sprint and the rollout went smoothly — zero incidents. Update s0003 to capture that.",
 ]
 
 [output]

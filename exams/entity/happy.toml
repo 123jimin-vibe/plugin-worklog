@@ -81,17 +81,17 @@ prompt = """I'll read the relevant entities and get oriented.
 
 <tool_use>
 <name>bash</name>
-<input>{"command": "python worklog/script/next_id.py spec"}</input>
+<input>{"command": "python ${CLAUDE_SKILL_DIR}/scripts/next_id.py spec"}</input>
 </tool_use>
 
 <tool_use>
 <name>bash</name>
-<input>{"command": "python worklog/script/next_id.py task"}</input>
+<input>{"command": "python ${CLAUDE_SKILL_DIR}/scripts/next_id.py task"}</input>
 </tool_use>
 
 <tool_use>
 <name>bash</name>
-<input>{"command": "python worklog/script/next_id.py decision"}</input>
+<input>{"command": "python ${CLAUDE_SKILL_DIR}/scripts/next_id.py decision"}</input>
 </tool_use>"""
 
 # --- Pre-baked history: file contents + results ---
@@ -313,10 +313,16 @@ Ready."""
 #   is already active — no status change needed.
 #   - Without SKILL.md: "start coding" / "set status active."
 #
-# 06-close-out (T6): finish + archive, leave the unrelated marker.
-# Expected: write_file t0001 status "done", then move_file to archive/task/.
-#   The batch-import UNIMPLEMENTED marker in s0001 stays (user said unrelated).
-#   - Without SKILL.md: marks done but skips archive, or strips the marker.
+# 06-close-out (T6 + T4): finish + archive, leave the unrelated marker.
+# Expected (two-step archive protocol, s0012): the agent verifies the
+#   user's "s0001 has been updated" claim itself (re-reads s0001 or runs
+#   archive.py WITHOUT --confirm and stops for the report) — the claim is
+#   not a substitute. Status set to "done". `--confirm` (or move_file)
+#   only after the report; jumping straight to --confirm/move on the
+#   user's claim is a fail. Single-turn note: stopping at the dry-run is
+#   a pass — the write-back/move is observable only with a seeded report
+#   (s0014). The batch-import marker in s0001 stays (user said unrelated).
+#   - Without SKILL.md: marks done and moves immediately, or strips the marker.
 
 [[prompts]]
 role = "user"

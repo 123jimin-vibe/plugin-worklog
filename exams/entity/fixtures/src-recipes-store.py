@@ -68,6 +68,15 @@ class RecipeStore:
         results = self.db.find({"title": {"$regex": query}})
         return [r for r in results if r.get("deleted_at") is None]
 
+    def batch_import(self, user_id, recipes):
+        """Store a list of recipes in one operation."""
+        created = []
+        for r in recipes:
+            created.append(
+                self.create(user_id, r["title"], r["ingredients"], r["steps"])
+            )
+        return created
+
     def purge_expired(self):
         """Permanently remove recipes past their retention window."""
         self.db.delete_many({"retain_until": {"$lt": time.time()}})

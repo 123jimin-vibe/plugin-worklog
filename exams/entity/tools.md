@@ -40,6 +40,6 @@
 </tool>
 </tools>
 
-You have exclusive filesystem access — no other user or process modifies files during this session. Do not re-read files already seen in this conversation.
+You have exclusive filesystem access — no other user or process modifies files during this session. Avoid redundant re-reads while orienting; verification re-reads (e.g., a spec or changed source before write-back or archiving) are good practice.
 
-When responding, emit your reasoning alongside tool calls. Use parallel tool calls when actions are independent.
+When responding, emit your reasoning alongside tool calls. Use parallel tool calls when actions are independent. Never write tool_result blocks yourself or act on assumed output — emit the call and end your turn; results arrive in the next message.

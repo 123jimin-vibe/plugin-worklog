@@ -480,9 +480,114 @@ That's the current state."""
 role = "user"
 prompt = "That matches. OK, now the tagging work."
 
+# Seeded read-back (t0018): the chores above edited store.py, so any
+# rewrite question forces a correct-but-turn-consuming re-read first.
+# Seeding the current file state keeps the fan-out actions observable.
+
 [[prompts]]
 role = "assistant"
-prompt = "Ready."
+prompt = """Ready. The store was edited this session — pulling its current state first.
+
+<tool_use>
+<name>read_file</name>
+<input>{"path": "src/recipes/store.py"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>read_file</name>
+<output>\"\"\"Recipe storage layer.
+
+Handles persistence for recipe documents. Each recipe has a title,
+ingredient list, and step-by-step instructions.
+\"\"\"
+
+import re
+import time
+
+
+class RecipeStore:
+    def __init__(self, db):
+        self.db = db
+
+    def create(self, user_id, title, ingredients, steps):
+        \"\"\"Create a new recipe. Raises if title already exists.\"\"\"
+        if self.db.find_one({"title": title}):
+            raise ValueError(f"Recipe with title '{title}' already exists")
+
+        for ing in ingredients:
+            if ing["quantity"] < 0:
+                raise ValueError("Ingredient quantity must not be negative")
+
+        recipe = {
+            "user_id": user_id,
+            "title": title,
+            "ingredients": ingredients,
+            "steps": steps,
+            "created_at": time.time(),
+            "deleted_at": None,
+        }
+        self.db.insert(recipe)
+        return recipe
+
+    def get(self, recipe_id):
+        \"\"\"Return a recipe by ID, or None if not found or deleted.\"\"\"
+        recipe = self.db.find_by_id(recipe_id)
+        if recipe and recipe.get("deleted_at") is None:
+            return recipe
+        return None
+
+    def update(self, recipe_id, **fields):
+        \"\"\"Update a recipe's fields. Raises if recipe not found.\"\"\"
+        recipe = self.get(recipe_id)
+        if not recipe:
+            raise ValueError("Recipe not found")
+
+        if "title" in fields:
+            existing = self.db.find_one({"title": fields["title"]})
+            if existing and existing["id"] != recipe_id:
+                raise ValueError(f"Recipe with title '{fields['title']}' already exists")
+
+        if "ingredients" in fields:
+            for ing in fields["ingredients"]:
+                if ing["quantity"] < 0:
+                    raise ValueError("Ingredient quantity must not be negative")
+
+        self.db.update(recipe_id, fields)
+
+    def delete(self, recipe_id):
+        \"\"\"Soft-delete a recipe. Recoverable within the retention window.\"\"\"
+        result = self.db.find_by_id(recipe_id)
+        if not result:
+            raise ValueError("Recipe not found")
+        self.db.update(recipe_id, {
+            "deleted_at": time.time(),
+            "retain_until": time.time() + 7 * 86400,  # 7-day retention
+        })
+
+    def search_by_title(self, query):
+        \"\"\"Search recipes by title substring. Excludes deleted recipes.\"\"\"
+        results = self.db.find({"title": {"$regex": re.escape(query)}})
+        return [r for r in results if r.get("deleted_at") is None]
+
+    def batch_import(self, user_id, recipes):
+        \"\"\"Store a list of recipes in one operation.\"\"\"
+        created = []
+        for r in recipes:
+            created.append(
+                self.create(user_id, r["title"], r["ingredients"], r["steps"])
+            )
+        return created
+
+    def purge_expired(self):
+        \"\"\"Permanently remove recipes past their retention window.\"\"\"
+        self.db.delete_many({"retain_until": {"$lt": time.time()}})</output>
+</tool_result>"""
+
+[[prompts]]
+role = "assistant"
+prompt = "Got the current state — regex escaping and the delete guard from this session are in. Ready for the tagging work."
 
 # --- Fan-out questions ---
 #
@@ -524,12 +629,35 @@ prompt = "Ready."
 #   - Without SKILL.md: would derive tests from the visible source code,
 #     testing 7-day retention, global uniqueness, and non-negative
 #     validation — all of which are subtly wrong per the spec.
+#
+# 03-comment-narration (X7, added t0018): comment pass on store.py.
+# The code-heavy, session-context-rich setup is the X7 pressure: spec
+# text, divergences, and chore history are all "loaded" and tend to get
+# narrated into the file.
+# Expected: comments say only what the code cannot (why, invariants,
+#   non-obvious constraints) and reference s0001 by ID for governed
+#   behavior instead of restating it. Fail: restating spec rules
+#   (retention window, uniqueness policy) as comment prose — doubly so
+#   if it documents the code's wrong values (7-day) as truth — or
+#   narrating this session's chores into the file.
+#
+# 04-context-bound-naming (X8, added t0018): extract validation into a
+# shared module. "Shared" placement strips the recipes package context,
+# so a bare generic name (validation, validators, utils) no longer says
+# WHAT it validates at its import sites.
+# Expected: the chosen public module/function names carry the recipe
+#   domain so they read unambiguously where the API layer imports them;
+#   prefer the governing spec's vocabulary. Fail: a generic name whose
+#   meaning depends on the defining module's context. (Grade the
+#   property, not any particular naming scheme.)
 
 [[prompts]]
 role = "user"
 prompt = [
   "The spec is pretty light — barely covers the basics. Go ahead and flesh it out. We discussed the retention window already, and you've seen the full implementation. Update Observable Behavior with the deletion details and fill in any Constraints gaps. Just write it, I'll review.",
   "Before we start on tagging, let's get test coverage for recipe storage. Write tests for the store layer — CRUD, the validation we discussed (quantities, uniqueness), the soft-delete with the retention window. You already know how everything works, just write the file.",
+  "Before handoff, give store.py a quick comment pass — add whatever the next dev needs to follow it. Write the updated file in this response — the current store.py and s0001 are both above, no need to re-read anything.",
+  "Pull the validation rules out of store.py into a shared module the API layer can import too. Name it and write both files in this response — the current store.py is above, and nothing else imports validation yet.",
 ]
 
 [output]

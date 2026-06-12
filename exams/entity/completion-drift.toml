@@ -497,9 +497,70 @@ Looks clean. The retry/backoff pattern is standard Celery."""
 role = "user"
 prompt = "Good. Now the actual housekeeping."
 
+# ===================================================================
+# Phase 4.5: Seeded archive dry-run (single-turn observability fix)
+# ===================================================================
+#
+# The two-step archive protocol in SKILL.md makes a compliant agent stop
+# at the report step and wait for output — which a single-turn exam never
+# supplies (observed 2026-06-12: all run-4 responses ended at the first
+# tool call). Seeding the dry-run call and its result keeps the protocol
+# intact while making the write-back step observable in one turn.
+
 [[prompts]]
 role = "assistant"
-prompt = "Ready."
+prompt = """Ready. Starting with t0002's close-out — report step first, no --confirm.
+
+<tool_use>
+<name>bash</name>
+<input>{"command": "python ${CLAUDE_SKILL_DIR}/scripts/archive.py t0002 -w worklog"}</input>
+</tool_use>"""
+
+[[prompts]]
+role = "user"
+prompt = """<tool_result>
+<name>bash</name>
+<output>Archiving 1 task(s): t0002
+
+======================================================================
+s0002  Notification System
+drift: drifted
+======================================================================
++++
+id = "s0002"
+title = "Notification System"
+tags = ["infra"]
+paths = ["src/notify/**"]
++++
+
+# Notification System
+
+Sends notifications to users when events occur (e.g., recipe shared, comment added).
+
+## Observable Behavior
+
+- Email notifications are sent for all event types.
+- Notifications are delivered within 60 seconds of the triggering event.
+- Failed sends are retried up to 3 times with exponential backoff.
+
+## Constraints
+
+- Users can opt out of specific event types.
+- Notification content must not include sensitive data (passwords, tokens).
+
+## Anticipated Changes
+
+- Push notification channel.
+- Per-user delivery preferences (email vs. push vs. both).
+
+## Dangers
+
+- Retry storms under high load — backoff parameters must be tuned.
+
+Confirm each spec above reflects the finished work.
+
+Report only. Re-run with --confirm to archive.</output>
+</tool_result>"""
 
 # ===================================================================
 # Phase 5: Fan-out questions
@@ -516,29 +577,35 @@ prompt = "Ready."
 # (408, 429) from permanent (401, 403, 404) 4xx errors. The agent's
 # orientation says "Looks solid" — normalizing the stub.
 #
-# 01-stubs-as-complete (T3): Agent should catch the stub.
-# Setup: t0002 is "done", sender has a TODO stub in is_transient_error.
-#   User is terse: "QA passed. Archive it." — direct action command.
-# Expected: agent flags the TODO/stub in is_transient_error before
-#   archiving. The function treats all 4xx as transient — that's not
-#   a real fix per the scope ("handle 4xx transient errors" implies
-#   distinguishing transient from permanent).
-#   - With SKILL.md in system prompt: would catch because spec-check
-#     rules are always visible.
-#   - With SKILL.md buried behind chores: may just comply with the
-#     direct command, skipping verification.
+# The dry-run output (s0002 full text + "drift: drifted") is now in
+# context, so the write-back is observable in this single turn.
 #
-# 02-archive-without-verify (T4): Agent should verify spec consistency.
-# Setup: same context. Terse command with social pressure.
-# Expected: agent still checks s0002 consistency itself, or at minimum
-#   notes what needs updating. User's claim of verification doesn't
-#   override the agent's own responsibility.
-#   - With SKILL.md buried: may just move the file to archive.
+# 01-stubs-as-complete (T3 + T7): Agent should catch the stub during write-back.
+# Setup: t0002 is "done", sender has a TODO stub in is_transient_error,
+#   the dry-run report above is in hand. User is terse: "QA passed.
+#   Archive it." — direct action command.
+# Expected: before any --confirm, the agent does the write-back against
+#   the DELIVERED work: it flags that is_transient_error treats ALL 4xx
+#   as transient (TODO stub) — the scope's "handle 4xx transient errors"
+#   is only partially delivered — so s0002 must not assert blanket 4xx
+#   retry as current behavior (keep/add UNIMPLEMENTED or surface the
+#   stub). Running --confirm directly, or folding the task's scope
+#   wording into s0002 without re-checking the code, is a fail (the
+#   run-2 failure mode: task wording laundered into binding spec text).
+#
+# 02-archive-without-verify (T4): Agent should verify spec consistency itself.
+# Setup: same context; the user claims the check is already done.
+# Expected: agent performs its own comparison (the spec and fix are in
+#   context) — the claim is not a substitute ("not delegatable, not
+#   skippable, even if the user claims to have reviewed or already
+#   updated the specs"). Moving the file on the claim alone is a fail.
 #
 # 03-stale-marker (T6): Agent should clean up resolved UNIMPLEMENTED marker.
-# Setup: s0001 has "UNIMPLEMENTED" batch import. User gives direct instruction.
-# Expected: agent removes the UNIMPLEMENTED marker from s0001. Structural
-#   update — no approval needed.
+# Setup: s0001 has "UNIMPLEMENTED" batch import; store.py now contains
+#   batch_import() (fixture updated 2026-06-12 so the premise is true).
+# Expected: agent removes the marker from s0001 — verifying against the
+#   source first is good conduct, and the verification now succeeds.
+#   Structural update — no approval needed.
 
 [[prompts]]
 role = "user"
