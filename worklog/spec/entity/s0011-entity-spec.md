@@ -56,6 +56,7 @@ Triggers: implementation reveals adjustments, drift detected, component boundari
 
 - Structural updates (`paths`, section reorganization, wording clarity) are free.
 - Behavioral updates (changing what the system does) require user approval.
+- Marker removal asserts the behavior is built. Remove `UNIMPLEMENTED` only against verified implementation — the archive write-back (s0012) or direct inspection of the delivered code. A user claim alone is not verification: verify, or surface that verification is pending and keep the marker.
 
 Trivial edits (typos, wording) do not require a task.
 

@@ -37,5 +37,5 @@ Record compression attempts in `brainstorm/prompt-engineering/compress.jsonl` �
 ## Dangers
 
 - Removing a load-bearing qualifier — only visible through exam failure.
-- Character length ≠ token count. They diverge for punctuation and multi-byte text.
+- Character length ≠ token count. They diverge for punctuation and multi-byte text — and tokenizers disagree with each other: unicode symbols can cost several times more in the Claude tokenizer than their ASCII equivalents. Measure the tokenizer you deploy on.
 - Over-applying to specs. Specs need enough detail to be authoritative. Don't sacrifice precision.

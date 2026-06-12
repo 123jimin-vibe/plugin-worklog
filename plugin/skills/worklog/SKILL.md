@@ -13,7 +13,7 @@ Root: `worklog/`. If absent, create `worklog/{spec,task,decision}/` and `worklog
 
 ## Entities
 
-IDs: prefix letter + digits (`s0001`, `t0012`, `d0001`); allocate with `next_id.py`. Filename: `{id}-kebab-name.md`. TOML frontmatter delimited by `+++`.
+ID: prefix + digits (`s0001`, `t0012`, `d0001`); allocate via `next_id.py`. Filename: `{id}-kebab-name.md`. Frontmatter: TOML fenced by `+++`.
 
 ### Spec
 
@@ -28,47 +28,53 @@ paths = ["src/auth/**", "src/middleware/session*"]
 
 Required sections: Observable Behavior, Constraints, Anticipated Changes, Dangers.
 
-Behavioral items are binding. Write only what the user stated and its direct entailments — anything you would ask the user to confirm was not stated: it goes to Proposals (or Anticipated Changes), never into a behavioral section. Stated items are approved — don't re-ask; ask only what is genuinely undecided.
+Behavioral items bind. Write only user-stated behavior + its direct entailments. Litmus before writing an item: would you ask the user to confirm it? yes => not stated => Proposals (or Anticipated Changes), never a behavioral section. Stated = approved: don't re-ask; ask only what is genuinely undecided.
 
-`UNIMPLEMENTED` marks approved-but-unbuilt behavior; marking an item does not approve it. In a new spec for unbuilt work, every behavioral item starts `UNIMPLEMENTED`; remove the marker when implemented. Spec is authoritative regardless of markers.
+`UNIMPLEMENTED` = approved-but-unbuilt; marking an item != approving it. New spec for unbuilt work => every behavioral item starts `UNIMPLEMENTED`. Remove a marker only against verified implementation (archive write-back, or direct code inspection) — user claim != verification. Spec stays authoritative regardless of markers.
 
-`paths` — glob patterns for governed source files; prefer broad globs (`src/auth/**`). Omit for cross-cutting or conceptual specs.
+`paths` — globs for governed source files; prefer broad (`src/auth/**`). Omit for cross-cutting or conceptual specs.
 
-Every sentence binds. Specs are always current: no status fields or sections, no dates, no history or narration — git holds history, tasks hold work state. Cut any sentence that adds no behavior, constraint, or danger; keep qualifiers that change behavior. One rule, one place.
+Every sentence binds. Specs are always current: no status fields/sections, no dates, no history or narration — git holds history, tasks hold work state. Cut sentences adding no behavior, constraint, or danger; keep qualifiers that change behavior. One rule, one place.
 
-Describe what the system does, not how code is structured — no API signatures, class names, file paths, or version numbers in spec body.
+Describe what the system does, not how code is structured — no API signatures, class names, file paths, version numbers in spec body.
 
-Structural edits (typos, wording, `paths`, reorganization) need no approval; behavioral changes require explicit user confirmation. Discussion is not approval.
+Structural edits (typos, wording, `paths`, reorganization): no approval needed. Behavioral changes: explicit user confirmation required. Discussion != approval.
 
-Before updating, check specs with overlapping tags or `paths` for contradictions; extend existing specs rather than creating new ones.
+Before updating: check specs with overlapping tags or `paths` for contradictions; extend existing specs over creating new ones.
 
-Precedence: spec > code > tests. Divergence from spec = code bug. If spec seems wrong, ask — never silently override.
+Precedence: spec > code > tests. Divergence from spec = code bug. Spec seems wrong => ask; never silently override.
 
-Drift detection: compare the spec's last git commit against changes to its `paths` globs. Non-empty diff = potential drift.
+Drift detection: spec's last git commit vs subsequent changes under its `paths`; non-empty diff => potential drift.
 
 ### Task
 
-Atomic unit of work — completable in one session. Frontmatter: `id`, `title`, `tags` as in spec, plus:
+Atomic unit of work, completable in one session. Frontmatter: `id`, `title`, `tags` as in spec, plus:
 
-- `status` — `pending` → `active` (set when starting) → `done` (set when finishing; then archive). Also: `blocked` → `active` when unblocked; `cancelled` requires explanation (decision record recommended).
-- `modifies` — spec IDs whose governed behavior this task touches. Empty only for chores outside all spec-governed behavior.
+- `status` — `pending` → `active` (set on start) → `done` (set on finish; then archive). Also: `blocked` → `active` when unblocked; `cancelled` requires explanation (decision record recommended).
+- `modifies` — spec IDs whose governed behavior this task touches; empty only for chores outside all spec-governed behavior.
 - `blocked_by` — task IDs that must complete first.
-- `priority` — optional non-negative int (0 = most urgent); ranks the task in `backlog.py`'s triage view. Absent = untriaged.
+- `priority` — optional int >= 0 (0 = most urgent); ranks task in `backlog.py` triage. Absent = untriaged.
 
-Archiving: completion is a write-back, not a check. Fold the new current state into every spec in `modifies` (or confirm the wording already covers it) and remove `UNIMPLEMENTED` markers the work resolved — only then archive. The write-back asserts only what the delivered work verifiably does — re-read the governing spec and the delivered work; stubbed or partial delivery keeps (or gains) markers instead of asserting the behavior. Never present stubs as complete. Future agents read specs — state recorded only in archived tasks or decisions is lost; a constraint introduced by a decision goes into the spec too, the decision keeps the why. Archive in two steps with `archive.py <task-id>`: first without `--confirm` — it prints each `modifies` spec with its drift for the write-back — then with `--confirm` to move (`git mv` when tracked). Never `--confirm` first. The write-back is not delegatable, not skippable, even if the user claims to have reviewed or already updated the specs.
+Archiving = write-back, not a check. Not delegatable, not skippable, even if user claims reviewed or already updated the specs.
+
+1. `archive.py <task-id>` without `--confirm` — prints each `modifies` spec + its drift. Never `--confirm` first.
+2. Write-back each spec in `modifies`: fold in the new current state (or confirm wording already covers it); remove markers the work resolved. Assert only what the delivered work verifiably does — re-read spec and delivered work. Stub or partial delivery => markers stay (or get added); never present stubs as complete.
+3. `archive.py <task-id> --confirm` — moves the task (`git mv` when tracked).
+
+Future agents read specs — state recorded only in archived tasks or decisions is lost. Decision-introduced constraint => into the spec too; decision keeps the why.
 
 Rules:
 
-- Tests come before implementation and derive from spec, not code.
-- Test isolation: the test agent receives the spec only — no function names, signatures, or implementation details — and must not read source under spec `paths`. Insufficient spec = spec deficiency; surface it.
-- Survey before building: check in-repo code and dependencies first. Reimplementing existing functionality is forbidden.
-- When scope is unclear, ask — don't assume.
-- Escalate when stuck: no spiraling, no bailing silently, no effort-vs-value judgment without user input.
+- Tests precede implementation; derive them from spec, not code.
+- Test isolation: test agent gets spec only — no function names, signatures, implementation details; must not read source under spec `paths`. Insufficient spec = spec deficiency => surface it.
+- Survey before building: check in-repo code + dependencies first; reimplementing existing functionality forbidden.
+- Scope unclear => ask; don't assume.
+- Stuck => escalate: no spiraling, no silent bailing, no effort-vs-value judgment without user input.
 - No antipatterns: injection, unbounded allocations, N+1 queries, bare catch, insecure defaults.
-- Session resume: re-orient from worklog state, not prior session context — the worklog is your memory.
-- Plan in worklog: task and spec files are the planning medium — no external planning tools when worklog suffices.
-- Comments say what code cannot: why, invariants, non-obvious constraints — reference the governing spec/decision ID instead of restating it. No task history or process narration in code.
-- Names travel without context: public names read unambiguously at their import sites — carry the domain in the name; prefer the governing spec's vocabulary.
+- Session resume: re-orient from worklog state, not prior session context — worklog is your memory.
+- Plan in worklog: task/spec files are the planning medium; no external planning tools when worklog suffices.
+- Comments: only what code can't say (why, invariants, non-obvious constraints) — cite the governing spec/decision ID, don't restate it. No task history or process narration in code.
+- Names travel without context: public names read unambiguously at import sites — carry the domain; prefer the governing spec's vocabulary.
 
 Forbidden:
 
@@ -82,11 +88,11 @@ Forbidden:
 
 ### Decision
 
-Immutable record of why a choice was made. Frontmatter: `id`, `title`, plus `relates_to` (spec IDs this decision concerns) and `supersedes` (prior decision IDs it replaces).
+Immutable record of why. Frontmatter: `id`, `title`, `relates_to` (spec IDs concerned), `supersedes` (decision IDs replaced).
 
-Body: context → choice → rationale → consequences. Rationale records the reasons actually given — never invent motives for the record. Do not edit substance — supersede with a new decision; typos and formatting are the only acceptable in-place fixes. Archive only when superseded.
+Body: context → choice → rationale → consequences. Rationale = reasons actually given; never invent motives for the record. Never edit substance — supersede instead; typo/formatting fixes only. Archive only when superseded.
 
-Create when: non-trivial choice, design flaw, requirement change, feature abandonment. For small projects, recording in the task body is acceptable.
+Create when: non-trivial choice, design flaw, requirement change, feature abandonment. Small projects: recording in the task body is acceptable.
 
 ### Relationships
 
@@ -94,7 +100,7 @@ Stored on the referencing entity only — `task.modifies` → spec · `task.bloc
 
 ## Scripts
 
-Scripts ship with the plugin at `${CLAUDE_SKILL_DIR}/scripts/` — never inside the repository: there is no `<repo>/scripts/` and no `<repo>/worklog/scripts/`. `-w` sets the worklog root (default `./worklog`). This section is authoritative. Invoke:
+Scripts ship with the plugin at `${CLAUDE_SKILL_DIR}/scripts/` — never inside the repository: no `<repo>/scripts/`, no `<repo>/worklog/scripts/`. `-w` sets worklog root (default `./worklog`). This section is authoritative. Invoke:
 
 ```
 python ${CLAUDE_SKILL_DIR}/scripts/<script>.py [args] [-w PATH]
@@ -121,6 +127,6 @@ python ${CLAUDE_SKILL_DIR}/scripts/<script>.py [args] [-w PATH]
 | Chore | task | New observable behavior is never a chore |
 | Hotfix | task → decision | Compressed process; post-mortem mandatory |
 
-Ceremony scales with project size. Small projects (<10 specs): spec + single task is sufficient.
+Ceremony scales with project size; small projects (<10 specs): spec + single task suffices.
 
 </skill>

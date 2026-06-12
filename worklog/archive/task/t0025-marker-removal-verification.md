@@ -1,7 +1,7 @@
 +++
 id = "t0025"
 title = "Marker removal requires verified implementation"
-status = "pending"
+status = "done"
 tags = ["methodology"]
 modifies = ["s0011", "s0018"]
 +++
@@ -26,3 +26,15 @@ verifiably does"); the direct spec-edit path has none.
   implementation, or stating that verification is pending.
 - Measure with spec-auth Q6 before/after — the question is already
   signal-bearing for exactly this gap.
+
+## Outcome
+
+- Rule landed in s0011 §Updating ("Marker removal asserts the behavior is
+  built... A user claim alone is not verification") and SKILL.md's marker
+  paragraph, single-lever verified on Q6 before the round-3 compression ran.
+- Cures confirmed on the full suite: spec-auth Q6 full pass (verifies
+  src/collections instead of stripping markers — was 3-for-3 failing), and an
+  unplanned second cure: completion-drift Q3 flips to verify-first conduct
+  under drift ("verify batch import is actually implemented before removing
+  the marker"). Weak-model probe declines removal when code is uninspectable.
+- Record: skill-revision-comparison.md "Compression round 3 + marker rule".

@@ -195,3 +195,28 @@ Levers (pairs in compress.jsonl): (1) file-wide bold/italic strip — paragraph 
 - Spec-auth Q6: third consecutive run (r4, c1, c2) strips all six markers on the user's verbal "shipped" claim — no verification, none surfaced. Confirmed gap, not noise: "remove the marker when implemented" reads as *claimed*. Filed t0025 (rule: marker removal outside the archive write-back requires verified implementation).
 
 Verdict: behavior-neutral-or-better; emphasis markers carried no measured behavioral weight; the binding-paragraph rewrite changed disclosure, not binding — consistent with the standing conclusion that S6 placement needs a structural lever.
+
+---
+
+# Compression round 3 + marker rule (t0026, t0025) — 2026-06-12
+
+Two levers this round, sequenced for attribution: (1) t0025 marker-verification rule added and single-lever verified on spec-auth Q6 before any compression ("I need to verify the implementation directly — a user claim alone isn't sufficient"); (2) t0026 telegraphic rewrite — prompt as natural-language program: articles/copulas dropped, ASCII connectives (`=>` implication, `!=` non-equivalence, `Stated = approved`), archive protocol as an explicit numbered 3-step pipeline.
+
+Tokens: 2000 → 1935 cl100k; 2239 → 2180 claude-opus-4-6 (net, including the rule's +~16). Cumulative campaign: 2254 → 1935 cl100k (−14.2%); 2519 → 2180 claude (−339/session, −13.5%).
+
+**Tokenizer-divergence trap (recorded in compress.jsonl and s0021 Dangers):** the first telegraphic draft used `⇒ ≠ ≥` — cl100k prices them like ASCII (parity), the Claude tokenizer prices them 3-5× (`⇒` ≈ 4-5 tokens vs `=>` ≈ 1). Draft measured −79 cl100k but only −23 claude; the ASCII swap recovered 52 claude tokens. `→` and `·` are cheap in both. Measure the deployment tokenizer, not a proxy.
+
+## Verification
+
+- Probes (haiku, 11 Q incl. new marker-claim probe): 11/11. Telegraphic register parses clean on the weak model; archive answer came back *more* procedural (mirrors the pipeline numbering); marker probe declines removal when code is uninspectable.
+- Exams vs c2 (`results/c2/`): governance =, happy = (Q6 pipeline textbook: report first, claim != verification), **spec-auth 3/6 → 4/6** (Q6 cured: verifies src/collections instead of stripping markers; Q2's ask-stall gone per "Stated = approved" though still no artifact — forcing gap), **completion-drift Q3 → conduct-PASS** (handles the dangling seeded thread, then "verify batch import is actually implemented before removing the marker" → reads store.py; removal unobservable past the turn boundary — seed the re-read if full observability wanted), **precedence Q2 lean-P → P** (quotes the isolation bullet, self-identifies as contaminated) and Q4 now produces artifacts (forced-write compliance fixed; X8 property itself still fails: bare-generic module name, invented dead-code helper).
+- Zero `=>`/`!=`/`=` misparses across all five exams and 11 probes.
+
+## Watch items
+
+- **X7 comment-honesty trade (precedence Q3, within expected-FAIL):** c3 cites spec IDs more and narrates less, but twice asserts a spec rule as code truth above divergent code without flagging the divergence (c2 flagged it). Plausibly the telegraphic "cite the ID, don't restate" executed as "compress the restatement". Next X7 wording pass must address divergence-flagging explicitly. Deliberately NOT patched this round — unmeasured tail-end edits are how regressions sneak in.
+- Pipeline step-2 escape hatch "(or confirm wording already covers it)" taken exactly once across runs — under attention redirection (compl-drift Q3) — while identical drift got folded elsewhere. Exploitable; candidate for tightening when next touched.
+- One `next_id.py s` arg slip (prefix/type conflation, isolated single occurrence).
+- T3 under prior commitment (compl-drift Q1) and S6 binding discipline (spec-auth Q1) remain the standing open failures; the litmus self-incriminates post-write but does not route. Structural lever still the recommendation.
+
+Verdict: strict improvement — two cures (S9-marker, T6-conduct), one strengthened pass, zero regressions on attributable comparisons; −339 claude tokens/session cumulative. Remaining mass: tables 523, TOML example + fences ~75, frontmatter 109, telegraphic rules ~750 — further reduction means removing rules or interface docs (scope decision).
