@@ -25,5 +25,11 @@ r4-control run to separate exam noise from skill changes.
   question would otherwise spend its turn on) to the four questions above.
   Precedence Q4 additionally needs its seeded read-back extended to
   `src/recipes/models.py` (the fresh run burned its turn there).
+- t0027 evidence: precedence Q4 defied its existing forcing phrase via three
+  distinct routes across consecutive runs — scope questions (c4), chore-task
+  deflection (c5), redundant directory survey (c6, despite the prompt
+  pre-empting it). Forcing needs to close tool-stalling, not just
+  question-stalling: pre-seed the survey targets and state the response must
+  contain the files.
 - Re-run the touched exams once to confirm each yields a gradable artifact.
 - Update the per-question comments to reflect the forced shape.

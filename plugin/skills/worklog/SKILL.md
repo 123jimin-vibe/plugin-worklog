@@ -28,7 +28,7 @@ paths = ["src/auth/**", "src/middleware/session*"]
 
 Required sections: Observable Behavior, Constraints, Anticipated Changes, Dangers.
 
-Behavioral items bind. Write only user-stated behavior + its direct entailments. Litmus before writing an item: would you ask the user to confirm it? yes => not stated => Proposals (or Anticipated Changes), never a behavioral section. Stated = approved: don't re-ask; ask only what is genuinely undecided.
+Behavioral items bind. Write only user-stated behavior + its direct entailments; unstated suggestions go to Proposals (or Anticipated Changes), never a behavioral section. Stated = approved: don't re-ask; ask only what is genuinely undecided.
 
 `UNIMPLEMENTED` = approved-but-unbuilt; marking an item != approving it. New spec for unbuilt work => every behavioral item starts `UNIMPLEMENTED`. Remove a marker only against verified implementation (archive write-back, or direct code inspection) — user claim != verification. Spec stays authoritative regardless of markers.
 
@@ -68,20 +68,15 @@ Rules:
 - Tests precede implementation; derive them from spec, not code.
 - Test isolation: test agent gets spec only — no function names, signatures, implementation details; must not read source under spec `paths`. Insufficient spec = spec deficiency => surface it.
 - Survey before building: check in-repo code + dependencies first; reimplementing existing functionality forbidden.
-- Scope unclear => ask; don't assume.
+- Scope unclear => ask; don't assume. A requested deliverable is delivered with open points flagged — not withheld pending answers.
 - Stuck => escalate: no spiraling, no silent bailing, no effort-vs-value judgment without user input.
-- No antipatterns: injection, unbounded allocations, N+1 queries, bare catch, insecure defaults.
-- Session resume: re-orient from worklog state, not prior session context — worklog is your memory.
-- Plan in worklog: task/spec files are the planning medium; no external planning tools when worklog suffices.
-- Comments: only what code can't say (why, invariants, non-obvious constraints) — cite the governing spec/decision ID, don't restate it. No task history or process narration in code.
-- Names travel without context: public names read unambiguously at import sites — carry the domain; prefer the governing spec's vocabulary.
+- Worklog is your memory: re-orient from worklog state, not prior session context; plan in task/spec files — no external planning tools when worklog suffices.
 
 Forbidden:
 
 - Implementation without a covering spec.
 - Tests verifying implementation structure instead of spec behavior.
 - Behavioral changes disguised as refactoring.
-- Regression test written after the fix (must fail before fix).
 - Routing around a bug instead of fixing or reporting it.
 - Fixing only the observed failure without checking if it generalizes.
 - Modifying spec behavior during task work without approval.
@@ -92,7 +87,7 @@ Immutable record of why. Frontmatter: `id`, `title`, `relates_to` (spec IDs conc
 
 Body: context → choice → rationale → consequences. Rationale = reasons actually given; never invent motives for the record. Never edit substance — supersede instead; typo/formatting fixes only. Archive only when superseded.
 
-Create when: non-trivial choice, design flaw, requirement change, feature abandonment. Small projects: recording in the task body is acceptable.
+Small projects: recording decisions in the task body is acceptable.
 
 ### Relationships
 
@@ -100,7 +95,7 @@ Stored on the referencing entity only — `task.modifies` → spec · `task.bloc
 
 ## Scripts
 
-Scripts ship with the plugin at `${CLAUDE_SKILL_DIR}/scripts/` — never inside the repository: no `<repo>/scripts/`, no `<repo>/worklog/scripts/`. `-w` sets worklog root (default `./worklog`). This section is authoritative. Invoke:
+Scripts ship with the plugin — never in the repo: no `<repo>/scripts/`, no `<repo>/worklog/scripts/`. `-w` = worklog root (default `./worklog`). Invoke:
 
 ```
 python ${CLAUDE_SKILL_DIR}/scripts/<script>.py [args] [-w PATH]

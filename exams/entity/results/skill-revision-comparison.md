@@ -220,3 +220,36 @@ Tokens: 2000 → 1935 cl100k; 2239 → 2180 claude-opus-4-6 (net, including the 
 - T3 under prior commitment (compl-drift Q1) and S6 binding discipline (spec-auth Q1) remain the standing open failures; the litmus self-incriminates post-write but does not route. Structural lever still the recommendation.
 
 Verdict: strict improvement — two cures (S9-marker, T6-conduct), one strengthened pass, zero regressions on attributable comparisons; −339 claude tokens/session cumulative. Remaining mass: tables 523, TOML example + fences ~75, frontmatter 109, telegraphic rules ~750 — further reduction means removing rules or interface docs (scope decision).
+
+---
+
+# Trim experiment (t0027) — 2026-06-12
+
+User-directed: clauses judged non-preventing (counterfactually present during failures, duplicated, or mechanism-unmapped) cut as c4 and evaluated. Sequence: c4 (eight cuts) → c5 (bisect: litmus restored) → c6 (final: litmus re-cut + deliver clause).
+
+Tokens: 1935 → 1766 (c4) → 1782 cl100k (c6 final); claude 2180 → 1995 → 2014. **Campaign cumulative: 2254 → 1782 cl100k (−20.9%); 2519 → 2014 claude (−505/session, −20.0%).**
+
+## Cut verdicts
+
+| Cut | Watcher | Verdict |
+|---|---|---|
+| Scripts preamble (path prose + "This section is authoritative") | happy Q6 direct X9 stress + all-run sweeps | **Clean** — template-only path statement suffices; zero invented paths anywhere |
+| No-antipatterns bullet | (exam-blind, mechanism-unmapped) | **Clean** — no effect anywhere |
+| Forbidden regression-test line (dup of Bug fix row) | (exam-blind) | **Clean** |
+| Session-resume + Plan-in-worklog → merged bullet | (exam-blind, X6 Low) | **Clean** |
+| Decision "Create when:" list | governance Q1, happy Q4 | **Clean** — supersede mechanism alone drives correct decision handling |
+| X7 comments bullet | precedence Q3 | **Keep cut** — WITH the rule: trap fired every run + false spec-as-truth comments with cargo-cult ID cites; WITHOUT: c4 zero false/zero narration (one false comment returned at c6 under the deliver clause — still better than any rule-present run) |
+| X8 names bullet | precedence Q4 | **Keep cut on c3-era evidence** — counterfactual still unmeasurable (no artifact in any condition; Q4 defied forcing via questions→chore-deflection→survey across c4/c5/c6 — t0023 evidence) |
+| Binding-paragraph litmus | spec-auth Q1, happy | **Keep cut — attribution corrected**: happy Q3 regressed at c4, but restoring the litmus (c5) did NOT cure it, and its credited disclosure effect survived removal (Q1 disclosed in c4/c6). The five-revision attribution was wrong. |
+
+## The Q3 mechanism and the deliver clause
+
+The c4 regression (happy Q3: "Draft the spec update" → 3 questions, no draft) was ask-salience redistribution: thinning the rules list amplified "Scope unclear => ask". Fix (c6): the ask bullet gains "A requested deliverable is delivered with open points flagged — not withheld pending answers." Results: happy Q3 cured (draft delivered, write correctly withheld); **spec-auth Q2 flips to its first-ever PASS** (ratings spec written, all five behavioral items `UNIMPLEMENTED`, opens flagged in prose); approval gates verified intact (governance Q5/Q6 — Q6 stronger); the binding rule dominates where delivery would encode a contradiction (spec-auth Q5 still flags, doesn't write); completion-drift Q2's in-turn write-back restored, Q3 marker verification sharper (greps the function).
+
+Known costs of the clause (recorded, accepted): happy Q4 self-initiated an unrequested third write retiring s0001's Dangers note (out-of-scope edit, non-behavioral); precedence Q3's one false comment (above); precedence Q4 now tool-stalls (survey) instead of question-stalls — the clause needs "in this response"-grade teeth only the exam-side forcing (t0023) can measure.
+
+## Suite state at c6 vs campaign start (r4)
+
+happy 5/6 (Q1 environmental), governance 4/6 (Q2/Q3 r4-era, control-proven), **spec-auth 4/6 (Q2 and Q6 both new passes vs r4's 2/5)**, completion-drift Q2 + Q3-conduct, precedence Q1/Q2. The file is 20% smaller than r4 and the suite is strictly stronger.
+
+Standing items: T3-under-prior-commitment and S6 binding (open as ever, structural lever); X7 future work = divergence-flagging wording; t0023 (on hold) now owns three documented Q4 defiance routes + happy Q1/governance Q2/spec-auth Q3 stalls; deliver-clause act-bias watch (Q4-happy shape).
