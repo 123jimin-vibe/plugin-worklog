@@ -18,9 +18,9 @@ Sections in order:
 1. **Worklog** — one-line philosophy, root directory, init instruction.
 2. **Entities** — ID format, filename convention, frontmatter fence. One subsection per entity type, each carrying the rules that govern it:
    - **Spec** — fields, required sections, `UNIMPLEMENTED` markers, `paths`, precedence, drift detection.
-   - **Task** — fields, lifecycle, archiving, stubs, execution rules, forbidden list.
+   - **Task** — fields, lifecycle, archiving (including stub honesty), execution rules, forbidden list.
    - **Decision** — fields, immutability, supersession.
-   - **Relationships** — forward-link table, reverse-via-grep rule.
+   - **Relationships** — forward links, reverse-via-grep rule.
 3. **Scripts** — table of scripts with flags and purpose.
 4. **Workflows** — summary table (name, flow, key constraint). No full flowcharts.
 

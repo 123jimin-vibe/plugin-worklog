@@ -150,4 +150,28 @@ r1/r3 ran the full suite; r2/r4/r5 ran affected files. Token cost: 1765 → 2254
 1. Structural S6-placement enforcement (see Open failures).
 2. Decision-record proposal trigger: X5/cancellation passes never propose the decision record (governance Q6 near-miss, both rounds) — candidate for the same sharpening the chore row received.
 3. Multi-turn harness for X4 and for protocol-following beyond the seeded step (s0014 single-turn limits).
-4. SKILL.md compression pass (s0021): +489 tokens this iteration; merge candidates exist now that wording is stable.
+4. SKILL.md compression pass (s0021): +489 tokens this iteration; merge candidates exist now that wording is stable. **Done — see below.**
+
+---
+
+# Compression pass (t0022) — 2026-06-12
+
+Model: claude-sonnet-4-6, temperature 0.0 (exams); claude-haiku-4-5 (comprehension canary).
+
+Tokens: 2254 → 2097 cl100k (−7.0%); 2519 → 2344 claude-opus-4-6 (−175/session, confirmed in exam input_tokens). Per-section cl100k: Task 825→748, Relationships 107→58, Decision 147→133, Entities 58→51, Spec 465→457 (binding paragraph minimal-touch — S6 battleground), Scripts 372→370, preamble/Workflows unchanged.
+
+Levers (pairs + verdicts in `brainstorm/prompt-engineering/compress.jsonl`): task+decision TOML examples → field lists (spec example kept as sole syntax anchor); Stubs ¶ merged into Archiving; "Approval = explicit confirmation" bullet deduped (rule stays in Spec ¶ + Forbidden); "Implementation details in specs." deduped from Forbidden (stays in Spec ¶); Relationships diagram → inline `·` line; status lifecycle merged into the field list; minor merges (decision edit rules, next_id gloss). Every measured load-bearing phrase kept verbatim.
+
+## Verification
+
+- Comprehension probes (10 questions × {r4, compressed}, haiku): 10/10 parity; compressed read better twice (frontmatter probe included `tags`; Proposals routing cleaner, no invented constraints in the illustration).
+- Exams: happy 5/6, governance 4/6, spec-auth 3/6, completion-drift and precedence unchanged. **Every delta reproduces under a same-exam r4-skill control run** — governance r4-control Q3 writes t0004 with no `modifies`, rationalizing "the parameter isn't a behavioral item"; r4-control Q2 ask-stalls with no artifact; happy r4-control Q1 stalls identically. The dips are r4-era behavior + exam observability surfaced by re-running files last measured at r3, not compression. Zero malformed frontmatter in any run despite the removed examples.
+
+## Watch items (pre-existing, surfaced by this round)
+
+- T2 (governance Q3): the r3 pass did not survive into r4 — fails under both r4-control and compressed runs. Confirms the doc's earlier read: framing pressure, flaky boundary.
+- S6 (spec-auth Q1): fresh run binds the same invented spec with zero disclosure prose (r4 at least disclosed). Single sample; strengthens the structural-lever recommendation.
+- Spec-auth Q6: both runs strip all six markers purely on the user's shipped-claim, no verification surfaced — latent T6-adjacent gap distinct from the register property (which both hold).
+- Orientation stalls on artifact questions without in-turn forcing now affect happy Q1, governance Q2, spec-auth Q3, precedence Q4 (post-t0018 tools.md re-read line). Exam-side forcing pass queued as t0023.
+
+Verdict: compression is behavior-neutral on every attributable comparison; −175 claude tokens/session banked. Next size lever would be removing rules, which is a scope decision, not a wording one.
