@@ -175,3 +175,23 @@ Levers (pairs + verdicts in `brainstorm/prompt-engineering/compress.jsonl`): tas
 - Orientation stalls on artifact questions without in-turn forcing now affect happy Q1, governance Q2, spec-auth Q3, precedence Q4 (post-t0018 tools.md re-read line). Exam-side forcing pass queued as t0023.
 
 Verdict: compression is behavior-neutral on every attributable comparison; −175 claude tokens/session banked. Next size lever would be removing rules, which is a scope decision, not a wording one.
+
+---
+
+# Compression round 2 (t0024) — 2026-06-12
+
+User-directed deeper pass. Tokens: 2097 → 2000 cl100k; 2344 → 2239 claude-opus-4-6. Cumulative across both rounds: 2254 → 2000 cl100k (−11.3%), 2519 → 2239 claude (−280/session, visible in exam input_tokens: governance ~−145, precedence ~−105, drift-condition exams ~−100 vs r4).
+
+Levers (pairs in compress.jsonl): (1) file-wide bold/italic strip — paragraph leads → plain or colon-labels, Rules bullet titles → lead phrases, workflow names plain (~60 cl100k); (2) binding paragraph rebuilt — confirm-test merged into the write-rule as the definition of unstated, "invent nothing" subsumed by "only", don't-re-ask sentence shortened ("genuinely" kept); (3) `UNIMPLEMENTED` semantics split to own paragraph, "does not license it" → concrete "marking an item does not approve it"; (4) archiving lost-state sentence merged. Verbatim-kept: two-step protocol + "Never `--confirm` first." + claims qualifier, "Never present stubs as complete.", "Discussion is not approval.", chore row, script location/template/negative, greenfield marker rule.
+
+## Verification
+
+- Comprehension probes (haiku, 10 Q): 10/10; the S6 probe produced the cleanest Proposals routing of the three revisions.
+- Exams vs c1 (snapshot `results/c1/`): happy 5/6 =, governance 4/6 =, spec-auth 3/6 =, completion-drift =, precedence = . All required passes held; **no new ask-stalls on stated content** (the named r5 risk — happy Q4's re-ask canary clean; the residual ask-stalls target only genuinely-undecided points, per graders).
+- Shape improvements, not graded as wins: spec-auth Q1 back to disclosed binding (c1 bound silently; c2 appends "things I inferred that you should confirm or correct" — the merged confirm-test fires post-write; binding-section discipline still open); happy Q4's malformed double-brace tool JSON gone and invented rationale hedged; happy Q3 delivers the draft in-turn; completion-drift Q1 proposes instead of writing immediately; precedence Q3 comments flag divergence instead of asserting spec rules as code truth.
+
+## New finding
+
+- Spec-auth Q6: third consecutive run (r4, c1, c2) strips all six markers on the user's verbal "shipped" claim — no verification, none surfaced. Confirmed gap, not noise: "remove the marker when implemented" reads as *claimed*. Filed t0025 (rule: marker removal outside the archive write-back requires verified implementation).
+
+Verdict: behavior-neutral-or-better; emphasis markers carried no measured behavioral weight; the binding-paragraph rewrite changed disclosure, not binding — consistent with the standing conclusion that S6 placement needs a structural lever.
