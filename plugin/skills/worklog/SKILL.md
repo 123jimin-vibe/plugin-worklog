@@ -9,7 +9,7 @@ description: "Spec-driven development methodology via flat-file worklog. Trigger
 
 Specs define what the system is. Tasks change it. Decisions record why.
 
-Root: `worklog/`. If absent, create `worklog/{spec,task,decision}/` and `worklog/archive/task/`.
+Root: `worklog/`. Absent => project may not use this methodology; unless setup was requested, ask before creating `worklog/{spec,task,decision}/` and `worklog/archive/task/`.
 
 ## Entities
 

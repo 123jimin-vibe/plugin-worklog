@@ -68,6 +68,10 @@ A decision record is recommended (not required) when:
 - Archive or delete a decision that has not been superseded. Superseded decisions may be archived or deleted.
 - Omit `relates_to` — unlinked decisions float free of spec governance and become hard to discover.
 
+## Proposals
+
+- Adding the hotfix post-mortem to Required Creation. s0009 makes it mandatory and forbids a hotfix without one, while Required Creation lists an abandoned refactor as its only required case. The two describe different records — s0009's post-mortem covers root cause and accepted tech debt, the recommended bullet covers a preventive design choice arising from the fix — so the gap is a missing required case, not a disagreement about strength. Adding it also requires scoping "The hotfix itself is not a decision" to the fix action, since as written it denies the post-mortem too.
+
 ## Anticipated Changes
 
 - Structured fields for context/choice/rationale/consequences instead of free-form body.

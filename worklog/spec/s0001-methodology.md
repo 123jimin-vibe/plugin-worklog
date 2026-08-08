@@ -8,6 +8,10 @@ tags = ["methodology"]
 
 Spec-driven development methodology for AI agents. Stores project state in flat files so agents can pick up where they left off without relying on session memory.
 
+## Adoption
+
+The methodology is opt-in per project, and `worklog/` is the only signal that a project has opted in. A missing root means the project may not use the methodology at all, not that a worklog is owed. Creating one is an adoption decision: ask first, unless the user requested the setup.
+
 ## Entities
 
 Three entity types in `worklog/`. Entity specs in `worklog/spec/entity/`:

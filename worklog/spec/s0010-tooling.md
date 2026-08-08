@@ -23,7 +23,7 @@ At runtime, consuming agents invoke the scripts from the installed skill directo
 
 ## Scripts
 
-`validate.py` — dangling refs, invalid statuses, missing required fields, ID format, duplicate IDs, unknown tags. Also: archived tasks must be terminal (`done`/`cancelled`), cancelled tasks must carry an explanation in their body, and `blocked_by` chains must be acyclic.
+`validate.py` — dangling refs, invalid statuses, missing required fields, ID format, duplicate IDs, unknown tags. Also: archived tasks must be terminal (`done`/`cancelled`), cancelled tasks must carry an explanation in their body, and `blocked_by` chains must be acyclic. The tag check needs the index (s0015) — with no index the check is skipped, not failed, so a worklog created without one loses tag validation silently.
 
 `next_id.py` — next available ID for a given entity type.
 

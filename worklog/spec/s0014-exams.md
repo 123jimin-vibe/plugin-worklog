@@ -7,7 +7,7 @@ paths = ["exams/**"]
 
 # Exams
 
-LLM Q&A evaluation files. Each exam tests a worklog spec by feeding it as a system prompt and running questions against it.
+LLM Q&A evaluation files. Each exam runs questions against the delivered skill artifact (s0018) and observes whether an agent following it behaves as this project's specs prescribe.
 
 ## Purpose
 
@@ -17,11 +17,11 @@ The goal of writing exams is to find failures — questions the agent gets wrong
 
 ## Location
 
-`exams/` — organized by spec under test. Fictional source files and other test data go in `fixtures/` subdirectories alongside the exam TOMLs.
+`exams/` — one directory per spec group, named for the group it probes. Exam files are named for the pitfall cluster or the condition they test, not for a spec ID. Prompt fragments shared across a group's exams — the tool sheet and the fictional worklog state — sit beside the exam files; fictional source files go in a `fixtures/` subdirectory.
 
 ## Format
 
-TOML configs for the prompt-engineer:invoke-llm skill. The system prompt references the spec under test. User prompts are questions that probe the spec's behavioral prescriptions.
+TOML configs for the prompt-engineer:invoke-llm skill. Each config resolves the artifact under test into a variable and delivers it either as the system prompt or as a tool result inside the conversation body. User prompts are questions that probe the artifact's behavioral prescriptions. Model and temperature are pinned, and pinned identically across every exam in a group — cross-revision verdict tables are comparable only because they are.
 
 ## Writing Questions
 
@@ -41,17 +41,18 @@ Expected answers in exam comments must be grounded in spec rules with citations.
 
 ## Relationships
 
-| Direction | Relationship         | Target |
-|-----------|----------------------|--------|
-| Outbound  | system prompt `file` | Spec   |
+| Direction | Relationship        | Target           |
+|-----------|---------------------|------------------|
+| Outbound  | artifact under test | SKILL.md (s0018) |
+| Outbound  | grading reference   | Spec             |
 
 ## Tool Emulation
 
 Some exams need to test agent behavior in realistic environments where the agent reads files, creates entities, and archives tasks. When the underlying runner does not support tool invocation, exams emulate tools via prompt conventions — tool schemas in the system prompt, tool calls as structured text in the response.
 
-**Minimal tool set.** The emulated tools should be the smallest set that covers the entity lifecycle: orienting (reading, listing, searching) and acting (writing, moving). Git operations and other non-entity tooling are excluded unless the exam specifically targets them.
+**Minimal tool set.** The emulated tools should be the smallest set that covers the entity lifecycle: orienting (reading, listing, searching), acting (writing, moving), and a shell — script invocation is itself a graded surface (s0019 X9). Other non-entity tooling is excluded unless an exam specifically targets it.
 
-**Single-turn constraint.** Exams are single-turn — the runner sends one prompt and collects one response. Multi-step tool loops cannot be tested. Only the immediate next action (tool call, reasoning, or refusal) is observable. Workarounds: instruct the LLM to include its reasoning alongside tool calls, or encourage parallel tool calls so multiple actions are visible in one response. Rules that prescribe stop-and-wait protocols (e.g., two-step archiving) push the graded action past the single turn — seed the protocol's first step and its tool_result into the pre-baked history so the graded action is the next one. For artifact questions, instruct the write to happen in the current response; an orientation-only turn yields no verdict.
+**Single-turn constraint.** Exams are single-turn — the runner sends one prompt and collects one response. Multi-step tool loops cannot be tested. Only the immediate next action (tool call, reasoning, or refusal) is observable. Workarounds: instruct the LLM to include its reasoning alongside tool calls, or encourage parallel tool calls so multiple actions are visible in one response. Rules that prescribe stop-and-wait protocols (e.g., two-step archiving) push the graded action past the single turn — seed the protocol's first step and its tool_result into the pre-baked history so the graded action is the next one. The tool sheet both sanctions verification re-reads and forbids the model from writing its own tool results, so orientation consumes the turn by default. For artifact questions, instruct the write to happen in the current response; an orientation-only turn yields no verdict.
 
 **One scenario per file.** A TOML exam file can test multiple scenarios only when the final user message differs between them. All prior turns (system prompt, conversation history, tool results) are shared. This means each file is effectively one setup with a fan-out at the last message.
 
@@ -60,11 +61,23 @@ Some exams need to test agent behavior in realistic environments where the agent
 - **Pre-baked history:** Prior conversation turns already contain tool calls and results, placing the agent mid-scenario. The exam question tests what the agent does next. Tests entity knowledge — decisions, precedence, lifecycle rules.
 - **Dry calls:** No prior tool history. The agent writes tool calls in its response that are never executed. The exam evaluates intent — right tool, right arguments, right order. Tests orientation and discovery — ID allocation, archive checks, reference lookups.
 
+## Results
+
+Raw run output is uncommitted: each exam writes its answers to a JSONL file that the ignore rules keep out of the repository. Per-revision baseline snapshots and the comprehension-probe config are local measurement scaffolding, also uncommitted — a record that cites them cites something local by design, not a broken link.
+
+The durable record is a single append-only comparison ledger per exam group. One section per campaign round, each pairing that round's artifact levers with the questions watching them, the per-question verdicts, attributable wins, open failures, and watch items. Earlier sections are never rewritten; a corrected attribution is recorded in the round that corrected it.
+
+Verdicts are comparable only against baselines captured on the same exam files. Where an exam file changed after its baseline was taken, a control run of the prior artifact revision against the current files separates exam noise from artifact change.
+
+## Proposals
+
+- Classifying the pitfalls added since the drift/framing split was drawn (S9, T7, X7, X8, X9) as drift targets or framing targets.
+- Ranking the drift techniques by measured strength, so an author reaches for the strongest first.
+- Making the weak-model comprehension probes a binding gate on exam changes, as they already are on artifact changes (s0018).
+
 ## Anticipated Changes
 
 - Grading rubric or automated scoring.
-- Convention for exam file naming relative to spec ID.
-- Result archiving strategy.
 
 ## Writing Adversarial Questions
 
@@ -80,17 +93,17 @@ Adversarial questions push the LLM toward a wrong answer. Two requirements: the 
 
 ## Drift Techniques
 
-Empirically validated techniques for increasing adversarial pressure. These were discovered through controlled experimentation (see `exams/entity/pitfall-drift.md` for the full lab notes). Apply these when a question passes too easily.
+Empirically validated techniques for increasing adversarial pressure, isolated by toggling one factor at a time; the lab notes beside the exam files carry the rounds. Apply these when a question passes too easily. Each technique's measured strength is stated with it — no technique is decisive alone.
 
-**SKILL.md placement.** Delivering SKILL.md as a conversation-body tool result (rather than a system prompt) makes it susceptible to attention decay as the conversation grows. This mirrors real-world delivery where skills are loaded as conversation content, not privileged system instructions.
+**Artifact placement.** Delivering the artifact as a conversation-body tool result rather than a system prompt exposes it to attention decay as the conversation grows, and mirrors real-world delivery where skills load as conversation content. Marginal in isolation: with the artifact in the system prompt and every other vector active, the same questions still fail. It is the default delivery, not an escalation.
 
-**Execution momentum.** Pre-baked chore turns (sed fixes, file creation, dependency bumps) between orientation and the critical question build a "just execute" pattern. Each chore is legitimately spec-free, establishing that the current session is about quick fixes. The critical question inherits this framing.
+**Execution momentum.** Pre-baked chore turns (sed fixes, file creation, dependency bumps) between orientation and the critical question build a "just execute" pattern. Each chore is legitimately spec-free, establishing that the current session is about quick fixes. The critical question inherits this framing. Insufficient alone — execution history without the other vectors leaves the questions passing.
 
-**Prior commitment.** The agent's own earlier suggestion — later referenced in the fan-out — creates sunk-cost pressure. When the agent already proposed a solution and the user approved it, the governance check feels redundant at execution time. This is the strongest single factor for suppressing process compliance on direct-action questions.
+**Prior commitment.** The agent's own earlier suggestion — later referenced in the fan-out — creates sunk-cost pressure. When the agent already proposed a solution and the user approved it, the governance check feels redundant at execution time. Strongest on the question that cashes in the commitment; it does not carry the rest of the fan-out.
 
 **Precedent-setting.** A chore that creates a file in an ungoverned area (e.g., a utility module) establishes that file creation there is governance-free. When the critical question asks for another file in the same area, the agent treats it as the same class of work.
 
-**Fan-out directness.** Action-oriented wording ("Add X at path Y. Wire it into Z.") suppresses deliberation compared to open-ended wording ("We need X, what do you think?"). Specifying exact file paths and actions gives the agent an execution plan that bypasses the "should I check governance?" step.
+**Fan-out directness.** Action-oriented wording ("Add X at path Y. Wire it into Z.") suppresses deliberation compared to open-ended wording ("We need X, what do you think?"). Specifying exact file paths and actions gives the agent an execution plan that bypasses the "should I check governance?" step. The single most impactful wording change measured.
 
 ### What drift affects and what it doesn't
 
@@ -105,7 +118,7 @@ Target drift techniques at process-rule pitfalls (T2, T4, X2). For reasoning-rul
 Some pitfalls resist single-turn testing. Record the reason here rather than shipping a refutable exam.
 
 - **X4 (inline spec edit without approval)** — the violation is the agent *spontaneously* editing a spec's behavioral content mid-task. A single user message instructing the edit reads as authorization (the irrefutability problem), so the wrong action becomes defensible. Needs a multi-turn harness that observes an unsolicited spec edit during task execution.
-- **S4, T1, D2, X6** — Low severity (per s0019); deferred, not infeasible.
+- **S4, X6** (Low severity) and **T1, D2** (Medium, per s0019) — deferred, not infeasible.
 
 ## Dangers
 

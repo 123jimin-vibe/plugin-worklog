@@ -7,6 +7,10 @@ Brainstorm for a plugin that enforces software development methodology on AI age
   - Empirical findings (e.g. `context-file-effectiveness.md`) can be treated as evidence.
 - `pitfalls.md` — catalog of AI agent failure modes relevant to this plugin.
 - `case-study-bfc.md` — observations from a project that used the previous worklog system.
+- `case-study-prompt-engineer.md` — observations from applying the current worklog methodology to another project.
+- `prompt-engineering/` — measurement records for the delivered SKILL.md.
+  - `compress.md` — ledger schema.
+  - `compress.jsonl` — the ledger: source text, candidate rewrites, token counts, regressions.
 - `expr-spec-structure.md` — evaluation of spec representation approaches (in-source docgen, per-directory README, flat/hierarchical separate directory, wiki-style, ADRs, etc.), with simulations against bfc.
 - `expr-documentation.md` — documentation structure (TODO).
 - `expr-workflows.md` — typical project workflows, entity analysis, git utilization, mistake/history tracking.

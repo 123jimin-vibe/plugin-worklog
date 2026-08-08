@@ -22,7 +22,6 @@ Update `tags.csv` when adding, renaming, or removing tags from spec frontmatter.
 
 ## Anticipated Changes
 
-- Validation that all tags in spec frontmatter appear in the index (via validate.py, s0010).
 - Tag descriptions enforced as non-empty.
 
 ## Dangers
