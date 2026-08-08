@@ -1,0 +1,1 @@
+You're working on the main repository for the 'worklog' agent skill.
