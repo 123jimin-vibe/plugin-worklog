@@ -9,39 +9,58 @@ title = "Worklog entities: objective specification"
 
 ### ID
 
-Note: References don't have IDs.
+References do not have IDs.
 
-- Standard form: type prefix + at least 4 decimal digits, padded with leading zeroes when necessary.
+- An ID consists of a type prefix and a decimal numeric value.
+- The type prefix and numeric value determine identity.
+- Within one type, each numeric value MUST identify at most one entity,
+  including archived entities.
+  - `s01` and `s0001` refer to the same entity.
+  - `s01` and `t01` may both exist because their types differ.
+- Standard form: prefix the numeric value with leading zeroes until its digit
+  part has four characters. Values already longer than four digits are
+  unchanged.
   - Examples: `s0001`, `t12345`
-- Conventional form: MAY omit leading zeroes, down to two digits.
+- Conventional form: leading zeroes MAY be omitted while retaining at least two
+  digits.
   - Examples: `s01`, `t123`
-- Number MUST be unique among entities of that type, including archived ones.
-  - Example: `s01` and `s0001` always refer to the same entity.
-  - Example: `s01` and `t01` may be present together (different types).
 - Numbers SHOULD NOT be changed or reassigned.
-- Tools SHOULD accept any non-empty decimal digit part without a length restriction.
-  - Example: `s1`, `s001`, and `s00001` are all valid ways of specifying `s0001`.
+- Tools SHOULD accept any non-empty decimal digit part without a length
+  restriction and normalize it by numeric value.
+  - `s1`, `s001`, and `s00001` all specify `s0001`.
 
 ### File
 
-- Entities are stored as Markdown files `worklog/{type}/**/{filename}.md`.
-- Any file or directory SHOULD be named in kebab-case.
-- For an entity with an ID, the filename MUST start with its ID in standard form.
-  - Example: `s0001-project-overview`
-  - Non-ID parts MAY change, RECOMMENDED to be based on title.
-- Files may freely move around in `worklog/{type}`.
+- Non-archived entities are Markdown files under
+  `worklog/{type}/**/{filename}.md`, where `{type}` is `spec`, `task`, `note`,
+  `ref`, or `decision`.
+- Files and directories under `worklog/` SHOULD be named in kebab-case.
+- For an entity with an ID, the filename MUST start with its ID in standard
+  form.
+  - Example: `s0001-project-overview.md`
+  - The non-ID portion MAY change and SHOULD be based on the title.
+- An entity with an ID retains its identity when its path or the non-ID portion
+  of its filename changes.
+
+### Archive
+
+The archive contains entities removed from the current working set but retained
+as project history.
+
+- Only tasks MAY be archived.
+- Archived tasks are stored as `worklog/archive/task/{filename}.md`;
+  subdirectories are not allowed.
 
 ### TOML frontmatter
 
-- Entities with IDs SHOULD have TOML frontmatter delimited by `+++`.
+- Every entity MUST have TOML frontmatter delimited by `+++`.
+- Reference frontmatter is metadata, not part of the copied source contents.
 
-Fields used by multiple types:
-
-| Field | Description | Types |
-| --- | --- | --- |
-| `id` | Standard-form ID. | spec, task, note, decision |
-| `title` | Human-readable title. | spec, task, note, decision |
-| `tags` | Labels for classification and search. | spec, task, note, decision |
+| Field | Type | Required | Available to | Description |
+| --- | --- | --- | --- | --- |
+| `id` | string | yes | spec, task, note, decision | Standard-form ID. |
+| `title` | string | yes | all types | Human-readable title. |
+| `tags` | array of strings | no | all types | Classification and search labels. |
 
 ## Spec
 
@@ -56,10 +75,19 @@ One unit of work, completable in one session.
 
 - ID prefix: `t`.
 - Declares `status` and the spec IDs it `modifies`.
-  - Status: `pending`, `active`, `blocked`, `done`, or `cancelled`.
+  - `pending`: work has not started.
+  - `active`: work is in progress.
+  - `blocked`: a dependency or external cause explicitly prevents work.
+  - `done`: work is complete.
+  - `cancelled`: work will not be completed.
+- A blocked task MUST state what prevents work. It is unblocked only after
+  checking that the stated cause no longer prevents work.
 - MAY declare `blocked_by`: IDs of tasks that need to be resolved first.
+- A task is resolved when its status is `done` or `cancelled`.
 - Open tasks live in `worklog/task/`.
-- Completed or cancelled tasks SHOULD BE moved to `worklog/archive/task/`.
+- Completed or cancelled tasks SHOULD be moved to `worklog/archive/task/`.
+- Done, cancelled, and archived tasks SHOULD remain terminal. Further work
+  SHOULD be recorded as a separate task.
 
 ## Note
 
@@ -70,12 +98,14 @@ Non-authoritative project guidance.
 ## Reference
 
 Material copied from an external source.
- 
+
 - ID not assigned.
-- RECOMMENDED to be arranged hierarchically under `worklog/ref/`.
-- MUST preserve the source's contents.
-  - Format conversion and partial extraction are allowed.
-  - Rephrasing and added clarification are NOT allowed.
+- SHOULD be arranged hierarchically under `worklog/ref/`.
+- Frontmatter SHOULD identify the original `source` via URL.
+- A partial extraction SHOULD identify its `selection`.
+- Copied contents SHOULD preserve the source's contents.
+  - Format conversion and partial extraction MAY be performed.
+  - Copied contents SHOULD NOT be rephrased or supplemented with clarification.
 
 ## Decision
 
