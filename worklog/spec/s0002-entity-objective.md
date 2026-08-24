@@ -1,5 +1,5 @@
 +++
-id = "s02"
+id = "s0002"
 title = "Worklog entities: objective specification"
 +++
 

@@ -1,5 +1,5 @@
 +++
-id = "s04"
+id = "s0004"
 title = "SKILL.md"
 paths = ["plugin/skills/worklog/SKILL.md"]
 +++

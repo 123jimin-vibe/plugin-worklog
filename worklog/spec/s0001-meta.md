@@ -1,11 +1,11 @@
 +++
-id = "s01"
+id = "s0001"
 title = "Meta-spec for this project"
 paths = ["worklog/spec/**/*.md"]
 +++
 
 - This governs this project's specs.
-- Changing s01 requires explicit user approval.
+- Changing s0001 requires explicit user approval.
 
 ## Worklog
 
