@@ -71,7 +71,7 @@ Authoritative specification of current project behavior.
 
 ## Task
 
-One unit of work, completable in one session.
+One unit of work expected to be completable in one session.
 
 - ID prefix: `t`.
 - Declares `status` and the spec IDs it `modifies`.

@@ -23,11 +23,11 @@ s0002 defines entity structure; n0001 guides writing.
 - State observable behavior, constraints, known failure modes, and expected future changes.
 - A spec SHOULD NOT contain behavior-independent implementation details or individual file paths.
   - Name governed files with `paths` globs.
-- Include only user-stated behavior and its direct entailments.
-  - Clearly mark anything that would require the user's confirmation.
+- Include only user-stated behavior and its direct entailments as authoritative content.
+  - Clearly mark other content as unapproved.
 - A spec outranks source code and tests.
   - Treat divergence as a code defect.
-  - If the spec seems wrong, raise it with the user, and never override it silently.
+  - If the spec seems wrong, raise it with the user; never override it silently.
 - Specs MUST NOT contradict each other.
   - Before changing a spec, check specs governing related behavior.
 - Behavioral changes require the user's approval, including changes made while implementing a task.
@@ -43,15 +43,16 @@ s0002 defines entity structure; n0001 guides writing.
   - Leave it empty only when no spec governs the work.
 - Task scope is subordinate to the specs it modifies.
   - If findings conflict with a spec, notify the user.
-- Update `status` timely, not post-hoc.
+- `status` MUST track the task's current state in real time.
+  - Set `active` before work begins. Agents MUST NOT skip `active` or defer status updates until after completion.
 - A task is done only when the delivered work meets its completion criteria.
   - Stubs, mocks, and placeholders MUST NOT count as done.
 - Before archiving, fold the delivered state into every spec in `modifies`, or confirm that its existing wording covers the delivery.
 - Archive a task as soon as it is resolved.
-- A resolved task SHOULD NOT be re-opened.
+- A resolved task SHOULD NOT be reopened.
   - Instead, create a new task referencing the resolved task.
-- Archived tasks are history, and MUST NOT be regarded as current-state.
-  - Look up specs instead.
+- Archived tasks are history and MUST NOT be treated as current-state references.
+  - Consult specs instead.
 
 ## Note
 
@@ -61,6 +62,7 @@ s0002 defines entity structure; n0001 guides writing.
 
 ## Reference
 
+- Create a reference only when the external material is consulted repeatedly or its source may change or disappear.
 - Contents SHOULD preserve the source's contents.
   - Format conversion and partial extraction MAY be performed.
   - Copied contents SHOULD NOT be rephrased or supplemented with clarification.
