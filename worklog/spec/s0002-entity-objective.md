@@ -5,6 +5,9 @@ title = "Worklog entities: objective specification"
 
 # Worklog entities
 
+Worklog records project state in flat files for use across sessions.
+This spec defines entity structure; s0003 defines judgment rules; n0002 describes the expected happy path.
+
 ## Common rules
 
 ### ID
