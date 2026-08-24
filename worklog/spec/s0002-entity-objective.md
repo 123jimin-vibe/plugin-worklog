@@ -103,9 +103,6 @@ Material copied from an external source.
 - SHOULD be arranged hierarchically under `worklog/ref/`.
 - Frontmatter SHOULD identify the original `source` via URL.
 - A partial extraction SHOULD identify its `selection`.
-- Copied contents SHOULD preserve the source's contents.
-  - Format conversion and partial extraction MAY be performed.
-  - Copied contents SHOULD NOT be rephrased or supplemented with clarification.
 
 ## Decision
 
