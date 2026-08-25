@@ -8,6 +8,11 @@ title = "Expected happy path"
 A happy path is the expected sequence of steps when work proceeds normally.
 This note lists the expected happy paths for common workflows.
 
+TODO: Handle various degrees of autonomy.
+- The user writes specs manually and asks agents to work based on specs.
+- Agents write specs based on descriptions provided by the user, and the user verifies them.
+- Agents manage the specs, and the user gives feedbacks mostly based on product behaviors.
+
 ## Starting a new project
 
 1. Define the project's basic idea.
@@ -43,15 +48,13 @@ This note lists the expected happy paths for common workflows.
 
 ## Introducing Worklog to an existing project
 
-**NEEDS REVIEW**
-
 1. Establish the current project state.
    A. Confirm that the project will adopt Worklog.
    B. Survey its code, tests, documentation, and existing behavior.
    C. Do not reconstruct project history.
 
 2. Establish Worklog coverage.
-   A. Create the minimum governing spec set.
+   A. Create a governing spec set.
       a. Allocate IDs and initialize each spec.
       b. Record verified current behavior and constraints.
       c. Add `paths` globs for governed files.
@@ -64,8 +67,6 @@ This note lists the expected happy paths for common workflows.
       b. Describe the work and follow its applicable happy path.
 
 ## Adding or changing behavior
-
-**NEEDS REVIEW**
 
 1. Define the proposed behavior.
    A. Survey current behavior, related work, and governing specs.
@@ -89,8 +90,6 @@ This note lists the expected happy paths for common workflows.
       g. Set `status = "done"` and archive the task.
 
 ## Fixing a bug
-
-**NEEDS REVIEW**
 
 1. Establish the defect.
    A. Reproduce the failure.
