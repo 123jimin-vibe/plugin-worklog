@@ -11,6 +11,7 @@ paths = ["worklog/spec/**/*.md"]
 
 - It is a durable record of the project's intent, shared by humans and agents working on it.
 - It consists of multiple types of entities, including specs (authoritative behaviors) and tasks (each one unit of work).
+- It supports varying human involvement across development stages, from review of every entity and code change to fully autonomous agentic development.
 
 ## Plugin
 
