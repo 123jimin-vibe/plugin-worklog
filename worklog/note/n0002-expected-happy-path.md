@@ -5,13 +5,8 @@ title = "Expected happy path"
 
 # Expected happy path
 
-Worklog preserves project context across sessions. Specs hold current behavior,
-tasks hold work in progress, notes hold reusable guidance, and references
-preserve external material. s0002 and s0003 define the rules.
-
-For every task: define its outcome, completion criteria, and `modifies`; set it
-to `active` before work; keep status current; verify delivery; set it to `done`;
-write verified state back to its specs; archive it.
+A happy path is the expected sequence of steps when work proceeds normally.
+This note lists the expected happy paths for common workflows.
 
 ## Starting a new project
 
