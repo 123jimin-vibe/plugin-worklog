@@ -1,7 +1,7 @@
 +++
 id = "t0003"
 title = "Rewrite entity specifications"
-status = "pending"
+status = "done"
 modifies = ["s0002", "s0003", "s0009", "s0010", "s0011"]
 +++
 
