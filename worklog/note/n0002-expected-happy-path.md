@@ -110,8 +110,6 @@ TODO: Handle various degrees of autonomy.
 
 ## Refactoring
 
-**NEEDS REVIEW**
-
 1. Define the refactoring boundary.
    A. Identify the governing specs and behavior that must remain unchanged.
    B. Create a task for the refactoring.
@@ -128,43 +126,16 @@ TODO: Handle various degrees of autonomy.
    C. Update spec structure or `paths` when boundaries move.
    D. Write back the specs, set `status = "done"`, and archive the task.
 
-## Performing a chore
+## Performing a chore or applying an urgent fix
 
-**NEEDS REVIEW**
+1. Assess the change.
+   A. Identify affected behavior and existing Worklog entities.
+   B. Keep urgent work narrowly scoped.
 
-1. Classify the work.
-   A. Identify any governing specs.
-   B. Use the behavior-change happy path if observable behavior will change.
+2. Make and verify the change.
 
-2. Track the chore.
-   A. Create a task.
-      a. Set `status = "pending"` and the applicable `modifies`.
-      b. Leave `modifies` empty only when no spec governs the work.
-      c. Set `status = "active"` before maintenance begins.
-
-3. Complete the chore.
-   A. Make and verify the maintenance change.
-   B. Check for stale specs or affected behavior.
-   C. Write back any affected specs.
-   D. Set `status = "done"` and archive the task.
-
-## Applying an urgent fix
-
-**NEEDS REVIEW**
-
-1. Bound the urgent problem.
-   A. Create a narrowly scoped task.
-      a. Set `status = "pending"` and the applicable `modifies`.
-      b. Set `status = "active"` before implementation.
-
-2. Correct and verify the problem.
-   A. Make the smallest complete correction.
-   B. Run verification covering the urgent failure.
-
-3. Reconcile Worklog.
-   A. Write the delivered state back to the governing specs.
-   B. Set `status = "done"` and archive the task.
-   C. Create pending follow-up tasks for deferred cleanup.
-
-Urgency does not suspend status tracking, verification, or spec write-back.
+3. Reconcile Worklog only when needed.
+   A. Leave specs and tasks untouched when they remain accurate.
+   B. Update affected specs or tasks.
+   C. Create follow-up tasks for deferred work.
 
