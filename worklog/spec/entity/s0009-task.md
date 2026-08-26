@@ -40,16 +40,14 @@ title = "Task entities"
 - `done`: work is complete.
 - `cancelled`: work will not be completed.
 - A task is resolved when its status is `done` or `cancelled`.
-- Set `active` before work begins. Agents MUST NOT skip `active` or defer status updates until after completion.
+- Set `active` before work begins. Agents SHOULD NOT skip `active` or defer status updates until after completion.
 - A blocked task MUST state what prevents work. It is unblocked only after checking that the stated cause no longer prevents work.
 - A task is done only when the delivered work meets its completion criteria.
   - Stubs, mocks, and placeholders MUST NOT count as done.
 
 ### Archival
 
-- Only tasks MAY be archived.
-- Open tasks live in `worklog/task/`.
-- Archived tasks are stored as `worklog/archive/task/{filename}.md`; subdirectories are not allowed.
+- Tasks may be archived per s0002.
 
 ## Desirable properties
 

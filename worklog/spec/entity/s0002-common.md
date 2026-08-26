@@ -29,6 +29,9 @@ title = "Common entity rules"
 ### Files and storage
 
 - Non-archived entities are Markdown files under `worklog/{type}/**/{filename}.md`, where `{type}` is `spec`, `task`, `note`, `ref`, or `decision`.
+- Archived entities are located under `worklog/archive/task/{filename}.md`.
+  - Only tasks MAY be archived.
+  - Subdirectories are not allowed.
 - Every entity MUST have TOML frontmatter delimited by `+++`.
 - For an entity with an ID, the filename MUST start with its ID in standard form, followed by a word boundary (`\b`).
   - Example: `s0001-project-overview.md`.
