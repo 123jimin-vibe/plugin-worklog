@@ -91,27 +91,6 @@ TODO: Define verification modes, including when human judgment is binding.
       f. Write the delivered state back to the governing specs.
       g. Set `status = "done"` and archive the task.
 
-## Performing spec-only work
-
-**NEEDS REVIEW**
-
-1. Define the spec change.
-   A. Identify the affected behavior and related specs.
-   B. Obtain approval when the change is behavioral.
-
-2. Make the spec-only change.
-   A. Create and activate a linked task.
-      a. Initialize it with `status = "pending"` and the applicable `modifies`.
-      b. Set `status = "active"` before editing the specs.
-   B. Update the governing specs.
-      a. Record approved current or unbuilt behavior clearly.
-      b. Check related specs for overlap or contradiction.
-
-3. Close the task.
-   A. Confirm that no implementation or test change is required.
-   B. Set `status = "done"` and archive the task.
-   C. Report entities that still require human review.
-
 ## Fixing a bug
 
 1. Establish the defect.
@@ -131,45 +110,24 @@ TODO: Define verification modes, including when human judgment is binding.
       e. Write the delivered state back to the governing specs.
       f. Set `status = "done"` and archive the task.
 
-## Investigating or experimenting
+## Investigating or reviewing
 
-1. Define the investigation.
-   A. Create a task.
-      a. Initialize it with `status = "pending"` and state the question, method,
-         required evidence, and stop conditions.
-      b. Set `modifies` and any `blocked_by` relationships when applicable.
-      c. Set `status = "active"` before investigating.
-
-2. Run the investigation.
-   A. Record evidence and findings as they emerge.
-   B. Retain, discard, or separately govern experimental artifacts.
-
-3. Resolve the investigation.
-   A. Record the verdict, including negative or inconclusive results.
-   B. Obtain approval for behavioral conclusions.
-   C. Write authoritative findings back to the governing specs.
-   D. Create follow-up tasks for accepted work.
-   E. Set `status = "done"` and archive the task.
-
-## Reviewing or auditing
-
-1. Define the review.
+1. Define the work.
    A. Create a task.
       a. Initialize it with `status = "pending"` and the applicable `modifies`.
-      b. State the scope, standards, evidence, and finding format.
-      c. Set `status = "active"` before reviewing.
+      b. State the question or scope, method or standards, required evidence, and stop conditions.
+      c. Set `status = "active"` before investigating or reviewing.
 
-2. Conduct the review.
-   A. Inspect the complete stated scope.
-   B. Separate confirmed findings from suspicions.
-   C. Deduplicate findings and record their impact.
+2. Gather and assess evidence.
+   A. Investigate the question or inspect the complete stated scope.
+   B. Record evidence, findings, uncertainty, and impact.
+   C. Retain, discard, or separately govern experimental artifacts.
 
-3. Triage the findings.
-   A. Present the findings for human review.
+3. Resolve the findings.
+   A. Present the findings for human review and obtain approval for behavioral conclusions.
    B. Write accepted current-state findings into the governing specs.
-   C. Create prioritized tasks for accepted work.
-   D. Record each finding's disposition.
-   E. Set `status = "done"` and archive the task.
+   C. Create follow-up tasks and record each finding's disposition.
+   D. Set `status = "done"` and archive the task.
 
 ## Refactoring
 
