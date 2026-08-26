@@ -17,3 +17,4 @@ The first row is an example.
 | --- | --- | --- | --- |
 | s00, n00 | example/test.md | Instructed to write an example. | This is an example. |
 | s0002, s0003, s0008 | `worklog/spec/*.md` | Define project agent policy. | Invented a `confirmed` frontmatter field without user approval. |
+| s0003, s0008 | `worklog/spec/s0003-entity-subjective.md` | Define recommended markers. | Applied a spec change before human approval despite effective `agent_mode = "propose"`. |

@@ -23,6 +23,19 @@ title = "Worklog entities: subjective specification"
 - Express requirement strength with MUST, SHOULD, or MAY.
 - An agent MUST NOT present content awaiting human approval as approved. Discussion is not approval.
 
+## Recommended markers
+
+Use markers to expose state that is not evident from the content itself.
+
+- `NEEDS APPROVAL`: content awaits required human approval and is not yet authoritative.
+- `UNIMPLEMENTED`: authorized spec behavior is not implemented; it remains authoritative.
+- A marker in a Markdown heading applies to the entire section rooted at that heading.
+  - Example: `## UX (UNIMPLEMENTED)` marks the entire `UX` section as unimplemented.
+  - A marker-only child section, such as `### UNIMPLEMENTED` under `## UX`, MAY be used to mark only part of the parent section.
+- A heading marker MUST be removed when it no longer applies to every part of its section.
+  - In the same change, apply the marker to every child section or statement that remains affected.
+- A marker MUST be removed when its condition no longer applies.
+
 ## Spec
 
 - Create a spec for behavior expected to outlast the current task.
