@@ -30,7 +30,7 @@ title = "Common entity rules"
 
 - Non-archived entities are Markdown files under `worklog/{type}/**/{filename}.md`, where `{type}` is `spec`, `task`, `note`, `ref`, or `decision`.
 - Every entity MUST have TOML frontmatter delimited by `+++`.
-- For an entity with an ID, the filename MUST start with its ID in standard form.
+- For an entity with an ID, the filename MUST start with its ID in standard form, followed by a word boundary (`\b`).
   - Example: `s0001-project-overview.md`.
 - The non-ID portion of a filename MAY change without changing entity identity.
 - An entity with an ID retains its identity when its path changes.
@@ -62,23 +62,6 @@ title = "Common entity rules"
 - An agent MUST NOT claim human approval that it did not receive.
 - An agent MUST NOT present content awaiting human approval as approved. Discussion is not approval.
 
-### Marker semantics
-
-- `NEEDS APPROVAL` means that content awaits required human approval and is not yet authoritative.
-- `UNIMPLEMENTED` means that authorized spec behavior is not implemented; the behavior remains authoritative.
-- A marker in a Markdown heading applies to the entire section rooted at that heading.
-  - Example: `## UX (UNIMPLEMENTED)` marks the entire `UX` section as unimplemented.
-  - A marker-only child section, such as `### UNIMPLEMENTED` under `## UX`, MAY be used to mark only part of the parent section.
-- A heading marker MUST be removed when it no longer applies to every part of its section.
-  - In the same change, apply the marker to every child section or statement that remains affected.
-- A marker MUST be removed when its condition no longer applies.
-
-### Legacy decisions
-
-- A decision is an immutable record of rationale.
-- ID prefix: `d`.
-- New decisions MUST NOT be created.
-
 ## Desirable properties
 
 ### Organization
@@ -96,6 +79,17 @@ title = "Common entity rules"
 - Refer to another Worklog entity by ID rather than its file path; entity paths are not stable.
 - Express requirement strength with MUST, SHOULD, or MAY.
 
+### Marker semantics
+
+- `NEEDS APPROVAL` means that content awaits required human approval and is not yet authoritative.
+- `UNIMPLEMENTED` means that authorized spec behavior is not implemented; the behavior remains authoritative.
+- A marker in a Markdown heading applies to the entire section rooted at that heading.
+  - Example: `## UX (UNIMPLEMENTED)` marks the entire `UX` section as unimplemented.
+  - A marker-only child section, such as `### UNIMPLEMENTED` under `## UX`, MAY be used to mark only part of the parent section.
+- A heading marker MUST be removed when it no longer applies to every part of its section.
+  - In the same change, apply the marker to every child section or statement that remains affected.
+- A marker MUST be removed when its condition no longer applies.
+
 ### Interoperability
 
 - Tools SHOULD accept any non-empty decimal digit part without a length restriction and normalize it by numeric value.
@@ -105,3 +99,11 @@ title = "Common entity rules"
 
 - Small changes that can be reviewed in full are encouraged.
 - At the end of a session, report draft changes still awaiting human approval.
+
+## Deprecated
+
+### Decisions
+
+- A decision is an immutable record of rationale.
+- ID prefix: `d`.
+- New decisions MUST NOT be created.
