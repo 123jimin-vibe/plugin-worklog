@@ -3,12 +3,17 @@ id = "n0003"
 title = "Worklog pitfalls"
 +++
 
-Observed and anticipated failure modes when LLM agents work with the worklog methodology.
+Generalized failure modes when agents use worklog.
+Authoritative rules remain in specs.
+Repository-specific incidents belong in n0004.
 
-## Spec pitfalls
+## Classification
 
-| \# | Pitfall | Observed |
+### Severity
 
-## Task pitfalls
+- Critical: silently corrupts authority, verification, or completion state.
+- High: creates persistent but discoverable drift.
+- Medium: repairable governance or maintenance failure.
+- Low: visible friction with little persistent damage.
 
-## Severity
+## Pitfalls
