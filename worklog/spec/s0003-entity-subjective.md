@@ -5,7 +5,13 @@ title = "Worklog entities: subjective specification"
 
 # Worklog entity judgment
 
-s0002 defines entity structure; n0001 guides writing. n0002 describes the expected happy path; n0003 records pitfalls.
+## Relevant entries
+
+- s0002 defines entity structure.
+- s0008 defines project-level agent policy.
+- n0001 guides writing.
+- n0002 describes the expected happy path.
+- n0003 records pitfalls.
 
 ## Common rules
 
@@ -15,7 +21,7 @@ s0002 defines entity structure; n0001 guides writing. n0002 describes the expect
 - Record current state and intent, not how they arose.
 - Cite another entity by ID instead of restating it.
 - Express requirement strength with MUST, SHOULD, or MAY.
-- An agent MUST NOT present unapproved content as decided. Discussion is not approval.
+- An agent MUST NOT present content awaiting human approval as approved. Discussion is not approval.
 
 ## Spec
 
@@ -23,14 +29,14 @@ s0002 defines entity structure; n0001 guides writing. n0002 describes the expect
 - State observable behavior, constraints, known failure modes, and expected future changes.
 - A spec SHOULD NOT contain behavior-independent implementation details or individual file paths.
   - Name governed files with `paths` globs.
-- Include only user-stated behavior and its direct entailments as authoritative content.
-  - Clearly mark other content as unapproved.
+- Include only behavior authorized by the applicable `agent_mode` and its direct entailments as authoritative content.
+  - Clearly mark content awaiting human approval.
 - A spec outranks source code and tests.
   - Treat divergence as a code defect.
-  - If the spec seems wrong, raise it with the user; never override it silently.
+  - If the spec seems wrong, resolve it under the applicable `agent_mode`; never override it silently.
 - Specs MUST NOT contradict each other.
   - Before changing a spec, check specs governing related behavior.
-- Behavioral changes require the user's approval, including changes made while implementing a task.
+- Agent-authored behavioral changes MUST follow the applicable `agent_mode`, including changes made while implementing a task.
 - Update a spec in the same session as any change that invalidates it.
 - Remove behavior the spec no longer governs; do not retain it as history.
 
@@ -68,8 +74,9 @@ s0002 defines entity structure; n0001 guides writing. n0002 describes the expect
   - Copied contents SHOULD NOT be rephrased or supplemented with clarification.
 - Put judgment or comments about a reference in the spec or note that cites it, never in the reference itself.
 
-## Review
+## Human approval
 
-- A human approves worklog entities. An agent MUST NOT treat an entity it wrote as reviewed.
-- Keep each entity short enough to read in full during review.
-- At the end of a session, report entities written or changed without approval.
+- Apply the `agent_mode` selected by s0008 before creating or changing an entity.
+- An agent MUST NOT claim human approval that it did not receive.
+- It's encouraged to make small changes that can be reviewed in full.
+- At the end of a session, report draft changes still awaiting human approval.

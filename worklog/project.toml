@@ -1,0 +1,8 @@
+[spec]
+agent_mode = "propose"
+
+[task]
+agent_mode = "draft"
+
+[note]
+agent_mode = "draft"

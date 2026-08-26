@@ -5,8 +5,13 @@ title = "Worklog entities: objective specification"
 
 # Worklog entities
 
-Worklog records project state in flat files for use across sessions.
-This spec defines entity structure; s0003 defines judgment rules; n0002 describes the expected happy path.
+Worklog records project state in flat files for use across sessions. This spec defines entity structure.
+
+## Relevant entries
+
+- s0003 defines judgment rules.
+- s0008 defines project-level agent policy.
+- n0002 describes the expected happy path.
 
 ## Common rules
 
@@ -64,6 +69,7 @@ as project history.
 | `id` | string | yes | spec, task, note, decision | Standard-form ID. |
 | `title` | string | yes | all types | Human-readable title. |
 | `tags` | array of strings | no | all types | Classification and search labels. |
+| `agent_mode` | string | no | spec, task, note| Entity-specific override of the project policy defined by s0008. |
 
 ## Spec
 

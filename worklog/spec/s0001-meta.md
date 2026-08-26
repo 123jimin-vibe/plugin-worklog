@@ -2,10 +2,10 @@
 id = "s0001"
 title = "Meta-spec for this project"
 paths = ["worklog/spec/**/*.md"]
+agent_mode = "read_only"
 +++
 
 - This governs this project's specs.
-- Changing s0001 requires explicit user approval.
 
 ## Worklog
 
