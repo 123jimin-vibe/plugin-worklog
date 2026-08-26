@@ -18,12 +18,11 @@ title = "Common entity rules"
 
 ## Principles
 
-- Worklog records project state in flat files for use across sessions.
-- Common rules apply to every entity unless they explicitly name a subset.
-- Entity-type specs refine s0002 and MUST NOT contradict it.
-- Cross-entity concerns extend s0002; rules concerning only one entity type extend that entity's spec.
-- Inherent properties determine validity or have binary adherence.
-- Desirable properties remain authoritative, but violating one does not invalidate an entity.
+- Worklog keeps the project's intent and state in flat files, so humans and agents can continue work across sessions.
+- Unless a rule says otherwise, s0002 applies to every entity. An entity-type spec MAY add detail, but MUST NOT conflict with s0002.
+- Put rules that apply across entity types in s0002. Put rules for only one type in that type’s spec.
+- An inherent property defines what an entity must satisfy to be valid, or gives a yes-or-no requirement.
+- A desirable property remains authoritative, but falling short does not make the entity invalid.
 
 ## Inherent properties
 
