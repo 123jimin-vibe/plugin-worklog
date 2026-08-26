@@ -69,7 +69,7 @@ as project history.
 | `id` | string | yes | spec, task, note, decision | Standard-form ID. |
 | `title` | string | yes | all types | Human-readable title. |
 | `tags` | array of strings | no | all types | Classification and search labels. |
-| `agent_mode` | string | no | spec, task, note| Entity-specific override of the project policy defined by s0008. |
+| `agent_mode` | string | no | spec, task, note | Entity-specific override of the project policy defined by s0008. |
 
 ## Spec
 

@@ -30,6 +30,7 @@ title = "Worklog entities: subjective specification"
 - A spec SHOULD NOT contain behavior-independent implementation details or individual file paths.
   - Name governed files with `paths` globs.
 - Include only behavior authorized by the applicable `agent_mode` and its direct entailments as authoritative content.
+  - Agent-authored spec content is authoritative only after required human approval, or when the applicable mode is `autonomous`.
   - Clearly mark content awaiting human approval.
 - A spec outranks source code and tests.
   - Treat divergence as a code defect.
