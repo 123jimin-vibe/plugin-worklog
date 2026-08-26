@@ -13,6 +13,8 @@ TODO: Handle various degrees of autonomy.
 - Agents write specs based on descriptions provided by the user, and the user verifies them.
 - Agents manage the specs, and the user gives feedbacks mostly based on product behaviors.
 
+TODO: Define verification modes, including when human judgment is binding.
+
 ## Starting a new project
 
 1. Define the project's basic idea.
@@ -89,6 +91,27 @@ TODO: Handle various degrees of autonomy.
       f. Write the delivered state back to the governing specs.
       g. Set `status = "done"` and archive the task.
 
+## Performing spec-only work
+
+**NEEDS REVIEW**
+
+1. Define the spec change.
+   A. Identify the affected behavior and related specs.
+   B. Obtain approval when the change is behavioral.
+
+2. Make the spec-only change.
+   A. Create and activate a linked task.
+      a. Initialize it with `status = "pending"` and the applicable `modifies`.
+      b. Set `status = "active"` before editing the specs.
+   B. Update the governing specs.
+      a. Record approved current or unbuilt behavior clearly.
+      b. Check related specs for overlap or contradiction.
+
+3. Close the task.
+   A. Confirm that no implementation or test change is required.
+   B. Set `status = "done"` and archive the task.
+   C. Report entities that still require human review.
+
 ## Fixing a bug
 
 1. Establish the defect.
@@ -107,6 +130,46 @@ TODO: Handle various degrees of autonomy.
       d. Correct the general cause and verify the result.
       e. Write the delivered state back to the governing specs.
       f. Set `status = "done"` and archive the task.
+
+## Investigating or experimenting
+
+1. Define the investigation.
+   A. Create a task.
+      a. Initialize it with `status = "pending"` and state the question, method,
+         required evidence, and stop conditions.
+      b. Set `modifies` and any `blocked_by` relationships when applicable.
+      c. Set `status = "active"` before investigating.
+
+2. Run the investigation.
+   A. Record evidence and findings as they emerge.
+   B. Retain, discard, or separately govern experimental artifacts.
+
+3. Resolve the investigation.
+   A. Record the verdict, including negative or inconclusive results.
+   B. Obtain approval for behavioral conclusions.
+   C. Write authoritative findings back to the governing specs.
+   D. Create follow-up tasks for accepted work.
+   E. Set `status = "done"` and archive the task.
+
+## Reviewing or auditing
+
+1. Define the review.
+   A. Create a task.
+      a. Initialize it with `status = "pending"` and the applicable `modifies`.
+      b. State the scope, standards, evidence, and finding format.
+      c. Set `status = "active"` before reviewing.
+
+2. Conduct the review.
+   A. Inspect the complete stated scope.
+   B. Separate confirmed findings from suspicions.
+   C. Deduplicate findings and record their impact.
+
+3. Triage the findings.
+   A. Present the findings for human review.
+   B. Write accepted current-state findings into the governing specs.
+   C. Create prioritized tasks for accepted work.
+   D. Record each finding's disposition.
+   E. Set `status = "done"` and archive the task.
 
 ## Refactoring
 
@@ -135,7 +198,8 @@ TODO: Handle various degrees of autonomy.
 2. Make and verify the change.
 
 3. Reconcile Worklog only when needed.
-   A. Leave specs and tasks untouched when they remain accurate.
-   B. Update affected specs or tasks.
-   C. Create follow-up tasks for deferred work.
+   A. Leave specs untouched when their current-state wording remains accurate.
+   B. Leave tasks untouched when the work finishes in the current session and creates no follow-up or resumable state.
+   C. Otherwise, update affected specs or tasks.
+   D. Create follow-up tasks for deferred work.
 
