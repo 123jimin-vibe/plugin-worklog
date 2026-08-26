@@ -5,7 +5,7 @@ title = "Worklog entities: subjective specification"
 
 # Worklog entity judgment
 
-s0002 defines entity structure; n0001 guides writing. n0002 describes the expected happy path; n0003 records spec risks.
+s0002 defines entity structure; n0001 guides writing. n0002 describes the expected happy path; n0003 records pitfalls.
 
 ## Common rules
 
