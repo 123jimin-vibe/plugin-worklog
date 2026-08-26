@@ -26,7 +26,7 @@ title = "Reference entities"
 ### Content boundary
 
 - Reference frontmatter is metadata, not part of the copied source contents.
-- Once created, an agent MUST NOT change a reference.
+- Once created, an agent SHOULD NOT change a reference.
 
 ## Desirable properties
 
