@@ -19,3 +19,4 @@ The first row is an example.
 | s0002, s0003, s0008 | — | Define project agent policy. | Invented a `confirmed` frontmatter field without user approval. |
 | s0003, s0008 | — | Define recommended markers. | Applied a spec change before human approval despite effective `agent_mode = "propose"`. |
 | s0002, s0008 | — | Reorganize entity specs. | Added the ID-over-filepath rule without human approval despite effective `agent_mode = "propose"`. |
+| n0003 | — | Fill the Worklog pitfalls note. | Invoked `list.py --type note` even though the current script does not support note entities. |
