@@ -56,18 +56,18 @@ The following descriptions use `{scope}` for either the individual entity or the
 
 | Mode | Recommended description |
 | --- | --- |
-| `read_only` | Agents should not modify or prepare changes to {scope} unless asked. |
-| `propose` | Agents may propose changes to {scope}, but must obtain human approval before applying them. |
-| `draft` | Agents may change {scope}, but must mark own changes as `NEEDS APPROVAL`. |
-| `autonomous` | Agents may change {scope} without routine human approval. |
+| `read_only` | Agents MUST treat {scope} as read-only and SHOULD NOT prepare changes unless asked. |
+| `propose` | Agents MAY propose changes to {scope}, but MUST obtain human approval before applying them. |
+| `draft` | Agents MAY change {scope}, but MUST mark agent-authored changes as `NEEDS APPROVAL`. |
+| `autonomous` | Agents MAY change {scope} without routine human approval. |
 
-The description MAY be adapted grammatically to its scope but SHOULD preserve the mode's meaning and MUST NOT grant additional rights to agents.
+The description MAY be adapted grammatically to its scope but MUST preserve the mode's meaning and MUST NOT grant additional rights to agents.
 
 Such comments MUST NOT be regarded as establishing authority independently of the `agent_mode` field.
 
 Example entity override:
 
 ```toml
-# Agents should not modify or prepare changes to this file unless asked.
+# Agents MUST treat this entity as read-only and SHOULD NOT prepare changes unless asked.
 agent_mode = "read_only"
 ```
