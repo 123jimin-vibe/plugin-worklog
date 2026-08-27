@@ -91,6 +91,7 @@ title = "Common entity rules"
 ### Marker semantics
 
 - `NEEDS APPROVAL` means that content awaits required human approval and is not yet authoritative.
+  - `NEEDS REVIEW` is equivalent to `NEEDS APPROVAL`.
 - `UNIMPLEMENTED` means that authorized spec behavior is not implemented; the behavior remains authoritative.
 - A marker in a Markdown heading applies to the entire section rooted at that heading.
   - Example: `## UX (UNIMPLEMENTED)` marks the entire `UX` section as unimplemented.
