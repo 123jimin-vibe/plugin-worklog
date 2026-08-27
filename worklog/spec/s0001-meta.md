@@ -12,6 +12,10 @@ agent_mode = "read_only"
 - It is a durable record of the project's intent, shared by humans and agents working on it.
 - It consists of multiple types of entities, including specs (authoritative behaviors) and tasks (each one unit of work).
 - It supports varying human involvement across development stages, from review of every entity and code change to fully autonomous agentic development.
+- Self-descriptiveness is desirable: worklog’s directory structure and files SHOULD contain enough in-band guidance for humans and agents without prior worklog knowledge or plugin access to discover the governing entities, interpret their fields and authority, and follow the applicable rules.
+  - At minimum, this SHOULD support correct read-only use, including recognizing when content must not be modified.
+  - Where modification is permitted, the files SHOULD also provide enough guidance to make safe changes without plugin assistance.
+  - Machine-readable files SHOULD use comments or equivalent in-band documentation to explain important fields whose meaning is not self-evident.
 
 ## Plugin
 
