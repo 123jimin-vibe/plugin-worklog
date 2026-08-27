@@ -98,6 +98,8 @@ title = "Common entity rules"
 - A heading marker MUST be removed when it no longer applies to every part of its section.
   - In the same change, apply the marker to every child section or statement that remains affected.
 - A marker MUST be removed when its condition no longer applies.
+- It is RECOMMENDED to state the owning task, if one exists.
+  - Example: `UNIMPLEMENTED (t0012)`
 
 ### Interoperability
 
