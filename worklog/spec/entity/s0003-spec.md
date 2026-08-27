@@ -8,7 +8,7 @@ title = "Spec entities"
 ## Related entities
 
 - s0002 defines common entity rules and markers.
-- s0008 defines project-level agent policy.
+- s0012 defines agent modes and entity policy.
 - n0001 guides writing.
 - n0002 describes the expected happy path.
 - n0003 records pitfalls.

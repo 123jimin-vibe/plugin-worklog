@@ -25,7 +25,7 @@ Repository-specific incidents belong in n0004.
 
 ### Authority and approval
 
-- **Unauthorized spec modification** — Critical; observed; s0003, s0008.
+- **Unauthorized spec modification** — Critical; observed; s0003, s0012.
   - Failure: An agent adds or changes authoritative behavior without the authorization required by the effective `agent_mode`.
   - Pressure: New behavior looks like clarification or incidental bookkeeping, especially during task work.
   - Check: Trace every behavioral change to human input, prior authoritative content, or autonomy granted by the effective `agent_mode`.

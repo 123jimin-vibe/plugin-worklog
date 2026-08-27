@@ -8,7 +8,7 @@ title = "Common entity rules"
 ## Related entities
 
 - s0003 defines spec entities.
-- s0008 defines project-level agent policy.
+- s0012 defines agent modes and entity policy.
 - s0009 defines task entities.
 - s0010 defines note entities.
 - s0011 defines reference entities.
@@ -57,11 +57,11 @@ title = "Common entity rules"
 | `id` | string | yes | spec, task, note, decision | Standard-form ID. |
 | `title` | string | yes | all types | Human-readable title. |
 | `tags` | array of strings | no | all types | Classification and search labels. |
-| `agent_mode` | string | no | spec, task, note | Entity-specific override of the project policy defined by s0008. |
+| `agent_mode` | string | no | spec, task, note | Entity-specific override of the agent mode defined by s0012. |
 
 ### Authority and approval
 
-- Apply the `agent_mode` selected by s0008 before creating or changing a spec, task, or note.
+- Apply the effective `agent_mode` defined by s0012 before creating or changing a spec, task, or note.
 - An agent MUST NOT claim human approval that it did not receive.
 - An agent MUST NOT present content awaiting human approval as approved. Discussion is not approval.
 

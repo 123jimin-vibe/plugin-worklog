@@ -8,7 +8,7 @@ title = "Reference entities"
 ## Related entities
 
 - s0002 defines common entity rules.
-- s0008 describes the convenience `agent_mode` value exposed for references.
+- s0012 defines agent mode, which does not apply to references.
 - n0001 guides writing.
 
 ## Principles

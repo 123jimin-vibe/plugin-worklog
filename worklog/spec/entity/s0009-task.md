@@ -9,7 +9,7 @@ title = "Task entities"
 
 - s0002 defines common entity rules.
 - s0003 defines the specs that tasks modify.
-- s0008 defines project-level agent policy.
+- s0012 defines agent modes and entity policy.
 - n0001 guides writing.
 - n0002 describes the expected happy path.
 
