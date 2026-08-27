@@ -47,3 +47,27 @@ The declared mode overrides both its project-level mode and its type's default m
 
 An agent MUST NOT introduce or relax an override without prior human approval.
 An agent MUST NOT represent a draft change as human-approved before receiving that approval.
+
+## Recommended in-band descriptions
+
+When `agent_mode` is declared in entity frontmatter or project configuration, a nearby comment SHOULD describe its effect.
+
+The following descriptions use `{scope}` for either the individual entity or the configured entity type:
+
+| Mode | Recommended description |
+| --- | --- |
+| `read_only` | Agents should not modify or prepare changes to {scope} unless asked. |
+| `propose` | Agents may propose changes to {scope}, but must obtain human approval before applying them. |
+| `draft` | Agents may change {scope}, but must mark own changes as `NEEDS APPROVAL`. |
+| `autonomous` | Agents may change {scope} without routine human approval. |
+
+The description MAY be adapted grammatically to its scope but SHOULD preserve the mode's meaning and MUST NOT grant additional rights to agents.
+
+Such comments MUST NOT be regarded as establishing authority independently of the `agent_mode` field.
+
+Example entity override:
+
+```toml
+# Agents should not modify or prepare changes to this file unless asked.
+agent_mode = "read_only"
+```

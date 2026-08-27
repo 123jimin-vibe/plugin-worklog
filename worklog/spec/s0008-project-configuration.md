@@ -5,13 +5,11 @@ title = "Worklog project configuration"
 
 # Worklog project configuration
 
-A Worklog project MAY use `worklog/project.toml` to configure Worklog for that project.
+A worklog project MAY use `worklog/project.toml` to configure worklog for that project.
 
 ## File
 
-`worklog/project.toml` is a TOML file.
-When the file is absent, Worklog uses the defaults defined by s0012.
-
+`worklog/project.toml` is a TOML file; an absent `project.toml` is equivalent to an empty one.
 The file's own agent mode is always `read_only`.
 
 ## Entity policy tables
@@ -20,3 +18,30 @@ The tables `spec`, `task`, and `note` configure project-level policy for their c
 
 Each table MAY contain `agent_mode`.
 Its value MUST be an agent mode defined by s0012.
+
+## In-band guidance
+
+`worklog/project.toml` SHOULD contain comments sufficient to interpret it without access to the worklog plugin.
+
+The comments SHOULD:
+
+- identify the file as worklog project configuration;
+- state that agents must treat the file itself as read-only;
+- explain that omitted entity policies use the defaults from s0012;
+  - For clarity, `project.toml` SHOULD state the policy for every applicable entity type instead of relying on implicit defaults.
+- describe each configured `agent_mode` using the corresponding wording recommended by s0012.
+
+Suggested generated header:
+
+```toml
+# Worklog project configuration.
+# Agents should not modify or prepare changes to this file unless asked.
+```
+
+Example configured policy:
+
+```toml
+[spec]
+# Agents may propose changes to specs, but must obtain human approval before applying them.
+agent_mode = "propose"
+```

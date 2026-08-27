@@ -67,6 +67,12 @@ title = "Common entity rules"
 
 ## Desirable properties
 
+### Self-descriptive frontmatter
+
+- Entity frontmatter SHOULD be understandable without access to the worklog plugin.
+- A field whose purpose, authority, or effect is not evident from its name and value SHOULD have a brief adjacent TOML comment explaining it.
+- Comments SHOULD concisely explain semantic effects rather than restate obvious syntax or values.
+
 ### Organization
 
 - Files and directories under `worklog/` SHOULD be named in kebab-case.
