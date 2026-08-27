@@ -50,9 +50,22 @@ An agent MUST NOT represent a draft change as human-approved before receiving th
 
 ## Recommended in-band descriptions
 
-When `agent_mode` is declared in entity frontmatter or project configuration, a nearby comment SHOULD describe its effect.
+A visible `agent_mode` declaration contributes to its own description.
 
-The following descriptions use `{scope}` for either the individual entity or the configured entity type:
+A comment adjacent to the declaration SHOULD state only behavior that is not evident from the field, value, and surrounding scope.
+
+When the declaration is not visible or its scope is unclear, the complete standalone description SHOULD be used.
+
+### Adjacent comments
+
+| Mode | Recommended comment |
+| --- | --- |
+| `read_only` | Agents SHOULD NOT prepare changes unless asked. |
+| `propose` | Agents MUST obtain human approval before applying changes. |
+| `draft` | Agent-authored changes MUST be marked `NEEDS APPROVAL`. |
+| `autonomous` | Agents MAY apply changes without routine human approval. |
+
+### Standalone descriptions
 
 | Mode | Recommended description |
 | --- | --- |
@@ -61,13 +74,13 @@ The following descriptions use `{scope}` for either the individual entity or the
 | `draft` | Agents MAY change {scope}, but MUST mark agent-authored changes as `NEEDS APPROVAL`. |
 | `autonomous` | Agents MAY change {scope} without routine human approval. |
 
-The description MAY be adapted grammatically to its scope but MUST preserve the mode's meaning and MUST NOT grant additional rights to agents.
+A description MAY be adapted grammatically to its scope but MUST preserve the mode's meaning and MUST NOT grant additional rights to agents.
 
 Such comments MUST NOT be regarded as establishing authority independently of the `agent_mode` field.
 
 Example entity override:
 
 ```toml
-# Agents MUST treat this entity as read-only and SHOULD NOT prepare changes unless asked.
+# Agents SHOULD NOT prepare changes unless asked.
 agent_mode = "read_only"
 ```

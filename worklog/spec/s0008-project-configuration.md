@@ -42,6 +42,6 @@ Example configured policy:
 
 ```toml
 [spec]
-# Agents MAY propose changes to specs, but MUST obtain human approval before applying them.
+# Agents MUST obtain human approval before applying changes.
 agent_mode = "propose"
 ```
