@@ -23,3 +23,4 @@ agent_mode = "read_only"
 - It is an [agent skill](https://agentskills.io/specification) for AI agents to develop software via worklog.
 - Whether a project uses worklog is that project's choice, never the plugin's.
 - It should be harness-agnostic.
+- Plugin users, including agents, MUST be assumed unable to access any repository content outside `plugin/`, including this project's worklog specs and notes.
