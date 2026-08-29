@@ -24,8 +24,9 @@ Task hierarchy should permit durable coordination without weakening task scope, 
 - Existing tasks without `child_of` MUST remain valid.
 - Keep a single parent per task so the hierarchy remains a tree.
   - Work related to more than one parent should use ordinary references or dependencies rather than multiple parents.
+- `child_of` MUST NOT affect how a task being handled in practice.
 
-## Parent task content (NEEDS APPROVAL)
+## Parent task content
 
 - A typical parent states the overall intended outcome and completion criteria.
 - The parent refers to its child tasks and delegates their implementation details to them.
@@ -34,7 +35,7 @@ Task hierarchy should permit durable coordination without weakening task scope, 
 - An overarching `UNIMPLEMENTED` marker MAY continue to name the parent while children deliver partial pieces.
   - A child should own the marker instead when that child alone owns the marked behavior.
 
-## Session scope (NEEDS APPROVAL)
+## Session scope
 
 - A task remains one unit of work.
 - The one-session expectation applies to a task's own work, excluding work delegated to child tasks.
@@ -45,7 +46,7 @@ Task hierarchy should permit durable coordination without weakening task scope, 
 Both the task principle and the desirable scope rule in s0009 must reflect this interpretation.
 Changing only the existing “Work spanning more than one session” rule would leave the task principle contradictory.
 
-## Relationship semantics (NEEDS APPROVAL)
+## Relationship semantics
 
 - `child_of` expresses decomposition only.
 - `child_of` does not imply a dependency and does not inherit `modifies`, `blocked_by`, `status`, `agent_mode`, tags, priority, or approval state.
@@ -57,7 +58,7 @@ Changing only the existing “Work spanning more than one session” rule would 
 - Parent status reflects the parent's own work.
   - A parent may be active alongside its children when no unresolved dependency prevents that work.
 
-## Validation and lifecycle (NEEDS APPROVAL)
+## Validation and lifecycle
 
 - `child_of` MUST reference an existing task.
 - `child_of` MUST NOT reference the declaring task or form a hierarchy cycle.
@@ -69,7 +70,7 @@ Changing only the existing “Work spanning more than one session” rule would 
   - Resolve, reparent, or detach unfinished children before cancelling their parent.
 - Historical reverse lookup must continue to work after children are archived.
 
-## Spec reconciliation (NEEDS APPROVAL)
+## Spec reconciliation
 
 - Every child follows the normal verification, spec write-back, status, and archival lifecycle.
 - A completed child reconciles the current delivered state into each spec in its own `modifies`, even while its parent remains open.
@@ -77,10 +78,10 @@ Changing only the existing “Work spanning more than one session” rule would 
 - Child write-back MUST NOT be deferred wholesale until the parent completes.
 - The parent performs final integration, verification, and reconciliation required by its own completion criteria.
 
-## Open-task reporting (NEEDS APPROVAL)
+## Open-task reporting
 
 - A summary view MAY collapse child tasks beneath their parent.
-- A collapsed parent should report the number and states of hidden children and allow them to be expanded.
+- A collapsed parent is RECOMMENDED TO report the number and states of hidden children and allow them to be expanded.
 - An actionable backlog SHOULD expose runnable leaf tasks rather than hide them behind a blocked parent.
 - Tools should derive child lists from `child_of` instead of requiring duplicated parent metadata.
 
@@ -98,10 +99,9 @@ Changing only the existing “Work spanning more than one session” rule would 
 - s0012 retains its current effective-mode selection because agent mode does not inherit through task hierarchy.
 - Implementing the full tool support belongs to t0006 after the behavior is specified.
 
-## Completion criteria (NEEDS APPROVAL)
+## Completion criteria
 
 - The governing specs and guidance define one consistent hierarchy model.
 - Existing tasks remain valid without migration.
 - Hierarchy and dependency validation remain distinct.
 - Parent and child lifecycle, write-back, archival, and reporting behavior are unambiguous.
-- The model addresses multi-session coordination without allowing undelegated multi-session work to masquerade as a single task.
