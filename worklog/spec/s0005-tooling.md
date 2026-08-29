@@ -19,6 +19,17 @@ usage requirements.
 - Every entity ID parameter MUST follow the identity and interoperability rules in s0002.
 - Tools SHOULD emit entity IDs in standard form.
 
+### Entity hierarchy
+
+#### UNIMPLEMENTED (t0006)
+
+- Tools MUST validate `parent` availability, references, and cycles according to s0002.
+- Parent lookup and validation MUST include archived tasks.
+- Hierarchy cycles MUST be validated independently from type-specific relationship cycles such as `blocked_by`.
+- Reverse lookup and hierarchy grouping MUST derive children from `parent` rather than duplicated parent metadata.
+- A summary view MAY group entities beneath their parent.
+- Tools MUST determine task actionability from ordinary task status and `blocked_by`, not from `parent`.
+
 ### Batch operations
 
 - An operation that can target multiple independent entities SHOULD accept multiple targets in one invocation.

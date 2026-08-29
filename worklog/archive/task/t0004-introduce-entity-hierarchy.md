@@ -2,7 +2,7 @@
 id = "t0004"
 title = "Introduce entity hierarchy"
 tags = ["entities", "methodology"]
-status = "pending"
+status = "done"
 modifies = ["s0002", "s0005"]
 +++
 
@@ -42,7 +42,7 @@ Entity hierarchy should provide that structure without creating inheritance, dep
 - Actionability MUST be determined from ordinary task status and `blocked_by`, not from hierarchy.
 - Reverse lookup SHOULD support `parent` relationships involving archived tasks.
 
-## Affected documents (NEEDS APPROVAL)
+## Affected documents
 
 - s0002 defines `parent`, its availability to specs, tasks, and notes, and its lack of non-structural semantics.
 - s0005 defines hierarchy validation, reverse lookup, grouping, and task actionability.

@@ -58,6 +58,19 @@ title = "Common entity rules"
 | `title` | string | yes | all types | Human-readable title. |
 | `tags` | array of strings | no | all types | Classification and search labels. |
 | `agent_mode` | string | no | spec, task, note | Entity-specific override of the agent mode defined by s0012. |
+| `parent` | string | no | spec, task, note | ID of a broader entity of the same type, used only for organization. |
+
+### Hierarchy
+
+- A spec, task, or note MAY declare one `parent`.
+- `parent` MUST identify an existing entity of the same type.
+- An entity MUST NOT name itself as its parent or form a `parent` cycle.
+- An entity MAY be both a parent and a child.
+- Children are derived by reverse lookup of `parent`.
+- References use directory hierarchy and MUST NOT declare `parent`.
+- Deprecated decisions do not participate in entity hierarchy.
+- `parent` expresses organization only. It MUST NOT imply authority, approval, inheritance, dependency, execution order, status propagation, lifecycle coupling, or field values.
+- Archiving a task MUST NOT invalidate an existing `parent` relationship.
 
 ### Authority and approval
 
