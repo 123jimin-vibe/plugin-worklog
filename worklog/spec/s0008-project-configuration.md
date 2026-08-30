@@ -34,7 +34,7 @@ The comments SHOULD:
 Suggested generated header:
 
 ```toml
-# Worklog project configuration.
+# worklog project configuration.
 # Agents MUST treat this file as read-only and SHOULD NOT prepare changes unless asked.
 ```
 
@@ -42,6 +42,6 @@ Example configured policy:
 
 ```toml
 [spec]
-# Agents MUST obtain human approval before applying changes.
+# Before applying a change, agents MUST obtain human approval of its content or permission scoped to the edit.
 agent_mode = "propose"
 ```

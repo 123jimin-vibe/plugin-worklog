@@ -2,8 +2,8 @@
 id = "t0005"
 title = "Define spec-change authority during task work"
 tags = ["agent-mode", "methodology"]
-status = "pending"
-modifies = ["s0012"]
+status = "done"
+modifies = ["s0008", "s0012"]
 +++
 
 # Define spec-change authority during task work
@@ -11,6 +11,15 @@ modifies = ["s0012"]
 Revise s0012 to define how a spec's effective `agent_mode` governs agent-authored changes,
 including changes made while executing or closing a task.
 The existing `autonomous` semantics need no further clarification.
+
+Use the following authority model:
+
+| Mode | Permission to edit | Authority of resulting content |
+| --- | --- | --- |
+| `read_only` | The agent cannot edit, even because of a task. | A human must update the spec or change its mode. |
+| `propose` | The agent requires exact-change approval or task-scoped edit permission. | Approved content is authoritative; permission-only content is marked `NEEDS APPROVAL`. |
+| `draft` | The agent requires no prior edit permission. | Already-approved content is authoritative; other agent-authored content is marked `NEEDS APPROVAL`. |
+| `autonomous` | The agent may edit within the task scope. | Agent-authored content is authoritative. |
 
 Retain the two approval paths for `propose`:
 

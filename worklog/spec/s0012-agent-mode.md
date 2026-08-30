@@ -5,82 +5,72 @@ title = "Agent mode"
 
 # Agent mode
 
-Agent mode governs how agents may create or change Worklog entities.
+Agent mode governs whether agents may change worklog entities and whether their content is authoritative.
 
 ## Related entities
 
 - s0002 defines common entity fields and approval rules.
+- s0003 defines spec authority.
 - s0008 defines how `worklog/project.toml` configures project-level modes.
+- s0009 defines task scope and lifecycle.
 - s0011 defines references, to which agent mode does not apply.
 
-## Entity policy
+## Policy
 
 Agent mode applies to specs, tasks, and notes.
 
-An entity's effective agent mode is selected in the following order:
+An entity's effective mode is selected in this order:
 
 1. The entity's `agent_mode` override.
 2. The project-level mode for its type configured through s0008.
 3. The default mode for its type.
 
-| `agent_mode` | Agent behavior |
-| --- | --- |
-| `read_only` | Humans write. Agents MUST NOT create or change entities and SHOULD NOT prepare changes unless asked. |
-| `propose` | Agents propose changes, but MUST obtain human approval before applying each change. |
-| `draft` | Agents may apply changes, but MUST mark them as awaiting human approval. |
-| `autonomous` | Agents may apply changes without routine human confirmation. |
+| `agent_mode` | Permission to edit | Authority of resulting content |
+| --- | --- | --- |
+| `read_only` | Agents MUST NOT create or change the entity and SHOULD NOT prepare changes unless asked. | A human must change the entity or its mode. |
+| `propose` | Before applying a change, an agent MUST obtain approval of its content or permission scoped to the edit. | Human-approved content is authoritative. Other agent-authored content MUST be marked `NEEDS APPROVAL`. |
+| `draft` | Agents MAY apply changes without prior permission. | Human-approved content is authoritative. Other agent-authored content MUST be marked `NEEDS APPROVAL`. |
+| `autonomous` | Agents MAY apply changes without prior permission. | Agent-authored content is authoritative. |
 
-The default modes are:
+Content approval and edit permission are independent; an instruction MAY grant either or both.
+Approval covers the stated content and its direct entailments, not additional agent decisions.
+Permission only allows changes within its stated scope and never makes their content authoritative.
 
-| Entity | Default mode |
-| --- | --- |
-| Spec | `propose` |
-| Task | `draft` |
-| Note | `draft` |
+The default is `propose` for specs and `draft` for tasks and notes.
 
 Humans may create or change entities in every mode.
+An agent MUST NOT introduce or relax an entity override without prior human approval,
+or represent draft content as human-approved.
 
-## Entity overrides
+## Task work
 
-A spec, task, or note MAY declare `agent_mode` in its TOML frontmatter.
-The declared mode overrides both its project-level mode and its type's default mode.
+The target spec's mode governs its modification; the task's mode does not.
 
-An agent MUST NOT introduce or relax an override without prior human approval.
-An agent MUST NOT represent a draft change as human-approved before receiving that approval.
+A task's existence, fields, and status grant neither content approval nor edit permission.
+An explicit human instruction to execute a task approves its then-stated requirements and direct entailments,
+and permits necessary changes to its then-listed `modifies` specs except those in `read_only` mode.
+It does not approve agent-inferred behavior, out-of-scope changes, or implementation state.
 
-## Recommended in-band descriptions
+Agents MUST NOT implement behavior unless it is authoritative in a governing spec.
+Permitted drafts MAY record other behavior as `NEEDS APPROVAL`, but agents MUST NOT implement it.
 
-A visible `agent_mode` declaration contributes to its own description.
+Verified implementation-state marker updates do not require content approval,
+but the target mode still controls editing and implementation does not authorize behavior.
 
-A comment adjacent to the declaration SHOULD state only behavior that is not evident from the field, value, and surrounding scope.
+A task MUST NOT be completed or archived while required spec content remains `NEEDS APPROVAL`.
+A required change to a `read_only` spec blocks the task until a human changes the spec or its mode.
 
-When the declaration is not visible or its scope is unclear, the complete standalone description SHOULD be used.
+## In-band descriptions
 
-### Adjacent comments
+A comment next to a visible declaration SHOULD state only behavior not evident from its field, value, and scope:
 
 | Mode | Recommended comment |
 | --- | --- |
 | `read_only` | Agents SHOULD NOT prepare changes unless asked. |
-| `propose` | Agents MUST obtain human approval before applying changes. |
-| `draft` | Agent-authored changes MUST be marked `NEEDS APPROVAL`. |
-| `autonomous` | Agents MAY apply changes without routine human approval. |
+| `propose` | Before applying a change, agents MUST obtain human approval of its content or permission scoped to the edit. |
+| `draft` | Unapproved agent-authored content MUST be marked `NEEDS APPROVAL`. |
+| `autonomous` | Agents MAY change content without routine human approval. |
 
-### Standalone descriptions
-
-| Mode | Recommended description |
-| --- | --- |
-| `read_only` | Agents MUST treat {scope} as read-only and SHOULD NOT prepare changes unless asked. |
-| `propose` | Agents MAY propose changes to {scope}, but MUST obtain human approval before applying them. |
-| `draft` | Agents MAY change {scope}, but MUST mark agent-authored changes as `NEEDS APPROVAL`. |
-| `autonomous` | Agents MAY change {scope} without routine human approval. |
-
-A description MAY be adapted grammatically to its scope but MUST preserve the mode's meaning and MUST NOT grant additional rights to agents.
-
-Such comments MUST NOT be regarded as establishing authority independently of the `agent_mode` field.
-
-Example entity override:
-
-```toml
-# Agents SHOULD NOT prepare changes unless asked.
-agent_mode = "read_only"
-```
+Otherwise, describe both permission and authority from the policy table.
+Descriptions MAY be adapted grammatically but MUST preserve meaning, grant no additional rights,
+and establish no authority independently of `agent_mode`.
