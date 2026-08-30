@@ -87,4 +87,4 @@ New common concerns should extend one of these subheadings where possible. A new
 - Place common rules in s0002 and entity-specific rules in the corresponding entity specification without duplication.
 - Define and consistently distinguish hard and soft specifications.
 - Preserve existing requirements unless a semantic change is explicitly identified and approved.
-- Update affected Worklog references by entity ID.
+- Update affected worklog references by entity ID.

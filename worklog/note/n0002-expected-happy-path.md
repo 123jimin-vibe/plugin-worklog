@@ -18,8 +18,8 @@ TODO: Define verification modes, including when human judgment is binding.
 ## Starting a new project
 
 1. Define the project's basic idea.
-   A. Initialize Worklog.
-      a. Confirm that the project will use Worklog.
+   A. Initialize worklog.
+      a. Confirm that the project will use worklog.
       b. Create the entity directories.
    B. Survey relevant dependencies and related work.
       a. Check existing solutions before choosing an approach.
@@ -48,14 +48,14 @@ TODO: Define verification modes, including when human judgment is binding.
       g. Set `status = "done"` and archive the task.
       h. Report entities that still require human review.
 
-## Introducing Worklog to an existing project
+## Introducing worklog to an existing project
 
 1. Establish the current project state.
-   A. Confirm that the project will adopt Worklog.
+   A. Confirm that the project will adopt worklog.
    B. Survey its code, tests, documentation, and existing behavior.
    C. Do not reconstruct project history.
 
-2. Establish Worklog coverage.
+2. Establish worklog coverage.
    A. Create a governing spec set.
       a. Allocate IDs and initialize each spec.
       b. Record verified current behavior and constraints.
@@ -150,14 +150,13 @@ TODO: Define verification modes, including when human judgment is binding.
 ## Performing a chore or applying an urgent fix
 
 1. Assess the change.
-   A. Identify affected behavior and existing Worklog entities.
+   A. Identify affected behavior and existing worklog entities.
    B. Keep urgent work narrowly scoped.
 
 2. Make and verify the change.
 
-3. Reconcile Worklog only when needed.
+3. Reconcile worklog only when needed.
    A. Leave specs untouched when their current-state wording remains accurate.
    B. Leave tasks untouched when the work finishes in the current session and creates no follow-up or resumable state.
    C. Otherwise, update affected specs or tasks.
    D. Create follow-up tasks for deferred work.
-

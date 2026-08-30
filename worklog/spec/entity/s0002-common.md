@@ -98,7 +98,7 @@ title = "Common entity rules"
 - Extend an existing entity rather than create an overlapping one.
 - Keep each entity to one subject; split entities that cover distinct subjects.
 - Record current state and intent, not how they arose.
-- Refer to another Worklog entity by ID rather than its file path; entity paths are not stable.
+- Refer to another worklog entity by ID rather than its file path; entity paths are not stable.
 - Express requirement strength with MUST, SHOULD, or MAY.
 
 ### Marker semantics
