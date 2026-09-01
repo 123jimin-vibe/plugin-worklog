@@ -22,3 +22,4 @@ The first row is an example.
 | n0003 | — | Fill the worklog pitfalls note. | Invoked `list.py --type note` even though the current script does not support note entities. |
 | t0009, s0012 | — | Make t0009 concrete and propose a content-determination method. | Left some agent-authored task content outside a `NEEDS APPROVAL` section despite effective `agent_mode = "draft"`. |
 | s0002, n0004, t0009 | — | Record the missing-marker mistake in n0004. | Identified t0009 by its file path even though worklog entities should be referenced by ID. |
+| t0010, s0009 | — | Analyze case studies and propose additions to n0003. | Began substantive task work before changing t0010 from `pending` to `active`. |
