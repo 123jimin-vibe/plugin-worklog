@@ -57,7 +57,7 @@ Repository-specific incidents belong in n0004.
   - Pressure: Spec writing naturally describes the intended end state.
   - Check: Verify implementation state separately from authority and mark every authorized gap.
 
-- **Durable behavior has no spec** — High; anticipated; s0003.
+- **Durable behavior has no spec** — High; observed; s0003.
   - Failure: Behavior expected to outlast the current task is implemented without a governing spec.
   - Pressure: A direct implementation request makes specification feel optional.
   - Check: Identify the governing spec before implementing durable behavior; extend one or create one when none applies.
@@ -72,10 +72,10 @@ Repository-specific incidents belong in n0004.
   - Pressure: Historical context feels necessary to explain the current wording.
   - Check: Delete statements that add neither current behavior, a constraint, nor a known failure mode.
 
-- **Overlapping spec created unnecessarily** — Low; observed; s0002, s0003.
-  - Failure: A new spec duplicates or fragments behavior already governed elsewhere.
-  - Pressure: A narrow request appears easier to isolate than integrate.
-  - Check: Search existing entities and extend the governing spec unless the subject is genuinely distinct.
+- **Behavior duplicated or fragmented across specs** — Medium; observed; s0002, s0003.
+  - Failure: A new or existing spec duplicates a behavioral rule or fragments one subject across multiple authoritative records.
+  - Pressure: A narrow request appears easier to isolate than integrate, and duplicated wording appears convenient to readers.
+  - Check: Search existing entities and keep each behavioral rule in one governing spec unless the subjects are genuinely distinct.
 
 ### Task lifecycle
 
@@ -94,7 +94,56 @@ Repository-specific incidents belong in n0004.
   - Pressure: Status maintenance is deferred until after the substantive work.
   - Check: Update status at each lifecycle transition rather than during later cleanup.
 
-- **Governed specs omitted from `modifies`** — Medium; anticipated; s0009.
-  - Failure: A task touches behavior governed by a spec but omits that spec from `modifies`.
-  - Pressure: Refactoring or chores appear unrelated to behavior even when they touch governed files.
-  - Check: Compare the work boundary with spec subjects and `paths`, not only with the task's label.
+- **Governance links do not match the implementation surface** — High; observed; s0003, s0009.
+  - Failure: A spec's `paths` omit files implementing its behavior or are so broad that drift ownership is unclear, or a task omits affected specs from `modifies`.
+  - Pressure: Manual knowledge of file relationships makes metadata seem optional or redundant.
+  - Check: Map each changed behavioral surface to its governing spec and keep `paths` precise; list every touched governing spec in `modifies`.
+
+### Additional observed pitfalls
+
+#### Project adoption
+
+- **Parallel authority introduced through partial Worklog adoption** — High; observed; s0002.
+  - Failure: Worklog is introduced beside an established authoritative process, or covers only one contributor or subsystem while presenting itself as project state.
+  - Pressure: Adding another ledger appears safer than deciding which record is authoritative.
+  - Check: Confirm adoption with the human, identify the authoritative record and workflow, and establish project-wide coverage before initializing Worklog.
+
+#### Spec integrity
+
+- **Requirement strength left implicit** — Medium; observed; s0002.
+  - Failure: Binding requirements use ordinary declarative prose, leaving required, recommended, and optional behavior indistinguishable.
+  - Pressure: Natural-language statements already sound authoritative.
+  - Check: Classify each behavioral statement explicitly with `MUST`, `SHOULD`, or `MAY`.
+
+#### Task lifecycle
+
+- **Worklog state reconstructed after delivery** — High; observed; s0002, s0009.
+  - Failure: Work proceeds from an external plan or without a task, then the task is created already done or archived, if it is created at all.
+  - Pressure: Interactive planning tools feel sufficient during execution, and an after-the-fact record appears equivalent.
+  - Check: Create and activate the task before reviewable work begins; keep temporary plans subordinate to its current state.
+
+- **Task dependency metadata does not match reality** — Medium; observed; s0009.
+  - Failure: A task depends on another task in practice or in its body, but `blocked_by` omits that dependency or retains a resolved one.
+  - Pressure: The dependency seems obvious from prose or current session context.
+  - Check: Reconcile `blocked_by` whenever prerequisites or task status change.
+
+#### Verification and completion
+
+- **Claimed result stronger than evidence** — Critical; observed; s0009.
+  - Failure: A task claims completion, correctness, or exhaustion from evidence that does not exercise the claimed boundary or decisive counterexamples.
+  - Pressure: Builds, unit tests, synthetic fixtures, forced state, aggregate metrics, authentication failures, or producer-side success provide convenient green signals.
+  - Check: Define the actual delivery boundary before implementation and verify it with representative evidence; disclose unavailable verification without generalizing the proxy result.
+
+#### Cross-cutting
+
+- **Worklog history duplicated in source comments** — Medium; observed; s0002, s0003.
+  - Failure: Code comments restate specs, cite task-era changes, preserve rejected alternatives, or narrate debugging history.
+  - Pressure: Session context feels useful and nearby comments appear durable.
+  - Check: Retain only non-obvious local invariants and their present rationale; remove change narration and duplicated authority.
+
+#### Backward compatibility
+
+- **Legacy decision history rewritten or erased** — High; observed; s0002.
+  - Failure: A pre-v0.2 decision is substantively edited or deleted, corrupting the historical rationale that backward compatibility requires preserving.
+  - Pressure: Because new decisions are deprecated, cleanup or current intent appears to justify changing old records.
+  - Check: Create no new decisions, preserve existing ones unchanged, and express current authority through specs without erasing legacy history.
