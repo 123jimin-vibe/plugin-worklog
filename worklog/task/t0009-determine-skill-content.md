@@ -21,7 +21,7 @@ The result MUST:
 - address recurring mistakes represented by n0003 and n0004; and
 - allow operation-specific guidance and prefilled state to be delegated to tooling governed by s0005, and specialized handling or auditing to agents governed by s0007.
 
-## Proposed determination method (NEEDS APPROVAL)
+## Proposed determination method
 
 1. Build an inventory of candidate information units from the worklog specs, n0002, n0003, n0004, and the v0.1 `SKILL.md`.
    Keep each unit small enough to allocate independently.
@@ -48,7 +48,7 @@ The result MUST:
 The inventory and allocation rationale MAY remain working material in t0009 while it is active.
 Only durable content-boundary requirements and review criteria are written to s0004.
 
-## Proposed completion criteria (NEEDS APPROVAL)
+## Proposed completion criteria
 
 Complete when s0004 is sufficient to write and review `SKILL.md` without deciding its content boundary again, including all of the following:
 
