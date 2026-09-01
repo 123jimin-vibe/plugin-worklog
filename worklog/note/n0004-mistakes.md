@@ -23,3 +23,5 @@ The first row is an example.
 | t0009, s0012 | — | Make t0009 concrete and propose a content-determination method. | Left some agent-authored task content outside a `NEEDS APPROVAL` section despite effective `agent_mode = "draft"`. |
 | s0002, n0004, t0009 | — | Record the missing-marker mistake in n0004. | Identified t0009 by its file path even though worklog entities should be referenced by ID. |
 | t0010, s0009 | — | Analyze case studies and propose additions to n0003. | Began substantive task work before changing t0010 from `pending` to `active`. |
+| t0004, t0008, s0003, s0009 | — | Define flexible entity organization and task lifecycle guidance. | Overused `MUST` and `MUST NOT` for preferred guidance and assumed normal workflows, affecting t0008’s changeability and blocker guidance and earlier s0009 activation and t0004 hierarchy rules. Treated ambiguity reduction as proof that no valid exception existed. |
+| t0008, s0009 | — | Recommend task body organization. | Added too many optional headings and rules, turning flexible guidance into an implicit template. |

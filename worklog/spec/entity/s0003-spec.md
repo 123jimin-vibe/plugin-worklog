@@ -44,9 +44,31 @@ title = "Spec entities"
 
 ### Content
 
-- State observable behavior, constraints, known failure modes, and expected future changes.
+- State observable behavior, principles, constraints, known failure modes, and changeability requirements.
 - A spec SHOULD NOT contain behavior-independent implementation details or individual file paths.
   - Name governed files with `paths` globs.
+- Do not include non-binding possibilities.
+  Preserve them in a note only when they provide reusable guidance, and put actionable work in a task.
+
+### Body organization
+
+- A principle is authoritative guidance for interpreting requirements and deciding matters they leave open.
+  It MUST NOT override an explicit requirement.
+- A hard constraint uses `MUST` or `MUST NOT`.
+- A soft constraint uses `SHOULD` or `SHOULD NOT`.
+- A permission uses `MAY`.
+- A spec containing both principles and constraints SHOULD group its principles under `Principles`.
+  Constraint strength remains explicit in each statement rather than depending on its heading.
+- A short spec MAY put its contents directly below the title.
+- A larger spec SHOULD group contents under headings named for the governed domain.
+- Include `Known failure modes` when known failures affect correct use or future work.
+- Include `Changeability` only when anticipated variations should constrain the current implementation.
+  - Each entry SHOULD state a current hard or soft constraint on accommodating a variation; listing a possible feature is insufficient.
+  - A changeability constraint does not authorize implementing the variation.
+  - State what should remain unchanged or what change surface is acceptable instead of requiring unspecified “low cost.”
+  - Implement only the seam or boundary needed by the current constraint, not speculative feature behavior.
+- Omit sections that would be empty or merely repeat another section.
+- A heading SHOULD classify content that is already needed, not prompt an agent to invent content.
 
 ### Maintenance
 

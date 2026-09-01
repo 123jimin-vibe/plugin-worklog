@@ -31,6 +31,7 @@ title = "Task entities"
 
 - A task declares `status` and the spec IDs it `modifies`.
 - A task MAY declare `blocked_by`: IDs of tasks that need to be resolved first.
+  - `blocked_by` records task dependencies only; it does not explain a blocking condition or represent an external blocker.
 
 ### State
 
@@ -41,8 +42,10 @@ title = "Task entities"
 - `cancelled`: work will not be completed.
 - A task is resolved when its status is `done` or `cancelled`.
 - Set `active` before work begins. Agents SHOULD NOT skip `active` or defer status updates until after completion.
-- A blocked task MUST state what prevents work. It is unblocked only after checking that the stated cause no longer prevents work.
-- A task is done only when the delivered work meets its completion criteria.
+- A blocked task SHOULD state what prevents progress, its effect on the task, and what would allow work to resume.
+  - This explanation SHOULD NOT merely repeat `blocked_by` IDs.
+  - A task is unblocked only after checking that the stated condition no longer prevents work.
+- A task is done only when the delivered work meets its stated completion conditions.
   - Stubs, mocks, and placeholders MUST NOT count as done.
 
 ### Archival
@@ -55,10 +58,16 @@ title = "Task entities"
 
 - Create a task for work that produces a reviewable change.
 - Work spanning more than one session SHOULD be split into multiple tasks.
-- State the intended outcome and completion criteria.
+- State what the work must accomplish and enough conditions to determine when it is done.
 - List in `modifies` every spec whose governed behavior the work touches.
   - Leave it empty only when no spec governs the work.
-- If findings conflict with a spec, notify the user.
+- If evidence or conclusions conflict with a spec, notify the user.
+
+### Body organization
+
+- A task body MAY be free-form and need no sections.
+- Add a heading only when it makes necessary content easier to find, and name it for that content.
+- `Done when` MAY state planned completion conditions, while `Completion evidence` MAY record performed checks and material limitations.
 
 ### Lifecycle
 
