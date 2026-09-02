@@ -41,11 +41,11 @@ The delivered `SKILL.md` MUST retain these categories because the primary agent 
 
 - **Applicability and orientation:** establish that using worklog is the project's choice, identify the worklog as durable project state, and prevent partial adoption from creating parallel authority.
 - **Authority and approval:** resolve effective agent mode, distinguish permission from content authority, preserve spec precedence, and prevent implementation of unauthorized behavior.
-- **Entity routing:** distinguish specs, tasks, notes, references, and deprecated decisions so information enters the correct durable record.
+- **Entity routing:** distinguish specs, tasks, notes, and references so information enters the correct durable record.
 - **Spec integrity:** preserve current authoritative behavior, distinguish approval from implementation state, require related-spec review, and prevent durable behavior from escaping specification.
 - **Task governance:** require timely task state, complete `modifies`, correct dependency semantics, and subordination to governing specs.
 - **Completion integrity:** calibrate claims to evidence, reject placeholders as completion, reconcile affected specs and markers, and archive resolved tasks.
-- **Backward compatibility:** preserve existing v0.1 entities and decision history while prohibiting new decisions.
+- **Backward compatibility:** preserve compatible v0.1 worklog data without reintroducing superseded methodology.
 - **Provider routing:** state when a tool or auxiliary agent is required and what result the primary agent must receive.
 
 The entrypoint SHOULD include only enough entity syntax and file layout to orient a cold reader and use the available providers.

@@ -64,9 +64,10 @@ Complete when s0004 is sufficient to write and review `SKILL.md` without decidin
 
 - Reviewed all 12 current specs, n0002–n0004, the 7,646-byte final v0.1 `SKILL.md`, its recorded evaluation/compression history, the aggregate happy-path survey, and all 14 authorized case-study reports.
 - Created n0005 with 94 independently allocated current units, 8 clearly separated suggested features, and fingerprints for all 16 required sources.
-- Allocated 38 units to `SKILL.md`, 20 conditionally to tools, 12 conditionally to auxiliary agents, 17 to governing specs or notes, and 7 nowhere.
+- Allocated 36 units to `SKILL.md`, 20 conditionally to tools, 12 conditionally to auxiliary agents, 17 to governing specs or notes, and 9 nowhere.
 - Walked the allocation through every n0002 happy path, every critical or high-severity n0003 pitfall, and each relevant n0004 incident.
 - Left test-first authority, verification modes, partial-adoption retirement, and multi-session work visibly unresolved rather than silently adding behavior.
 - Prepared a `NEEDS APPROVAL` s0004 proposal covering content categories, allocation rules, reproducible inventory maintenance, provider guarantees, the objective v0.1 length comparison, and review criteria.
 - Prepared `NEEDS APPROVAL` provider-result categories in t0006 and trigger/handoff requirements in t0007 without specifying complete messages or agent internals.
+- Applied the user's authorization to omit decision-specific runtime guidance; current-entity routing and generic v0.1 preservation retain the necessary behavior without teaching the deprecated entity.
 - Verified unique inventory IDs and entity IDs, valid allocation destinations, table shape, complete source fingerprints, baseline size, and clean patch whitespace before the approval correction.

@@ -100,8 +100,8 @@ Rows sourced from the proposed s0004 content describe proposed allocation mechan
 | i077 | s0007: Auxiliary agents may cover writers, proofreaders, and similar delegated roles. | Whether specialist procedures can leave the entrypoint. | Before delegation; global routing. | High; omission has not occurred because delegation is not yet established. | `Agent*` | s0007 must define a trigger, inputs, authority boundary, and result contract before any unit is omitted from `SKILL.md`. |
 | i078 | n0003, n0004: Unauthorized edits, contradictory specs, ungoverned behavior, false completion, stale write-back, and incomplete governance links are critical or high recurring failures. | Prioritizing limited entrypoint space and review. | During composition and evaluation; global. | Critical/high; repeatedly observed. | Governing spec | s0004 turns these evidence categories into mandatory coverage and deletion tests rather than copying the pitfall catalog. |
 | i079 | n0003: Requirement-strength errors, history, implementation detail, duplication, stale status, and comment narration are recurring but more locally repairable. | Choosing direct rules versus specialist review. | During authoring/review; operation-specific. | Medium; repeatedly observed. | `Agent*` | Authoring and audit providers can inspect the concrete artifact at lower routine context cost. |
-| i080 | n0003: Legacy decisions must not be rewritten or erased. | Migrating or maintaining a v0.1 worklog. | Before compatibility work; global. | High; observed. | `SKILL.md` | The prohibition complements the v0.2 ban on new decisions and prevents destructive cleanup. |
-| i081 | s0002: New decisions are deprecated and must not be created. | Choosing an entity for rationale or further work. | Before entity selection; global. | High; repeatedly observed in v0.1. | `SKILL.md` | The routing decision must be known before a create tool is chosen. |
+| i080 | n0003: Legacy decisions must not be rewritten or erased. | Migrating or maintaining a v0.1 worklog. | Before compatibility work; global. | High; observed. | Nowhere | The user authorized omitting decision-specific skill guidance; generic v0.1 preservation in the entrypoint and i072 prevents destructive cleanup without naming the deprecated entity. |
+| i081 | s0002: New decisions are deprecated and must not be created. | Choosing an entity for rationale or further work. | Before entity selection; global. | High; repeatedly observed in v0.1. | Nowhere | The user authorized omission; exhaustive routing among current entity types and current tool interfaces makes a separate deprecated-type warning redundant and avoids suggesting its use. |
 | i082 | n0004: Repository-specific mistakes remain evidence rather than general methodology by themselves. | Whether one incident becomes a universal prompt rule. | During composition; internal. | Medium; overfitting and bloat were repeatedly observed in prior rule writing. | Governing note | Generalize only when a governing spec, recurring pitfall, or cross-case consequence supports it. |
 | i083 | v0.1 and its exams: Strong archive wording, explicit marker verification, chore framing, and script-path negatives changed behavior; many duplicated or non-preventing prompts did not. | Selecting and compressing entrypoint language. | During composition/evaluation; internal. | High; context costs and behavioral regressions were repeatedly measured. | Governing note | Preserve the demonstrated mechanisms through s0004 review criteria without freezing v0.1 prose. |
 | i084 | v0.1: Decisions as a supported entity, priority/backlog behavior, mandatory hotfix post-mortems, and fixed workflow tables. | Reusing legacy methodology. | Never unless reauthorized. | None from omission; retention would reintroduce superseded behavior. | Nowhere | These behaviors are absent, deprecated, or not authoritative in v0.2. |
@@ -162,7 +162,7 @@ These items are evidence-backed possibilities, not current Worklog behavior or a
 | Parallel authority through partial adoption | i001, i004, i085 |
 | Worklog state reconstructed after delivery | i007, i041–i042 |
 | Claimed result stronger than evidence | i017, i048–i050 |
-| Legacy decision history rewritten or erased | i080–i081 |
+| Legacy decision history rewritten or erased | Generic v0.1 preservation in s0004 and i072; decision-specific units i080–i081 are intentionally omitted from runtime guidance. |
 
 ### Repository incidents
 
@@ -181,7 +181,8 @@ These items are evidence-backed possibilities, not current Worklog behavior or a
 ### Allocation findings
 
 - The current sources leave test-first authority, verification modes, partial-adoption retirement, and multi-session work unresolved; f004–f007 keep these gaps visible without silently adding behavior.
-- v0.1 entity templates, decision creation, priority/backlog behavior, script interfaces, Git-only drift, and fixed workflow tables are intentionally excluded rather than carried forward by inertia.
+- v0.1 entity templates, superseded entity creation, priority/backlog behavior, script interfaces, Git-only drift, and fixed workflow tables are intentionally excluded rather than carried forward by inertia.
+- Decision-specific runtime guidance is intentionally omitted with user authorization: current-entity routing makes deprecated creation unavailable, while generic v0.1 preservation covers compatibility without teaching the obsolete entity.
 - Tool and agent allocations are conditional because s0005 and s0007 do not yet establish most providers.
 - The old evaluation history supports keeping marker verification, governance framing, and close-out integrity salient while moving mechanical detail out of the entrypoint.
 
@@ -196,7 +197,7 @@ Fingerprints use Git blob object IDs so line-ending conversion and entity rename
 | s0001 | `7ac1f801311449ef1841691e60c3478635425986` |
 | s0002 | `efbb365ad7108f1f54b50b346d19b51063cbd402` |
 | s0003 | `d17626f4dce4eafc41e9f330f0e21d6da8633e14` |
-| s0004 | `859ba50c8088a89054e9ea19b8c4632b2c235e7c` |
+| s0004 | `279f79bf06951d51e8d362efd2b805775031a090` |
 | s0005 | `c9cb5369c07eb9ef5197c18eb4d130ed30021faf` |
 | s0006 | `5d107410fba90040699e240927f2f46fae4772f1` |
 | s0007 | `262324af94fe107411d154f9aac9d6c5cf53b21c` |
