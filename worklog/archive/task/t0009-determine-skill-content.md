@@ -2,7 +2,7 @@
 id = "t0009"
 title = "Determine SKILL.md content allocation"
 tags = ["methodology", "skill"]
-status = "active"
+status = "done"
 modifies = ["s0004"]
 +++
 
@@ -70,4 +70,6 @@ Complete when s0004 is sufficient to write and review `SKILL.md` without decidin
 - Prepared a `NEEDS APPROVAL` s0004 proposal covering content categories, allocation rules, reproducible inventory maintenance, provider guarantees, the objective v0.1 length comparison, and review criteria.
 - Prepared `NEEDS APPROVAL` provider-result categories in t0006 and trigger/handoff requirements in t0007 without specifying complete messages or agent internals.
 - Applied the user's authorization to omit decision-specific runtime guidance; current-entity routing and generic v0.1 preservation retain the necessary behavior without teaching the deprecated entity.
-- Verified unique inventory IDs and entity IDs, valid allocation destinations, table shape, complete source fingerprints, baseline size, and clean patch whitespace before the approval correction.
+- Replaced n0005's proposed acceptance role with direct s0004 requirements and generated freshness checks over authoritative specs.
+- Confirmed that n0005 is non-authoritative research and that the marked t0006 and t0007 drafts are not dependencies of s0004 or t0009 completion.
+- Verified that s0004 covers required content, delegation, form, review, and future freshness checks; defines the objective 7,646-byte v0.1 comparison; and contains no content awaiting approval.
