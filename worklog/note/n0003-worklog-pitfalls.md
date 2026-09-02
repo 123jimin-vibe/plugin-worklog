@@ -103,10 +103,10 @@ Repository-specific incidents belong in n0004.
 
 #### Project adoption
 
-- **Parallel authority introduced through partial Worklog adoption** — High; observed; s0002.
+- **Parallel authority introduced through partial worklog adoption** — High; observed; s0002.
   - Failure: Worklog is introduced beside an established authoritative process, or covers only one contributor or subsystem while presenting itself as project state.
   - Pressure: Adding another ledger appears safer than deciding which record is authoritative.
-  - Check: Confirm adoption with the human, identify the authoritative record and workflow, and establish project-wide coverage before initializing Worklog.
+  - Check: Confirm adoption with the human, identify the authoritative record and workflow, and establish project-wide coverage before initializing worklog.
 
 #### Spec integrity
 

@@ -47,7 +47,7 @@ If a reliable tool or auxiliary agent provides a detail before it is needed, `SK
 
 - `SKILL.md` MUST have valid agent-skill YAML frontmatter.
   Its `name` MUST be `worklog`, and its `description` MUST be concise and discriminating.
-- The description MUST make Worklog operations discoverable without implying that activation authorizes adoption or initialization.
+- The description MUST make worklog operations discoverable without implying that activation authorizes adoption or initialization.
 - The Markdown body SHOULD be shallow, direct, and organized around actions or workflows rather than mirroring the spec hierarchy.
 - Examples SHOULD appear only when they clarify behavior that is easy to misunderstand.
 - `SKILL.md` MUST use UTF-8 without a byte-order mark and LF line endings.

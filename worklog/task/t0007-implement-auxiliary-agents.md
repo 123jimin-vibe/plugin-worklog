@@ -23,4 +23,4 @@ Before s0007 establishes an auxiliary agent as the primary provider for an n0005
 - the evidence, uncertainty, findings, and required follow-up returned to the primary agent.
 
 Candidate bounded roles from n0005 are spec authoring and review, investigation or audit, bug-fix and refactor review, non-successful task disposition, completion verification, and comment-quality auditing.
-Ordinary Worklog use should not require delegation when the primary agent already has enough context to act reliably.
+Ordinary worklog use should not require delegation when the primary agent already has enough context to act reliably.
