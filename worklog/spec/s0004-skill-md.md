@@ -4,12 +4,12 @@ title = "SKILL.md"
 paths = ["plugin/skills/worklog/SKILL.md"]
 +++
 
-# `SKILL.md` (NEEDS APPROVAL)
+# `SKILL.md`
 
 ## Principles
 
 - The delivered `SKILL.md` is an execution entrypoint derived from the worklog specs, not an independent source of authority.
-- It SHOULD give the primary agent the smallest reliable context needed before an operation-specific tool or auxiliary agent can supply the rest.
+- It SHOULD give the primary agent the smallest reliable context needed, before an operation-specific tool or auxiliary agent can supply the rest.
 - Ordinary use SHOULD NOT require access to this repository's specs, notes, task history, or allocation rationale.
 - Concision serves reliable decisions and low routine context cost; completeness and a fixed section template are not goals.
 
@@ -35,7 +35,7 @@ paths = ["plugin/skills/worklog/SKILL.md"]
 
 ## Delivered artifact (UNIMPLEMENTED)
 
-### Entrypoint content
+### Entrypoint content (NEEDS APPROVAL)
 
 The delivered `SKILL.md` MUST retain these categories because the primary agent needs them before it can safely choose or invoke a provider:
 
@@ -51,7 +51,7 @@ The delivered `SKILL.md` MUST retain these categories because the primary agent 
 The entrypoint SHOULD include only enough entity syntax and file layout to orient a cold reader and use the available providers.
 Details that a reliable provider supplies before the affected choice SHOULD NOT be duplicated in the entrypoint.
 
-### Delegation
+### Delegation (NEEDS APPROVAL)
 
 - Operation-specific mechanics, validation, prefilled state, and close-out reminders SHOULD be delivered by tools governed by s0005.
 - Bounded specialist procedures for authoring, investigation, review, or verification SHOULD be delivered by auxiliary agents governed by s0007.
@@ -60,7 +60,7 @@ Details that a reliable provider supplies before the affected choice SHOULD NOT 
 - Until that guarantee exists, the entrypoint MUST retain enough of the unit for correct direct operation.
 - Rationale, history, obsolete v0.1 behavior, duplicated guidance, and information that does not alter correct ordinary use SHOULD remain in their governing source or be omitted.
 
-### Form
+### Form (NEEDS APPROVAL)
 
 - The skill MUST use valid agent-skill YAML frontmatter with `name: worklog` and a concise, discriminating description.
 - The description MUST make Worklog operations discoverable without implying that activation authorizes adoption or initialization.
@@ -69,7 +69,7 @@ Details that a reliable provider supplies before the affected choice SHOULD NOT 
 - A canonical UTF-8 rendering with LF line endings and no byte-order mark MUST be smaller than 7,646 bytes, the final v0.1 baseline.
 - Content needed only in a specialized operation SHOULD be progressively disclosed through its guaranteed provider.
 
-### Review
+### Review (NEEDS APPROVAL)
 
 - Every retained unit MUST pass a deletion test identifying the concrete happy path or mistake-prevention property that becomes unreliable without it.
 - Every excluded or delegated unit MUST have a named primary destination or an explicit reason for omission.
