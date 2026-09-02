@@ -104,6 +104,7 @@ title = "Common entity rules"
 ### Marker semantics
 
 - `NEEDS APPROVAL` means that content awaits required human approval and is not yet authoritative.
+  - An agent MUST NOT remove a `NEEDS APPROVAL` marker.
   - `NEEDS REVIEW` is equivalent to `NEEDS APPROVAL`.
 - `UNIMPLEMENTED` means that authorized spec behavior is not implemented; the behavior remains authoritative.
   - If a clause is affected by both `UNIMPLEMENTED` and `NEEDS APPROVAL`, then `NEEDS APPROVAL` takes priority. 
