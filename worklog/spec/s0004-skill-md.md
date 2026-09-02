@@ -8,73 +8,71 @@ paths = ["plugin/skills/worklog/SKILL.md"]
 
 ## Principles
 
-- The delivered `SKILL.md` is an execution entrypoint derived from the worklog specs, not an independent source of authority.
-- It SHOULD give the primary agent the smallest reliable context needed, before an operation-specific tool or auxiliary agent can supply the rest.
+- `SKILL.md` derives its guidance from the worklog specs. It is not authoritative on its own.
+- `SKILL.md` SHOULD contain the minimum reliable context needed before a tool or auxiliary agent is used.
 - Ordinary use SHOULD NOT require access to this repository's specs, notes, task history, or allocation rationale.
-- Concision serves reliable decisions and low routine context cost; completeness and a fixed section template are not goals.
-
-## Content inventory
-
-- n0005 is the non-authoritative content inventory used to write and review the delivered `SKILL.md`.
-- The inventory MUST cover every current worklog spec, n0002, n0003, n0004, and the final v0.1 `SKILL.md` baseline.
-- The inventory MUST divide source material into information units small enough to allocate independently.
-- Each unit MUST record:
-  - its source;
-  - the decision or action it affects;
-  - when it must become available;
-  - whether it is global or operation-specific;
-  - the consequence and observed frequency of omission;
-  - exactly one primary location; and
-  - the allocation rationale or provider guarantee.
-- Primary locations are the delivered `SKILL.md`, a tool, an auxiliary agent, a governing spec or note, or nowhere.
-- Suggested behavior not yet authorized MUST be visibly separate from the current allocation and MUST NOT be treated as delivered methodology.
-- The inventory is derived traceability data and MUST NOT override a governing spec.
-- The inventory MUST identify its complete source set and a reproducible fingerprint for each source.
-- Adding, removing, or changing a source makes the inventory stale until the affected units and fingerprint are reviewed.
-- A stale inventory MUST prevent acceptance of a new or changed delivered `SKILL.md`.
+- Concision supports reliable decisions and lowers routine context cost. Exhaustive coverage and a fixed section template are not goals.
+- Notes, tasks, generated source hashes, and evaluation results MAY inform implementation and review. They MUST NOT define required skill behavior or override a spec.
 
 ## Delivered artifact (UNIMPLEMENTED)
 
-### Entrypoint content (NEEDS APPROVAL)
+### Required content
 
-The delivered `SKILL.md` MUST retain these categories because the primary agent needs them before it can safely choose or invoke a provider:
+`SKILL.md` MUST give the primary agent enough guidance to:
 
-- **Applicability and orientation:** establish that using worklog is the project's choice, identify the worklog as durable project state, and prevent partial adoption from creating parallel authority.
-- **Authority and approval:** resolve effective agent mode, distinguish permission from content authority, preserve spec precedence, and prevent implementation of unauthorized behavior.
-- **Entity routing:** distinguish specs, tasks, notes, and references so information enters the correct durable record.
-- **Spec integrity:** preserve current authoritative behavior, distinguish approval from implementation state, require related-spec review, and prevent durable behavior from escaping specification.
-- **Task governance:** require timely task state, complete `modifies`, correct dependency semantics, and subordination to governing specs.
-- **Completion integrity:** calibrate claims to evidence, reject placeholders as completion, reconcile affected specs and markers, and archive resolved tasks.
-- **Backward compatibility:** preserve compatible v0.1 worklog data without reintroducing superseded methodology.
-- **Provider routing:** state when a tool or auxiliary agent is required and what result the primary agent must receive.
+- determine whether worklog applies and treat an adopted worklog as durable project state;
+- identify authoritative behavior;
+- resolve permission to edit separately from the authority of resulting content;
+- distinguish content approval from implementation state;
+- choose among current entity types and preserve the authority and lifecycle role of each;
+- plan and carry out reviewable work without bypassing governing specs or task state;
+- satisfy verification, spec write-back, and archival requirements;
+- know when to use a tool or auxiliary agent and what it must return; and
+- preserve compatible v0.1 worklogs without teaching superseded methodology.
 
-The entrypoint SHOULD include only enough entity syntax and file layout to orient a cold reader and use the available providers.
-Details that a reliable provider supplies before the affected choice SHOULD NOT be duplicated in the entrypoint.
+`SKILL.md` SHOULD include only enough entity syntax and file layout to orient a new reader and use the available tools and auxiliary agents.
+If a reliable tool or auxiliary agent provides a detail before it is needed, `SKILL.md` SHOULD NOT repeat it.
 
-### Delegation (NEEDS APPROVAL)
+### Tools and auxiliary agents
 
-- Operation-specific mechanics, validation, prefilled state, and close-out reminders SHOULD be delivered by tools governed by s0005.
-- Bounded specialist procedures for authoring, investigation, review, or verification SHOULD be delivered by auxiliary agents governed by s0007.
-- A delegated unit MUST retain only its trigger and required result in the entrypoint.
-- Delegation is not effective until the provider's governing spec guarantees that the information arrives before the affected decision.
-- Until that guarantee exists, the entrypoint MUST retain enough of the unit for correct direct operation.
-- Rationale, history, obsolete v0.1 behavior, duplicated guidance, and information that does not alter correct ordinary use SHOULD remain in their governing source or be omitted.
+- Tools governed by s0005 SHOULD provide operation-specific steps, validation, prefilled state, and close-out reminders.
+- Auxiliary agents governed by s0007 SHOULD provide bounded specialist help for authoring, investigation, review, or verification.
+- `SKILL.md` MUST state when a tool or auxiliary agent is required and what it must return.
+- `SKILL.md` MAY omit guidance only when s0005 or s0007 requires a tool or auxiliary agent to provide it before it is needed.
+- Otherwise, `SKILL.md` MUST provide enough guidance to proceed correctly without that tool or auxiliary agent.
+- `SKILL.md` SHOULD omit rationale, history, obsolete v0.1 behavior, duplicate guidance, and other content irrelevant to ordinary use.
+  Such content MAY remain in its governing source.
 
-### Form (NEEDS APPROVAL)
+### Form
 
-- The skill MUST use valid agent-skill YAML frontmatter with `name: worklog` and a concise, discriminating description.
+- `SKILL.md` MUST have valid agent-skill YAML frontmatter.
+  Its `name` MUST be `worklog`, and its `description` MUST be concise and discriminating.
 - The description MUST make Worklog operations discoverable without implying that activation authorizes adoption or initialization.
-- The Markdown body SHOULD be shallow, direct, and organized around decisions or workflows rather than mirroring the spec hierarchy.
-- Examples SHOULD appear only when they materially disambiguate fragile behavior.
-- A canonical UTF-8 rendering with LF line endings and no byte-order mark MUST be smaller than 7,646 bytes, the final v0.1 baseline.
-- Content needed only in a specialized operation SHOULD be progressively disclosed through its guaranteed provider.
+- The Markdown body SHOULD be shallow, direct, and organized around actions or workflows rather than mirroring the spec hierarchy.
+- Examples SHOULD appear only when they clarify behavior that is easy to misunderstand.
+- `SKILL.md` MUST use UTF-8 without a byte-order mark and LF line endings.
+  In that form, it MUST be smaller than the 7,646-byte final v0.1 version.
+- Guidance needed only for a specialized operation SHOULD come from the applicable tool or auxiliary agent.
 
-### Review (NEEDS APPROVAL)
+### Review
 
-- Every retained unit MUST pass a deletion test identifying the concrete happy path or mistake-prevention property that becomes unreliable without it.
-- Every excluded or delegated unit MUST have a named primary destination or an explicit reason for omission.
-- The allocation MUST be walked through every applicable n0002 happy path, every critical or high-severity n0003 pitfall, and relevant n0004 incidents.
-- A critical or high-severity mistake MUST NOT remain attributable to an unowned information gap.
-- The primary agent MUST be able to follow ordinary happy paths without routine methodology archaeology or avoidable delegation.
-- A reviewer MAY reject content that duplicates another reliable provider even when the duplicated statement is correct.
-- Behavioral evaluation SHOULD use realistic scenarios and claimed outcomes rather than merely checking headings or wording.
+- Every retained instruction MUST support ordinary use or prevent a concrete mistake.
+- The primary agent MUST be able to follow ordinary workflows without routine repository access or unnecessary delegation.
+- A reviewer MAY reject correct guidance that a reliable tool or auxiliary agent already provides.
+- Behavioral evaluation SHOULD use a small set of realistic scenarios and assess claimed outcomes.
+  It SHOULD NOT mirror individual spec requirements or merely check headings and wording.
+- Notes and prior incidents MAY suggest evaluation scenarios, but expected behavior MUST derive from authoritative specs.
+
+## Source freshness (UNIMPLEMENTED)
+
+- Repository verification MUST automatically discover current specs under `worklog/spec/**/*.md`.
+  It MUST detect additions, removals, and content changes since the last skill review.
+- When verification detects a spec change, the freshness check MUST fail until its effect on `SKILL.md` and its evaluations is reviewed.
+- To pass again, the check MUST require either:
+  - updates to affected `SKILL.md` guidance and evaluations; or
+  - confirmation that the changed specs require no changes to `SKILL.md` or its evaluations.
+- Source hashes MUST be generated from the discovered specs.
+  The process MUST NOT require a manually maintained semantic inventory.
+- Generated source hashes and evaluation results are evidence only.
+  They MUST NOT define behavior or override a spec.
+- Changes to non-authoritative notes MUST NOT by themselves make the freshness check fail.
