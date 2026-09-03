@@ -12,6 +12,7 @@ title = "Common entity rules"
 - s0009 defines task entities.
 - s0010 defines note entities.
 - s0011 defines reference entities.
+- s0015 defines tags and the tag database.
 - n0001 guides writing.
 - n0002 describes the expected happy path.
 - n0003 records pitfalls.
@@ -56,7 +57,7 @@ title = "Common entity rules"
 | --- | --- | --- | --- | --- |
 | `id` | string | yes | spec, task, note, decision | Standard-form ID. |
 | `title` | string | yes | all types | Human-readable title. |
-| `tags` | array of strings | no | all types | Classification and search labels. |
+| `tags` | array of strings | no | all types | Classification and search labels governed by s0015. |
 | `agent_mode` | string | no | spec, task, note | Entity-specific override of the agent mode defined by s0012. |
 | `parent` | string | no | spec, task, note | ID of a broader entity of the same type, used only for organization. |
 

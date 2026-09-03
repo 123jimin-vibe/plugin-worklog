@@ -9,9 +9,10 @@ Tools shipped with the plugin for managing worklogs.
 
 Individual tool specs define each tool's usage and behavior.
 
-## Related tools
+## Related specs
 
 - s0013 defines the `init` tool.
+- s0015 defines tags and the tag database.
 
 ## Tool inventory
 
@@ -23,6 +24,27 @@ It is idempotent, preserves existing worklog data, and neither creates semantic 
 ```text
 worklog init [PROJECT]
 ```
+
+### `tag` — UNIMPLEMENTED (t0006)
+
+Inspects and maintains the tag database defined by s0015.
+
+```text
+worklog tag list [--project PROJECT]
+worklog tag add TAG [--description TEXT] [--project PROJECT]
+worklog tag update TAG [--name NEW_TAG] [--description TEXT] [--project PROJECT]
+worklog tag remove TAG [--project PROJECT]
+```
+
+- Every command requires an existing valid tag database.
+  A missing or malformed database is reported without changing worklog files.
+- `list` reports every registered tag and description in normalized-name order.
+  It identifies unknown entity tags and unused database rows, without treating unused rows as errors.
+- `add` stores the normalized name and uses an empty description when `--description` is omitted.
+- `update` MUST receive `--name`, `--description`, or both.
+  A rename reports every changed entity.
+- `remove` rejects a referenced tag and identifies every referring entity.
+- Mutations preflight the complete change and leave every affected file unchanged when validation fails.
 
 ### Proposed additions (NEEDS APPROVAL)
 
@@ -72,6 +94,13 @@ worklog task resume TASK... --checked TEXT [--project PROJECT]
 worklog task finish TASK... [--project PROJECT]
 worklog task cancel TASK... [--reason TEXT] [--project PROJECT]
 ```
+
+### Tag integration — UNIMPLEMENTED (t0006)
+
+- `create` and `field` normalize tag inputs and reject unknown tags when the database exists.
+- Without a database, `create` and `field` accept normalized non-empty tag names without creating the database.
+- `status` reports whether the database is missing or malformed, duplicate normalized names, unknown entity tags, and unused database rows.
+  A missing database and unused rows are informational rather than errors.
 
 ### Implementation
 

@@ -2,8 +2,8 @@
 id = "t0012"
 title = "Specify the tag database"
 tags = ["entities", "tooling"]
-status = "pending"
-modifies = ["s0002", "s0005", "s0013"]
+status = "done"
+modifies = ["s0002", "s0005", "s0013", "s0015"]
 +++
 
 # Specify the tag database
@@ -12,7 +12,7 @@ Create the governing spec for the project-owned CSV database that describes tags
 Update the existing entity and tool specs to use that definition.
 Do not implement the database or any tool; t0006 owns tool and artifact implementation.
 
-## Proposed design (NEEDS APPROVAL)
+## Proposed design
 
 Use `worklog/tags.csv` with the exact header `tag,description`.
 Encode it as UTF-8 and use ordinary CSV quoting for commas, quotes, and line breaks in descriptions.
@@ -58,7 +58,7 @@ An existing valid database is used unchanged.
 
 ### s0005 — Common tool rules
 
-- Add the new tag spec to `Related tools`.
+- Add the new tag spec to `Related specs`.
 - Define a `tag` tool with these interfaces:
 
   ```text
@@ -90,3 +90,12 @@ Complete when the dedicated tag spec authoritatively defines the proposed design
 s0002, s0005, and s0013 contain the planned references and behavior without duplication,
 the resulting specs are mutually consistent,
 and all undelivered tool and artifact behavior remains assigned to t0006.
+
+## Completion evidence
+
+- s0015 defines the tag database, identity, entity references, changes, compatibility, and known failure modes.
+- s0002 delegates common tag-field behavior to s0015 without repeating its rules.
+- s0005 defines the `tag` interface and tag integration for the existing tool proposals.
+- s0013 defines database creation and direct reuse during initialization.
+- Every undelivered artifact and tool requirement remains marked `UNIMPLEMENTED (t0006)`.
+- No tag database, tool implementation, or tool test was added.

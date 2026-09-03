@@ -13,6 +13,7 @@ Initializes worklog for a project.
 - s0005 defines common tool rules.
 - s0008 defines the generated project configuration.
 - s0012 defines its default policies.
+- s0015 defines the tag database.
 
 ## Usage
 
@@ -34,6 +35,7 @@ It:
 
 - creates the standard entity and archive directories;
 - creates `worklog/project.toml` as defined by s0008 when it does not exist;
+- creates `worklog/tags.csv` as defined by s0015 when it does not exist;
 - writes explicit policies for specs, tasks, and notes using the default modes from s0012;
 - preserves every existing worklog file;
 - reports which paths it created and which already existed.
@@ -45,7 +47,9 @@ It does not:
 - generate placeholder project coverage;
 - initialize or modify version control;
 - modify files outside `worklog/`;
-- rewrite an existing `project.toml`.
+- rewrite an existing `project.toml`;
+- rewrite an existing valid `tags.csv`;
+- rewrite entity tag values while creating `tags.csv`.
 
 Creating semantic entities belongs to later workflow steps.
 Initialization alone MUST NOT imply that the project has adequate spec coverage.
@@ -57,7 +61,14 @@ Initialization alone MUST NOT imply that the project has adequate spec coverage.
 When the project already has a complete worklog, it makes no changes and exits successfully.
 
 When the project has a partial but compatible worklog, it creates only the missing standard structure.
-Existing v0.1 entities and directories are preserved for backward compatibility.
+Existing compatible files and directories are preserved.
+
+When `tags.csv` is missing, `init` scans every current entity and archived task before writing.
+It creates one normalized, alphabetically sorted row with an empty description for each distinct tag.
+It creates only the header when no entity uses tags.
+
+An existing valid `tags.csv` is used unchanged.
+An invalid existing database or normalized duplicate within one entity prevents initialization.
 
 If a required path is occupied by an incompatible file or directory, `init` fails without making partial changes.
 It never requires a destructive `--force` mode.
