@@ -103,6 +103,20 @@ worklog validate [ENTITY...] [--project PROJECT]
   - Each tool SHOULD NOT introduce an additional dependency.
 - Tools SHOULD expose workflow operations instead of requiring callers to manipulate entity file frontmatter directly.
 
+### Efficiency and implementation scope
+
+For this section, `n` is the relevant input size, most commonly the number of worklog entries an operation must consider.
+An individual tool spec MAY define another measure when appropriate.
+Quasi-linear means `O(n polylog n)`, and quasi-constant means `O(polylog n)`.
+
+- Every tool MUST run in quasi-linear time or better with respect to `n`.
+- An operation SHOULD admit a quasi-constant-time implementation when all necessary optimizations are assumed, apart from work proportional to explicitly supplied target data and required output.
+  - This is an optimizability requirement, not a requirement to implement those optimizations now; a linear entity-ID search satisfies it if indexing could make the search quasi-constant.
+- Tools SHOULD NOT require auxiliary tool-specific state files, such as a search index.
+  - This preference is not a compatibility guarantee for future worklog versions.
+- Tools SHOULD be straightforward to implement.
+  - Operations whose correctness depends on open-ended interpretation or support for many unrelated formats SHOULD instead be assigned to an auxiliary agent.
+
 ### Entity IDs
 
 - Every entity ID parameter MUST follow the identity and interoperability rules in s0002.
