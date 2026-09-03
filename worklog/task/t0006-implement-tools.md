@@ -2,7 +2,7 @@
 id = "t0006"
 title = "Implement the full tool set"
 tags = ["implementation", "tooling"]
-status = "pending"
+status = "active"
 modifies = ["s0005", "s0013"]
 +++
 
