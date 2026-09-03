@@ -14,7 +14,7 @@ paths = ["plugin/skills/worklog/SKILL.md"]
 - Concision supports reliable decisions and lowers routine context cost. Exhaustive coverage and a fixed section template are not goals.
 - Notes, tasks, generated source hashes, and evaluation results MAY inform implementation and review. They MUST NOT define required skill behavior or override a spec.
 
-## Delivered artifact (UNIMPLEMENTED)
+## Delivered artifact
 
 ### Required content
 
