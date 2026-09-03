@@ -26,89 +26,75 @@ worklog init [PROJECT]
 
 ### Proposed additions (NEEDS APPROVAL)
 
-#### `context`
+#### `status`
 
-Builds a compact, read-only working set from entity IDs and project paths so an agent can orient or resume without reading the whole worklog.
+Summarizes the current worklog or a working set selected by entity IDs and project paths so an agent can orient or resume without reading every entity.
 It resolves canonical entities, effective agent modes, governing specs, hierarchy, task dependencies and actionability, relevant markers, and the next mechanically available worklog actions.
 
 ```text
-worklog context [ENTITY...] [--path PATH...] [--project PROJECT]
+worklog status [ENTITY...] [--path PATH...] [--project PROJECT]
 ```
 
 #### `create`
 
 Creates one or more specs, tasks, or notes with allocated standard IDs, minimal valid content, and only fields available to that entity type.
-It validates relationships before writing, applies the effective agent mode, avoids fixed body templates, and reports any content that still needs human approval.
+It validates relationships before writing, avoids fixed body templates, and reports the effective agent mode and any content that still needs human approval.
 
 ```text
 worklog create (spec|task|note) (--title TITLE [--body FILE] | --from MANIFEST) [--parent ID] [--tag TAG...] [--agent-mode MODE] [--paths GLOB...] [--modifies SPEC...] [--blocked-by TASK...] [--project PROJECT]
 ```
 
-#### `capture`
+#### `set-parent`
 
-Creates one or more references by faithfully copying material from a URL, file, or standard input into `worklog/ref/` with source and selection metadata.
-It keeps interpretation out of the copied contents, validates the destination, and does not overwrite an existing reference.
-
-```text
-worklog capture (SOURCE --to REF_PATH --title TITLE [--selection TEXT] | --from MANIFEST) [--project PROJECT]
-```
-
-#### `group`
-
-Places specs, tasks, or notes beneath a same-type parent, or returns them to the top level, without implying dependency or lifecycle changes.
+Sets or clears the organizational parent of one or more specs, tasks, or notes without implying dependency or lifecycle changes.
 It validates existence and cycles before writing, includes archived tasks when resolving task hierarchy, and supports independent targets in one invocation.
 
 ```text
-worklog group ENTITY... (--under PARENT | --top-level) [--project PROJECT]
+worklog set-parent ENTITY... (--parent PARENT | --none) [--project PROJECT]
 ```
 
-#### `scope`
+#### `set-spec-paths`
 
-Reconciles governance scope after the caller identifies it by updating a spec's governed path globs or a task's complete `modifies` set.
-It validates every supplied relationship, shows the resulting coverage change, and does not infer behavioral ownership from filenames or implementation alone.
+Sets the complete collection of project path globs governed by a spec after the caller identifies the behavioral boundary.
+It validates the supplied globs, shows the resulting coverage change, and does not infer behavioral ownership from filenames or implementation alone.
 
 ```text
-worklog scope (spec SPEC --paths GLOB... | task TASK --modifies SPEC...) [--project PROJECT]
+worklog set-spec-paths SPEC --paths GLOB... [--project PROJECT]
 ```
 
 #### `task`
 
-Manages non-terminal task workflow: starting pending work, recording a concrete blocking condition and task dependencies, and recording the caller's blocker check before resuming.
-It enforces valid statuses and `blocked_by` relationships while keeping hierarchy independent from actionability.
+Manages task governance and lifecycle, including its governing specs, dependencies, activation, blocking, resumption, completion, cancellation, and prompt archival when resolved.
+It validates `modifies` and `blocked_by`, records blocker checks, applies mechanically checkable close-out gates, and leaves semantic judgment of completion evidence to the caller.
 
 ```text
+worklog task set-specs TASK (--spec SPEC... | --none) [--project PROJECT]
+worklog task set-dependencies TASK (--task TASK... | --none) [--project PROJECT]
 worklog task start TASK... [--project PROJECT]
 worklog task block TASK... --reason TEXT [--blocked-by TASK...] [--project PROJECT]
 worklog task resume TASK... --checked TEXT [--project PROJECT]
+worklog task finish TASK... --evidence FILE --specs-reconciled [--project PROJECT]
+worklog task cancel TASK... --reason TEXT [--follow-up TASK] [--project PROJECT]
+worklog task archive TASK... [--project PROJECT]
 ```
 
-#### `mark`
+#### `marker`
 
-Adds or moves structurally scoped `NEEDS APPROVAL` and `UNIMPLEMENTED` markers without losing affected child scopes, and records verified implementation by clearing `UNIMPLEMENTED`.
+Manages structurally scoped `NEEDS APPROVAL` and `UNIMPLEMENTED` markers without losing affected child scopes, and records verified implementation by clearing `UNIMPLEMENTED`.
 It may associate an implementation marker with its owning task and requires evidence for implementation updates, but it does not judge that evidence, clear `NEEDS APPROVAL`, or treat invocation as approval.
 
 ```text
-worklog mark (add|move) ENTITY --marker (needs-approval|unimplemented) --scope SCOPE [--to SCOPE] [--task TASK] [--project PROJECT]
-worklog mark implemented SPEC --scope SCOPE --evidence FILE [--project PROJECT]
+worklog marker (add|move) ENTITY --marker (needs-approval|unimplemented) --scope SCOPE [--to SCOPE] [--task TASK] [--project PROJECT]
+worklog marker implemented SPEC --scope SCOPE --evidence FILE [--project PROJECT]
 ```
 
-#### `close`
-
-Preflights mechanically checkable close-out conditions, closes tasks as done or cancelled, and archives each task that passes.
-Completion requires supplied evidence and the caller's spec-reconciliation declaration, rejects detectable unresolved approval or implementation state, and leaves judgment of the evidence to the caller; cancellation preserves the reason and reports unfinished state requiring disposition.
-
-```text
-worklog close done TASK... --evidence FILE --specs-reconciled [--project PROJECT]
-worklog close cancel TASK... --reason TEXT [--follow-up TASK] [--project PROJECT]
-```
-
-#### `check`
+#### `validate`
 
 Performs a read-only integrity check over current entities, archived tasks, and project configuration.
 It reports malformed frontmatter, identity collisions, invalid fields and references, hierarchy or dependency cycles, lifecycle inconsistencies, and unresolved review separately from structural errors, without rewriting files.
 
 ```text
-worklog check [ENTITY...] [--project PROJECT]
+worklog validate [ENTITY...] [--project PROJECT]
 ```
 
 ### Implementation
