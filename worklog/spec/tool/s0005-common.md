@@ -97,10 +97,13 @@ worklog task cancel TASK... [--reason TEXT] [--project PROJECT]
 
 ### Tag integration — UNIMPLEMENTED (t0006)
 
-- `create` and `field` normalize tag inputs and reject unknown tags when the database exists.
+- `create` and `field` normalize tag inputs.
+  When the database exists, they report unknown tags without rejecting the change.
 - Without a database, `create` and `field` accept normalized non-empty tag names without creating the database.
 - `status` reports whether the database is missing or malformed, duplicate normalized names, unknown entity tags, and unused database rows.
-  A missing database and unused rows are informational rather than errors.
+  A missing database is informational.
+  Unknown entity tags and unused database rows are advisory rather than errors.
+  A malformed database and duplicate normalized names are errors.
 
 ### Implementation
 

@@ -68,7 +68,9 @@ It creates one normalized, alphabetically sorted row with an empty description f
 It creates only the header when no entity uses tags.
 
 An existing valid `tags.csv` is used unchanged.
-An invalid existing database or normalized duplicate within one entity prevents initialization.
+An existing `tags.csv` with invalid CSV structure, an empty normalized tag name, or duplicate normalized database rows prevents initialization.
+A normalized duplicate within one entity also prevents initialization.
+Unknown entity tags and unused database rows do not prevent initialization.
 
 If a required path is occupied by an incompatible file or directory, `init` fails without making partial changes.
 It never requires a destructive `--force` mode.

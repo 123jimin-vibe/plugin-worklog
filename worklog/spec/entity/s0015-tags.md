@@ -46,12 +46,13 @@ title = "Tags"
 - Tag resolution includes current entities and archived tasks.
 - An entity tag without a matching row is unknown.
 - A database row without an entity reference is unused. Unused tags remain valid.
+- Unknown entity tags and unused database rows do not invalidate the database or the worklog.
 
 ## Changes
 
 - Adding a tag adds one normalized, unique database row.
 - Changing a description changes no tag behavior or entity reference.
-- Renaming a tag MUST store the normalized new name and update every matching current and archived reference as one operation.
+- A successful tag rename MUST store the normalized new name and update every matching current and archived reference as one operation.
 - A tag SHOULD NOT be removed while any entity refers to it.
 - A change affecting the database and entity references SHOULD validate the complete change before writing and SHOULD NOT leave a partial result on failure.
 
@@ -59,7 +60,6 @@ title = "Tags"
 
 - An absent tag database MUST NOT invalidate an otherwise compatible worklog or its existing tag values.
 - Creating a missing database for an existing worklog MUST add one normalized row with an empty description for each distinct entity tag without rewriting entity files.
-- An existing valid database MUST be used unchanged.
 
 ## Known failure modes
 
