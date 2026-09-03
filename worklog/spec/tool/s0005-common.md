@@ -29,7 +29,8 @@ worklog init [PROJECT]
 #### `status`
 
 Summarizes the current worklog or a working set selected by entity IDs and project paths so an agent can orient or resume without reading every entity.
-It resolves canonical entities, effective agent modes, governing specs, hierarchy, task dependencies and actionability, relevant markers, and the next mechanically available worklog actions.
+It reports canonical entities, effective agent modes, governing specs, hierarchy, task dependencies and actionability, unresolved markers and review needs, and the next mechanically available worklog actions.
+Its output reflects declared worklog state for orientation; it is not a project-wide integrity check and does not certify that authority, spec coverage, implementation, verification, or completion is correct.
 
 ```text
 worklog status [ENTITY...] [--path PATH...] [--project PROJECT]
@@ -37,64 +38,39 @@ worklog status [ENTITY...] [--path PATH...] [--project PROJECT]
 
 #### `create`
 
-Creates one or more specs, tasks, or notes with allocated standard IDs, minimal valid content, and only fields available to that entity type.
-It validates relationships before writing, avoids fixed body templates, and reports the effective agent mode and any content that still needs human approval.
+Creates one or more same-type specs, tasks, or notes with allocated standard IDs, minimal valid content, and only fields available to that entity type.
+All entities in one invocation receive the same optional fields; new tasks are always `pending`.
+The tool validates supplied fields before writing, avoids fixed body templates, reports the effective agent mode, and does not treat invocation as approval for generated content.
 
 ```text
-worklog create (spec|task|note) (--title TITLE [--body FILE] | --from MANIFEST) [--parent ID] [--tag TAG...] [--agent-mode MODE] [--paths GLOB...] [--modifies SPEC...] [--blocked-by TASK...] [--project PROJECT]
+worklog create (spec|task|note) TITLE... [--parent ID] [--tag TAG...] [--paths GLOB...] [--modifies SPEC...] [--blocked-by TASK...] [--project PROJECT]
 ```
 
-#### `set-parent`
+#### `field`
 
-Sets or clears the organizational parent of one or more specs, tasks, or notes without implying dependency or lifecycle changes.
-It validates existence and cycles before writing, includes archived tasks when resolving task hierarchy, and supports independent targets in one invocation.
-
-```text
-worklog set-parent ENTITY... (--parent PARENT | --none) [--project PROJECT]
-```
-
-#### `set-spec-paths`
-
-Sets the complete collection of project path globs governed by a spec after the caller identifies the behavioral boundary.
-It validates the supplied globs, shows the resulting coverage change, and does not infer behavioral ownership from filenames or implementation alone.
+Changes supported mutable fields on one or more current specs, tasks, or notes, including `parent`, `paths`, `modifies`, and `blocked_by`.
+It validates field applicability, value types, references, cardinality, and hierarchy and dependency cycles before writing; reports the effective agent mode without claiming to know the caller's authorization; and never infers values from hierarchy, filenames, or implementation.
+IDs are immutable, task status is changed only by `task`, and `agent_mode` changes remain deliberate approval-governed document edits.
 
 ```text
-worklog set-spec-paths SPEC --paths GLOB... [--project PROJECT]
+worklog field set ENTITY... --field FIELD --value VALUE... [--project PROJECT]
+worklog field add ENTITY... --field FIELD --value VALUE... [--project PROJECT]
+worklog field remove ENTITY... --field FIELD --value VALUE... [--project PROJECT]
+worklog field unset ENTITY... --field FIELD [--project PROJECT]
 ```
 
 #### `task`
 
-Manages task governance and lifecycle, including its governing specs, dependencies, activation, blocking, resumption, completion, cancellation, and prompt archival when resolved.
-It validates `modifies` and `blocked_by`, records blocker checks, applies mechanically checkable close-out gates, and leaves semantic judgment of completion evidence to the caller.
+Manages task lifecycle, including activation, blocking, resumption, completion, cancellation, and archival.
+`finish` and `cancel` each apply the terminal status and archive atomically; the corresponding command also closes an already-resolved but unarchived task after the same preflight, so archival is not a separate lifecycle path.
+The tool enforces declared transition and dependency rules and mechanically detectable close-out gates, but leaves semantic verification and approval judgments to the caller; command success is not proof of completion, and `--reason` is required when newly cancelling rather than archiving an already-cancelled task.
 
 ```text
-worklog task set-specs TASK (--spec SPEC... | --none) [--project PROJECT]
-worklog task set-dependencies TASK (--task TASK... | --none) [--project PROJECT]
 worklog task start TASK... [--project PROJECT]
-worklog task block TASK... --reason TEXT [--blocked-by TASK...] [--project PROJECT]
+worklog task block TASK... --reason TEXT [--project PROJECT]
 worklog task resume TASK... --checked TEXT [--project PROJECT]
-worklog task finish TASK... --evidence FILE --specs-reconciled [--project PROJECT]
-worklog task cancel TASK... --reason TEXT [--follow-up TASK] [--project PROJECT]
-worklog task archive TASK... [--project PROJECT]
-```
-
-#### `marker`
-
-Manages structurally scoped `NEEDS APPROVAL` and `UNIMPLEMENTED` markers without losing affected child scopes, and records verified implementation by clearing `UNIMPLEMENTED`.
-It may associate an implementation marker with its owning task and requires evidence for implementation updates, but it does not judge that evidence, clear `NEEDS APPROVAL`, or treat invocation as approval.
-
-```text
-worklog marker (add|move) ENTITY --marker (needs-approval|unimplemented) --scope SCOPE [--to SCOPE] [--task TASK] [--project PROJECT]
-worklog marker implemented SPEC --scope SCOPE --evidence FILE [--project PROJECT]
-```
-
-#### `validate`
-
-Performs a read-only integrity check over current entities, archived tasks, and project configuration.
-It reports malformed frontmatter, identity collisions, invalid fields and references, hierarchy or dependency cycles, lifecycle inconsistencies, and unresolved review separately from structural errors, without rewriting files.
-
-```text
-worklog validate [ENTITY...] [--project PROJECT]
+worklog task finish TASK... [--project PROJECT]
+worklog task cancel TASK... [--reason TEXT] [--project PROJECT]
 ```
 
 ### Implementation
@@ -136,7 +112,7 @@ Quasi-linear means `O(n polylog n)`, and quasi-constant means `O(polylog n)`.
 ### Batch operations
 
 - An operation that can target multiple independent entities SHOULD accept multiple targets in one invocation.
-  - Examples include creating multiple entities and archiving multiple tasks.
+  - Examples include creating multiple entities and finishing or cancelling multiple tasks.
   - A batch operation SHOULD report the result for each target.
   - Whether a failed target prevents changes to the remaining targets MUST be specified.
 
