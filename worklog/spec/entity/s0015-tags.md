@@ -1,6 +1,7 @@
 +++
 id = "s0015"
 title = "Tags"
+paths = ["plugin/skills/worklog/scripts/worklog_lib/tags.py", "plugin/skills/worklog/scripts/worklog_lib/initialization.py"]
 +++
 
 # Tags

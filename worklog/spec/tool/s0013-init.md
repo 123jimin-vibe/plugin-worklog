@@ -1,9 +1,10 @@
 +++
 id = "s0013"
 title = "The init tool"
+paths = ["plugin/skills/worklog/scripts/worklog.py", "plugin/skills/worklog/scripts/worklog_lib/initialization.py"]
 +++
 
-# The `init` tool (UNIMPLEMENTED)
+# The `init` tool
 
 Initializes worklog for a project.
 
@@ -46,7 +47,7 @@ It does not:
 - infer behavior from source code or project documentation;
 - generate placeholder project coverage;
 - initialize or modify version control;
-- modify files outside `worklog/`;
+- modify files outside `worklog/`, except for script bytecode permitted by s0005;
 - rewrite an existing `project.toml`;
 - rewrite an existing valid `tags.csv`;
 - rewrite entity tag values while creating `tags.csv`.

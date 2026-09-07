@@ -17,14 +17,13 @@ Complete when all defined tools are shipped and their normal, failure, and appli
 ### Current delivery state
 
 - s0005 defines six tools: `init`, `tag`, `status`, `create`, `field`, and `task`.
-  All six are marked `UNIMPLEMENTED`.
+  `init` is delivered; the other five tools remain marked `UNIMPLEMENTED`.
   s0013 specifies `init`; s0015 supplies the tag model and mutation rules.
 - t0013 covers the shared foundation; t0014 through t0019 cover the individual commands.
-  These child tasks remain pending and contain draft scope marked `NEEDS APPROVAL`.
+  t0013 and t0014 are delivered; t0015 through t0019 remain pending and contain draft scope marked `NEEDS APPROVAL`.
   The approval prerequisite described for the inventory in t0016 through t0019 is stale relative to current s0005; detailed command contracts still need review.
-- The plugin contains its manifest and worklog skill, but no tool source.
-  The test directory contains cached bytecode, with no runnable test source.
-  These caches do not establish an implementation or verification baseline.
+- The plugin contains a shared Python library and the `init` entry point, with runnable behavioral tests.
+  Remaining tool implementations can extend this foundation.
 - Existing specifications cover entity identity, hierarchy, modes, tags, and task state.
   They do not yet settle every command's selection, mutation, and failure behavior.
 

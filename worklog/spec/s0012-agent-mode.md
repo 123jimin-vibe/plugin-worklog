@@ -1,6 +1,7 @@
 +++
 id = "s0012"
 title = "Agent mode"
+paths = ["plugin/skills/worklog/scripts/worklog_lib/configuration.py"]
 +++
 
 # Agent mode
