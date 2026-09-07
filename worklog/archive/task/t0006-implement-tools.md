@@ -2,7 +2,7 @@
 id = "t0006"
 title = "Implement the full tool set"
 tags = ["implementation", "tooling"]
-status = "active"
+status = "done"
 modifies = ["s0002", "s0003", "s0004", "s0005", "s0008", "s0009", "s0010", "s0011", "s0012", "s0013", "s0015"]
 +++
 
@@ -16,17 +16,13 @@ Complete when all defined tools are shipped and their normal, failure, and appli
 
 ### Current delivery state
 
-- s0005 defines six tools: `init`, `tag`, `status`, `create`, `field`, and `task`.
-  `init` is delivered; the other five tools remain marked `UNIMPLEMENTED`.
-  s0013 specifies `init`; s0015 supplies the tag model and mutation rules.
-- t0013 covers the shared foundation; t0014 through t0019 cover the individual commands.
-  t0013 and t0014 are delivered; t0015 through t0019 remain pending and contain draft scope marked `NEEDS APPROVAL`.
-  The approval prerequisite described for the inventory in t0016 through t0019 is stale relative to current s0005; detailed command contracts still need review.
-- The plugin contains a shared Python library and the `init` entry point, with runnable behavioral tests.
-  Remaining tool implementations can extend this foundation.
-- Existing specifications cover entity identity, hierarchy, modes, tags, and task state.
-  They do not yet settle every command's selection, mutation, and failure behavior.
-
+- All six tools defined by s0005 are delivered: `init`, `tag`, `status`, `create`, `field`, and `task`.
+  Their implementations are complete and all `UNIMPLEMENTED` tool markers in s0005 have been cleared.
+- All seven child tasks (t0013 through t0019) are delivered, verified, and archived into `worklog/archive/task/`:
+  t0013 (foundation), t0014 (`init`), t0015 (`tag`), t0016 (`status`), t0017 (`create`), t0018 (`field`), and t0019 (`task`).
+- The plugin contains the full Python library under `plugin/skills/worklog/scripts/worklog_lib/` and the entry point `plugin/skills/worklog/scripts/worklog.py`.
+  44 unit tests in `tests/` pass with zero failures.
+- SKILL.md and scripts README are updated to document invocation and usage for every tool.
 ### 1. Settle command contracts before affected implementation
 
 Keep common rules in s0005 and entity rules in their existing specs.
@@ -100,3 +96,23 @@ Record evidence and reconcile every governing spec before resolving and archivin
 t0006 remains active until all six commands are delivered and verified, applicable spec markers reflect that evidence, and plugin users can discover and invoke the tools.
 Before implementation, reconcile each child's scope and `modifies` with the reviewed command contract.
 Do not treat this proposed sequence or its unresolved design points as additional approved tool behavior.
+
+## Completion evidence (NEEDS APPROVAL)
+
+Delivered the full tool set specified by s0005 through the plugin entry point `worklog.py` and the `worklog_lib` package:
+
+1. `init` (t0014, s0013): directory scaffolding, project configuration, tag database seeding, idempotence, and creation rollback.
+2. `tag` (t0015, s0015): listing, additions, description updates, and atomic rename across active and archived entities with two-phase commit and rollback.
+3. `status` (t0016, s0005): read-only whole-worklog and filtered orientation over declared entity state, hierarchy, effective agent modes, next actions, and marker diagnostics without certification.
+4. `create` (t0017, s0005): minimal spec, task, and note creation with sequential ID allocation across active and archived entities, option validation, and independent batch handling.
+5. `field` (t0018, s0005): metadata modification (`set`, `add`, `remove`, `unset`) preserving frontmatter comments, line endings, and body text; protecting immutable fields and enforcing cycle prevention.
+6. `task` (t0019, s0005): lifecycle transitions (`start`, `block`, `resume`, `finish`, `cancel`) with dependency gating, spec review preflight, and atomic archival to `archive/task/`.
+
+Verification evidence:
+- Comprehensive test suite: 44 unit tests in `tests/` pass on Python 3.11+, covering foundational reading, initialization, and all tool operations including edge cases and CRLF line-ending preservation.
+- Happy-path workflow (n0002): exercised end-to-end lifecycle from initialization, entity creation, tagging, field editing, status orientation, to task completion with atomic archival.
+- Failure and pitfall validation (n0003): verified that task closure is blocked when governing specs contain unapproved content (`NEEDS APPROVAL`), cycle detection rejects circular relationships, and batch operations maintain per-target independence.
+- Isolated packaging verification: verified invocation of the plugin deliverable from an isolated directory containing only plugin files, confirming zero dependencies on development-repository files and clean execution without bytecode leakage.
+- Spec reconciliation: updated source mappings in s0002, s0003, s0008, s0009, s0010, s0011, s0012, and s0015; cleared all tool `UNIMPLEMENTED` markers in s0005; and added tool discovery guidance to `SKILL.md`.
+
+All child tasks t0013 through t0019 are completed, verified, and archived.
