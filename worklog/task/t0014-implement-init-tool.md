@@ -8,7 +8,7 @@ modifies = ["s0002", "s0005", "s0008", "s0012", "s0013", "s0015"]
 blocked_by = ["t0013"]
 +++
 
-# Implement the init tool (NEEDS APPROVAL)
+# Implement the init tool
 
 Implement `worklog init` according to s0013 and the common tool rules in s0005.
 Build on the library foundation from t0013 and add reusable library capabilities when this tool establishes a concrete need.

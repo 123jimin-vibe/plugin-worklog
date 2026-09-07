@@ -46,9 +46,7 @@ worklog tag remove TAG [--project PROJECT]
 - `remove` rejects a referenced tag and identifies every referring entity.
 - Mutations preflight the complete change and leave every affected file unchanged when validation fails.
 
-### Proposed additions (NEEDS APPROVAL)
-
-#### `status`
+### `status` — UNIMPLEMENTED (t0006)
 
 Summarizes the current worklog or a working set selected by entity IDs and project paths so an agent can orient or resume without reading every entity.
 It reports canonical entities, effective agent modes, governing specs, hierarchy, task dependencies and actionability, unresolved markers and review needs, and the next mechanically available worklog actions.
@@ -58,7 +56,7 @@ Its output reflects declared worklog state for orientation; it is not a project-
 worklog status [ENTITY...] [--path PATH...] [--project PROJECT]
 ```
 
-#### `create`
+### `create` — UNIMPLEMENTED (t0006)
 
 Creates one or more same-type specs, tasks, or notes with allocated standard IDs, minimal valid content, and only fields available to that entity type.
 All entities in one invocation receive the same optional fields; new tasks are always `pending`.
@@ -68,7 +66,7 @@ The tool validates supplied fields before writing, avoids fixed body templates, 
 worklog create (spec|task|note) TITLE... [--parent ID] [--tag TAG...] [--paths GLOB...] [--modifies SPEC...] [--blocked-by TASK...] [--project PROJECT]
 ```
 
-#### `field`
+### `field` — UNIMPLEMENTED (t0006)
 
 Changes supported mutable fields on one or more current specs, tasks, or notes, including `parent`, `paths`, `modifies`, and `blocked_by`.
 It validates field applicability, value types, references, cardinality, and hierarchy and dependency cycles before writing; reports the effective agent mode without claiming to know the caller's authorization; and never infers values from hierarchy, filenames, or implementation.
@@ -81,7 +79,7 @@ worklog field remove ENTITY... --field FIELD --value VALUE... [--project PROJECT
 worklog field unset ENTITY... --field FIELD [--project PROJECT]
 ```
 
-#### `task`
+### `task` — UNIMPLEMENTED (t0006)
 
 Manages task lifecycle, including activation, blocking, resumption, completion, cancellation, and archival.
 `finish` and `cancel` each apply the terminal status and archive atomically; the corresponding command also closes an already-resolved but unarchived task after the same preflight, so archival is not a separate lifecycle path.

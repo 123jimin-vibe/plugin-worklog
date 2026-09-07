@@ -7,7 +7,7 @@ status = "pending"
 modifies = ["s0002", "s0005"]
 +++
 
-# Implement the tool library foundation (NEEDS APPROVAL)
+# Implement the tool library foundation
 
 Implement the initial shared Python library used by worklog tools.
 Limit this task to common infrastructure needed before individual tool implementations begin.
