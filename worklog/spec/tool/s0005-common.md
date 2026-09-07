@@ -26,7 +26,7 @@ It is idempotent, preserves existing worklog data, and neither creates semantic 
 worklog init [PROJECT]
 ```
 
-### `tag` — UNIMPLEMENTED (t0006)
+### `tag`
 
 Inspects and maintains the tag database defined by s0015.
 
@@ -47,7 +47,7 @@ worklog tag remove TAG [--project PROJECT]
 - `remove` rejects a referenced tag and identifies every referring entity.
 - Mutations preflight the complete change and leave every affected file unchanged when validation fails.
 
-### `status` — UNIMPLEMENTED (t0006)
+### `status`
 
 Summarizes the current worklog or a working set selected by entity IDs and project paths so an agent can orient or resume without reading every entity.
 It reports canonical entities, effective agent modes, governing specs, hierarchy, task dependencies and actionability, unresolved markers and review needs, and the next mechanically available worklog actions.
@@ -57,7 +57,7 @@ Its output reflects declared worklog state for orientation; it is not a project-
 worklog status [ENTITY...] [--path PATH...] [--project PROJECT]
 ```
 
-### `create` — UNIMPLEMENTED (t0006)
+### `create`
 
 Creates one or more same-type specs, tasks, or notes with allocated standard IDs, minimal valid content, and only fields available to that entity type.
 All entities in one invocation receive the same optional fields; new tasks are always `pending`.
@@ -67,7 +67,7 @@ The tool validates supplied fields before writing, avoids fixed body templates, 
 worklog create (spec|task|note) TITLE... [--parent ID] [--tag TAG...] [--paths GLOB...] [--modifies SPEC...] [--blocked-by TASK...] [--project PROJECT]
 ```
 
-### `field` — UNIMPLEMENTED (t0006)
+### `field`
 
 Changes supported mutable fields on one or more current specs, tasks, or notes, including `parent`, `paths`, `modifies`, and `blocked_by`.
 It validates field applicability, value types, references, cardinality, and hierarchy and dependency cycles before writing; reports the effective agent mode without claiming to know the caller's authorization; and never infers values from hierarchy, filenames, or implementation.
@@ -80,7 +80,7 @@ worklog field remove ENTITY... --field FIELD --value VALUE... [--project PROJECT
 worklog field unset ENTITY... --field FIELD [--project PROJECT]
 ```
 
-### `task` — UNIMPLEMENTED (t0006)
+### `task`
 
 Manages task lifecycle, including activation, blocking, resumption, completion, cancellation, and archival.
 `finish` and `cancel` each apply the terminal status and archive atomically; the corresponding command also closes an already-resolved but unarchived task after the same preflight, so archival is not a separate lifecycle path.
@@ -94,7 +94,7 @@ worklog task finish TASK... [--project PROJECT]
 worklog task cancel TASK... [--reason TEXT] [--project PROJECT]
 ```
 
-### Tag integration — UNIMPLEMENTED (t0006)
+### Tag integration
 
 - `create` and `field` normalize tag inputs.
   When the database exists, they report unknown tags without rejecting the change.
@@ -133,8 +133,6 @@ Quasi-linear means `O(n polylog n)`, and quasi-constant means `O(polylog n)`.
 
 ### Entity hierarchy
 
-#### UNIMPLEMENTED (t0006)
-
 - Tools MUST validate `parent` availability, references, and cycles according to s0002.
 - Parent lookup and validation MUST include archived tasks.
 - Hierarchy cycles MUST be validated independently from type-specific relationship cycles such as `blocked_by`.
@@ -143,6 +141,9 @@ Quasi-linear means `O(n polylog n)`, and quasi-constant means `O(polylog n)`.
 - Tools MUST determine task actionability from ordinary task status and `blocked_by`, not from `parent`.
 
 ### Batch operations
+
+- `create`, `field`, and `task` process independent targets and report each target's result.
+  A failed target MUST NOT prevent valid targets from succeeding.
 
 - An operation that can target multiple independent entities SHOULD accept multiple targets in one invocation.
   - Examples include creating multiple entities and finishing or cancelling multiple tasks.

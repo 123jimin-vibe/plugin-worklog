@@ -1,7 +1,7 @@
 +++
 id = "s0002"
 title = "Common entity rules"
-paths = ["plugin/skills/worklog/scripts/worklog_lib/entities.py", "plugin/skills/worklog/scripts/worklog_lib/identity.py", "plugin/skills/worklog/scripts/worklog_lib/initialization.py"]
+paths = ["plugin/skills/worklog/scripts/worklog_lib/**"]
 +++
 
 # Common entity rules

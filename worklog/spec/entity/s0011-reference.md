@@ -1,6 +1,7 @@
 +++
 id = "s0011"
 title = "Reference entities"
+paths = ["plugin/skills/worklog/scripts/worklog_lib/entities.py", "plugin/skills/worklog/scripts/worklog_lib/tag_command.py"]
 +++
 
 # Reference entities

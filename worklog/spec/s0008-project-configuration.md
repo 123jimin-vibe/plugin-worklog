@@ -1,7 +1,7 @@
 +++
 id = "s0008"
 title = "Worklog project configuration"
-paths = ["plugin/skills/worklog/scripts/worklog_lib/configuration.py"]
+paths = ["plugin/skills/worklog/scripts/worklog_lib/configuration.py", "plugin/skills/worklog/scripts/worklog_lib/context.py"]
 +++
 
 # Worklog project configuration

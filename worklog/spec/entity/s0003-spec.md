@@ -1,6 +1,7 @@
 +++
 id = "s0003"
 title = "Spec entities"
+paths = ["plugin/skills/worklog/scripts/worklog_lib/entity_commands.py", "plugin/skills/worklog/scripts/worklog_lib/status_command.py", "plugin/skills/worklog/scripts/worklog_lib/task_command.py"]
 +++
 
 # Spec entities

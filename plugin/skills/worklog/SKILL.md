@@ -62,3 +62,22 @@ Resolved tasks (`done` or `cancelled`) SHOULD be archived promptly.
 
 Archives are history; use specs for current state and a new task for further work.
 Report remaining approval needs and material verification limits at session end.
+
+## Tools
+
+Run `python <skill-directory>/scripts/worklog.py ...` with Python 3.11 or newer.
+Use `--help` on a command or subcommand for arguments; see `scripts/README.md` for details.
+
+| Command | Use | Result |
+| --- | --- | --- |
+| `init [PROJECT]` | Initialize after project adoption. | Created and existing paths; no semantic entities or coverage claim. |
+| `status` | Orient or resume, optionally by IDs or project paths. | Declared state, modes, relationships, markers, and next actions; no certification. |
+| `tag` | Inspect or maintain the tag database. | Tag rows, diagnostics, or affected references. |
+| `create` | Allocate minimal specs, tasks, or notes. | IDs, paths, and effective modes; new tasks are pending. |
+| `field` | Edit supported metadata after applying the effective mode. | Per-target changes and modes; IDs, status, and mode overrides are protected. |
+| `task` | Start, block, resume, finish, or cancel tasks. | Per-target state; finish/cancel also archive after mechanical preflight. |
+
+Commands other than `init` accept `--project PROJECT`, defaulting to the current directory.
+Create, field, and task batches have independent results; inspect successes and failures before retrying.
+Before finish/cancel, perform required verification, approval review, and spec write-back yourself.
+Tool success does not establish authority or prove completion.

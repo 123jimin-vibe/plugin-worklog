@@ -3,7 +3,7 @@ id = "t0006"
 title = "Implement the full tool set"
 tags = ["implementation", "tooling"]
 status = "active"
-modifies = ["s0005", "s0013"]
+modifies = ["s0002", "s0003", "s0004", "s0005", "s0008", "s0009", "s0010", "s0011", "s0012", "s0013", "s0015"]
 +++
 
 # Implement the full tool set

@@ -3,8 +3,8 @@ id = "t0015"
 title = "Implement the tag tool"
 tags = ["implementation", "tooling"]
 parent = "t0006"
-status = "pending"
-modifies = ["s0002", "s0005", "s0011", "s0012", "s0015"]
+status = "active"
+modifies = ["s0002", "s0005", "s0008", "s0011", "s0012", "s0015"]
 blocked_by = ["t0013"]
 +++
 

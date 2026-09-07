@@ -1,6 +1,7 @@
 +++
 id = "s0010"
 title = "Note entities"
+paths = ["plugin/skills/worklog/scripts/worklog_lib/entity_commands.py"]
 +++
 
 # Note entities

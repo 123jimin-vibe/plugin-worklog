@@ -3,7 +3,7 @@ id = "t0017"
 title = "Implement the create tool"
 tags = ["implementation", "tooling"]
 parent = "t0006"
-status = "pending"
+status = "active"
 modifies = ["s0002", "s0003", "s0005", "s0008", "s0009", "s0010", "s0012", "s0015"]
 blocked_by = ["t0013"]
 +++
