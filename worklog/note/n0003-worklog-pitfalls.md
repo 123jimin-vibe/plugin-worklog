@@ -57,10 +57,10 @@ Repository-specific incidents belong in n0004.
   - Pressure: Spec writing naturally describes the intended end state.
   - Check: Verify implementation state separately from authority and mark every authorized gap.
 
-- **Durable behavior has no spec** — High; observed; s0003.
-  - Failure: Behavior expected to outlast the current task is implemented without a governing spec.
-  - Pressure: A direct implementation request makes specification feel optional.
-  - Check: Identify the governing spec before implementing durable behavior; extend one or create one when none applies.
+- **Durable behavior has no spec (NEEDS APPROVAL)** — High; observed; s0003.
+  - Failure: Behavior expected to outlast the current task is implemented without governing coverage, including maintenance that adds behavior without making any existing spec statement false.
+  - Pressure: A small change or incomplete initial understanding makes specification feel unnecessary.
+  - Check: Establish authoritative governing behavior for the part being implemented; extend coverage as new enduring subjects become known without requiring the whole task to be specified first.
 
 - **Behavior-independent implementation detail in a spec** — Medium; observed; s0003.
   - Failure: A spec body records API shapes, internal names, individual file paths, or other details that do not affect governed behavior.
@@ -84,29 +84,52 @@ Repository-specific incidents belong in n0004.
   - Pressure: Complete structure is mistaken for complete behavior.
   - Check: Evaluate the delivery against the task's completion criteria rather than its shape.
 
-- **Current state stranded in task history** — Critical; observed; s0002, s0003, s0009.
-  - Failure: A task is completed or archived while affected specs or markers still describe the pre-task state.
-  - Pressure: The task body or archive feels like a durable substitute for spec write-back.
-  - Check: Reconcile every spec in `modifies`, including stale markers, before archiving the task.
+- **Current state stranded in a task (NEEDS APPROVAL)** — Critical; observed; s0002, s0003, s0009.
+  - Failure: Settled decisions or verified delivered behavior remain only in an active or archived task while governing specs and markers still describe an earlier state.
+  - Pressure: Spec write-back is treated as an end-of-task action, even when the task has several stages.
+  - Check: Synchronize authoritative decisions and verified implementation state during work, then reconcile affected specs before archival; leave genuinely unbuilt parts marked.
 
 - **Task status not kept current** — Medium; observed; s0009.
   - Failure: Work begins without `active`, finishes without `done`, or remains blocked after its blocker is gone.
   - Pressure: Status maintenance is deferred until after the substantive work.
   - Check: Update status at each lifecycle transition rather than during later cleanup.
 
-- **Governance links do not match the implementation surface** — High; observed; s0003, s0009.
-  - Failure: A spec's `paths` omit files implementing its behavior or are so broad that drift ownership is unclear, or a task omits affected specs from `modifies`.
-  - Pressure: Manual knowledge of file relationships makes metadata seem optional or redundant.
-  - Check: Map each changed behavioral surface to its governing spec and keep `paths` precise; list every touched governing spec in `modifies`.
+- **Governance links do not match the implementation surface (NEEDS APPROVAL)** — High; observed; s0003, s0009.
+  - Failure: Known affected specs or files remain absent from `modifies` or `paths`, or overly broad coverage obscures which spec governs the behavior.
+  - Pressure: Initial relationships are treated as final even after implementation reveals a wider change surface.
+  - Check: Record known relationships, keep unresolved coverage explicit, and revise links and spec boundaries as the affected subjects become clear.
 
-### Additional observed pitfalls
+
+### Developing tasks (NEEDS APPROVAL)
+
+- **Premature task precision** — Medium; anticipated; s0009.
+  - Failure: An agent delays useful work until requirements, affected specs, and the complete task breakdown are known, or invents those details to make the task look ready.
+  - Pressure: Task creation is treated as transcription of a finished plan rather than the beginning of a developing work record.
+  - Check: Start with the known outcome, constraints, and uncertainties; let investigation and implementation refine the task without presenting guesses as established requirements.
+
+- **Task breakdown frozen or endlessly expanded** — Medium; anticipated; s0009.
+  - Failure: Newly understood work is forced into an obsolete task breakdown, or unrelated outcomes accumulate in one growing task that cannot be reviewed or resumed clearly.
+  - Pressure: The initial task boundary is mistaken for an obligation to keep every discovery together or to preserve every planned subtask.
+  - Check: Revisit the breakdown when meaningful boundaries emerge, keep related discovery and delivery together, and give independently actionable remaining outcomes an explicit home.
+
+- **Acceptance criteria adjusted to fit the result** — Critical; anticipated; s0009, s0012.
+  - Failure: An agent weakens an established requirement or changes a delivery objective into an investigation verdict so that unfinished work can be marked done.
+  - Pressure: Legitimate refinement of an initially imprecise task is mistaken for permission to redefine success.
+  - Check: Distinguish clarification from a changed outcome, resolve intent under the applicable authority, and test completion against the resulting authorized criteria.
+
+- **Investigation forced to produce a change** — Medium; anticipated; s0003, s0009, s0010.
+  - Failure: A sufficient negative or no-change conclusion is treated as unfinished, or every finding is promoted into a spec edit or follow-up task.
+  - Pressure: Product delivery is treated as the only useful outcome and write-back as a requirement to change an authoritative document.
+  - Check: Close against the investigation's evidence and review conditions; retain task evidence, reusable guidance, authoritative conclusions, and actionable follow-up work only where each belongs.
+
+## Additional observed pitfalls
 
 #### Project adoption
 
-- **Parallel authority introduced through partial worklog adoption** — High; observed; s0002.
-  - Failure: Worklog is introduced beside an established authoritative process, or covers only one contributor or subsystem while presenting itself as project state.
+- **Parallel authority introduced through partial worklog adoption (NEEDS APPROVAL)** — High; observed; s0002.
+  - Failure: Worklog is introduced beside an established authoritative process, or covers only one contributor or subsystem while presenting itself as complete project state.
   - Pressure: Adding another ledger appears safer than deciding which record is authoritative.
-  - Check: Confirm adoption with the human, identify the authoritative record and workflow, and establish project-wide coverage before initializing worklog.
+  - Check: Confirm adoption and the authoritative record before initializing worklog; identify coverage gaps while establishing governed work rather than hiding them or demanding complete coverage before initialization.
 
 #### Spec integrity
 
@@ -117,22 +140,22 @@ Repository-specific incidents belong in n0004.
 
 #### Task lifecycle
 
-- **Worklog state reconstructed after delivery** — High; observed; s0002, s0009.
-  - Failure: Work proceeds from an external plan or without a task, then the task is created already done or archived, if it is created at all.
-  - Pressure: Interactive planning tools feel sufficient during execution, and an after-the-fact record appears equivalent.
-  - Check: Create and activate the task before reviewable work begins; keep temporary plans subordinate to its current state.
+- **Worklog state reconstructed after delivery (NEEDS APPROVAL)** — High; observed; s0002, s0009.
+  - Failure: Reviewable work proceeds only from an external plan, or a task is written retrospectively without preserving actionable state during execution.
+  - Pressure: Temporary planning tools seem sufficient, or task creation is delayed until its requirements and affected specs can be described precisely.
+  - Check: Create or select and activate the task before substantive work; keep its current findings, uncertainties, remaining work, and next action usable for continuation, with temporary plans subordinate to that record.
 
-- **Task dependency metadata does not match reality** — Medium; observed; s0009.
-  - Failure: A task depends on another task in practice or in its body, but `blocked_by` omits that dependency or retains a resolved one.
-  - Pressure: The dependency seems obvious from prose or current session context.
-  - Check: Reconcile `blocked_by` whenever prerequisites or task status change.
+- **Task dependency metadata does not match reality (NEEDS APPROVAL)** — Medium; observed; s0009.
+  - Failure: A current prerequisite is missing from `blocked_by`, or the recorded relationship no longer represents the task's actual dependency.
+  - Pressure: The initial plan is treated as complete, or dependencies are left implicit in task prose and session context.
+  - Check: Reassess prerequisites and work order as evidence develops; update relationships when the dependency changes, without deleting a still-valid relationship merely because its prerequisite is resolved.
 
 #### Verification and completion
 
-- **Claimed result stronger than evidence** — Critical; observed; s0009.
+- **Claimed result stronger than evidence (NEEDS APPROVAL)** — Critical; observed; s0009.
   - Failure: A task claims completion, correctness, or exhaustion from evidence that does not exercise the claimed boundary or decisive counterexamples.
   - Pressure: Builds, unit tests, synthetic fixtures, forced state, aggregate metrics, authentication failures, or producer-side success provide convenient green signals.
-  - Check: Define the actual delivery boundary before implementation and verify it with representative evidence; disclose unavailable verification without generalizing the proxy result.
+  - Check: Develop verification alongside the requirement, use representative evidence for the actual outcome, and obtain required human or expert judgment; disclose unavailable verification without generalizing a proxy result.
 
 #### Cross-cutting
 

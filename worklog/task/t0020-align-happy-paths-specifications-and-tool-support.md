@@ -1,8 +1,8 @@
 +++
 id = "t0020"
 title = "Align happy paths, specifications, and tool support"
-status = "pending"
-modifies = ["s0002", "s0003", "s0004", "s0005", "s0006", "s0008", "s0009", "s0010", "s0011", "s0012", "s0013", "s0015"]
+status = "active"
+modifies = ["s0002", "s0003", "s0004", "s0005", "s0006", "s0008", "s0009", "s0010", "s0011", "s0012", "s0013", "s0015", "s0016", "s0017", "s0018", "s0019", "s0020"]
 +++
 
 # Align happy paths, specifications, and tool support
@@ -15,7 +15,7 @@ modifies = ["s0002", "s0003", "s0004", "s0005", "s0006", "s0008", "s0009", "s001
 
 Agent-development work, particularly t0007 and t0011, is outside this task because it is still pre-development.
 
-## Proposed approach and completion conditions (NEEDS APPROVAL)
+## Proposed approach and completion conditions
 
 Amend n0002 around how understanding develops during actual work, not merely how a predetermined plan is executed.
 In particular, account for tasks that begin without precise requirements or a complete understanding of affected specs and develop through implementation.
@@ -46,3 +46,32 @@ During creation of this task, `status` reported reference-file parsing errors an
 
 Complete when n0002 is amended, n0003 has a justified revision or no-change decision, every in-scope spec has a review disposition with required ambiguity resolutions addressed, and the tool review records exercised scenarios, sufficiency findings, and recommended actions for gaps.
 Report unresolved authority decisions explicitly; required unapproved spec content is not completed work.
+
+## Note revision checkpoint (NEEDS APPROVAL)
+
+n0002 and n0003 have revised drafts awaiting approval.
+n0002 now describes a developing task lifecycle shared by the individual happy paths.
+n0003 distinguishes legitimate uncertainty and task refinement from fabricated precision, stale relationships, weakened acceptance, and misplaced current state.
+New generalized pitfalls are classified as anticipated rather than asserting new observed incidents.
+
+Manual scenario walkthrough:
+
+| Scenario | Result in the revised notes |
+| --- | --- |
+| Requirements and affected specs emerge during implementation | Begin with known intent and explicit uncertainty; refine the same task and governing coverage as evidence develops. |
+| Existing authorized but unbuilt behavior | Use the existing contract without redundant approval or spec rewriting. |
+| A new affected subject or prerequisite is discovered | Update relationships and work order; discovery does not grant spec-edit permission. |
+| A task splits or continues with only some behavior delivered | Keep remaining work explicit and update only verified delivered-state markers; do not infer completion from the split. |
+| Acceptance depends on product feedback | Use representative results and required human judgment without silently lowering established criteria. |
+| Investigation ends with a supported negative or no-change result | Close against its evidence conditions without manufacturing implementation, spec edits, or follow-up tasks. |
+| The requested outcome is specification or design only | Close that outcome without requiring code, but do not substitute it for requested implementation. |
+| Maintenance adds enduring behavior while old spec wording remains true | Reassess coverage rather than using unchanged wording to bypass specification. |
+
+The targeted `status n0002 n0003 t0020` command succeeded, reported the revised notes' approval markers and active task state, and emitted no reference parsing errors.
+This checks tool visibility, not approval of the drafts or full support for the new workflows.
+The newly present tool specs s0016 through s0020 were added to the review scope in `modifies`; the field update succeeded.
+
+Next: review each non-agent spec against these drafts, resolving ambiguity around incremental task precision, continuation, authority, and intermediate write-back, then exercise the current tools against the revised workflows.
+Reassess the earlier creation failure against the current implementation rather than assuming it still occurs.
+No specs or tool implementations have been changed in this stage.
+The task remains active; the specification and tool-sufficiency reviews are still outstanding.

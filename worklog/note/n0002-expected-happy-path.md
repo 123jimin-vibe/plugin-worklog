@@ -8,155 +8,102 @@ title = "Expected happy path"
 A happy path is the expected sequence of steps when work proceeds normally.
 This note lists the expected happy paths for common workflows.
 
-TODO: Handle various degrees of autonomy.
-- The user writes specs manually and asks agents to work based on specs.
-- Agents write specs based on descriptions provided by the user, and the user verifies them.
-- Agents manage the specs, and the user gives feedbacks mostly based on product behaviors.
+## Developing and continuing a task (NEEDS APPROVAL)
 
-TODO: Define verification modes, including when human judgment is binding.
+Tasks grow through investigation, implementation, and verification.
+The workflows below share this lifecycle.
 
-## Starting a new project
+1. Select an existing task or create one with `status = "pending"`.
+   A. State the known outcome, constraints, initial completion conditions, and unresolved questions.
+   B. Record known affected specs in `modifies` and task prerequisites in `blocked_by`.
+   C. Check current progress and prerequisites when continuing work, then set `status = "active"` before substantive work.
 
-1. Define the project's basic idea.
-   A. Initialize worklog.
-      a. Confirm that the project will use worklog.
-      b. Create the entity directories.
-   B. Survey relevant dependencies and related work.
-      a. Check existing solutions before choosing an approach.
-      b. Preserve external material as a reference only when needed repeatedly.
-      c. Record reusable non-authoritative findings in a note only when needed.
+2. Develop the task through execution.
+   A. Refine requirements, scope, and verification from implementation results and feedback.
+   B. Update governing specs, `paths`, and delivered-state markers as decisions settle and behavior is verified.
+   C. Revise task boundaries, relationships, and work order as useful divisions and dependencies emerge.
+   D. Keep findings, remaining questions, and next actions clear enough to resume.
 
-2. Derive a concrete first deliverable.
-   A. Define its completion and verification criteria.
-   B. Record anticipated changes when known.
+3. Verify the completion conditions, including required human acceptance.
+   Reconcile affected specs, record any follow-up work, set `status = "done"`, and archive the task.
 
-3. Refine the project's identity and boundaries, repeating A and B as needed.
-   A. Create the minimum governing spec set.
-      a. Allocate IDs and use standard filenames.
-      b. Initialize each spec.
-      c. Record approved enduring behavior and constraints, and clearly mark
-         approved but unbuilt behaviors.
-      d. Check related specs for overlap or contradiction.
-   B. Create relevant tasks individually or in bulk, then execute them.
-      a. Allocate IDs and set `status = "pending"`.
-      b. Set `modifies` and any `blocked_by` relationships, and describe the
-         work.
-      c. Set `status = "active"` before implementation.
-      d. Write tests derived from the specs.
-      e. Implement and verify the deliverable.
-      f. Write the delivered state back to the governing specs.
-      g. Set `status = "done"` and archive the task.
-      h. Report entities that still require human review.
+## Resolving intent and verification (NEEDS APPROVAL)
 
-## Introducing worklog to an existing project
+- Use existing authoritative requirements and resolve new behavior under the effective `agent_mode` before implementing it.
+- Choose evidence appropriate to the outcome: contract tests, runtime checks, representative outputs, or human judgment.
+  Write changed-contract tests before implementation where they can express the requirement.
 
-1. Establish the current project state.
-   A. Confirm that the project will adopt worklog.
-   B. Survey its code, tests, documentation, and existing behavior.
-   C. Do not reconstruct project history.
+## Starting a new project (NEEDS APPROVAL)
 
-2. Establish worklog coverage.
-   A. Create a governing spec set.
-      a. Allocate IDs and initialize each spec.
-      b. Record verified current behavior and constraints.
-      c. Add `paths` globs for governed files.
-      d. Resolve unclear or conflicting intent with the user.
-   B. Report new specs that still require human review.
+1. Define the basic idea, confirm worklog adoption, and initialize the entity directories.
 
-3. Begin governed work.
-   A. Create relevant tasks individually or in bulk.
-      a. Set `status`, `modifies`, and any `blocked_by` relationships.
-      b. Describe the work and follow its applicable happy path.
+2. Start a task for the first useful outcome.
+   Survey dependencies and existing solutions, and develop the outcome and its verification.
+   Preserve repeatedly needed external material as references and reusable findings as notes.
 
-## Adding or changing behavior
+3. Develop the minimum governing spec set alongside the work.
+   Record enduring behavior, constraints, and known changeability needs; mark authorized but unbuilt behavior.
+   Check related specs for overlap or contradiction and identify governed files through `paths`.
 
-1. Define the proposed behavior.
-   A. Survey current behavior, related work, and governing specs.
-   B. Check related specs for overlap or contradiction.
+## Introducing worklog to an existing project (NEEDS APPROVAL)
 
-2. Specify the change.
-   A. Obtain approval for new behavior.
-   B. Extend a governing spec or create the minimum new spec set.
-      a. Initialize each changed spec.
-      b. Record the approved behavior and constraints.
-      c. Clearly mark approved but unbuilt behaviors.
+1. Confirm adoption and identify the authoritative project record.
+   Survey code, tests, documentation, and existing behavior.
 
-3. Deliver the change, repeating A as needed.
-   A. Create relevant tasks individually or in bulk, then execute them.
-      a. Allocate IDs, set `status = "pending"`, and describe the work.
-      b. Set `modifies` and any `blocked_by` relationships.
-      c. Set `status = "active"` before implementation.
-      d. Write tests derived from the specs.
-      e. Implement and verify the changed behavior.
-      f. Write the delivered state back to the governing specs.
-      g. Set `status = "done"` and archive the task.
+2. Establish coverage through a task.
+   Create governing specs, resolve unclear intent, add `paths`, and identify remaining coverage and review needs.
 
-## Fixing a bug
+3. Begin governed work, extending coverage as additional enduring subjects become known.
 
-1. Establish the defect.
-   A. Reproduce the failure.
-   B. Compare the implementation with the governing specs.
+## Adding or changing behavior (NEEDS APPROVAL)
 
-2. Resolve the intended behavior.
-   A. If the specs are missing or wrong, obtain approval and update them.
-   B. Otherwise, treat the divergence as an implementation defect.
+1. Start from the requested outcome or an existing undelivered requirement.
+   Survey current behavior and related specs enough to begin a task.
 
-3. Correct the defect.
-   A. Create and execute a linked task.
-      a. Initialize it with `status = "pending"` and the applicable `modifies`.
-      b. Set `status = "active"` before implementation.
-      c. Add a regression test that fails before the fix.
-      d. Correct the general cause and verify the result.
-      e. Write the delivered state back to the governing specs.
-      f. Set `status = "done"` and archive the task.
+2. Investigate and implement in increments, refining requirements and affected specs through the results.
+   Extend or create specs where intended behavior changes; use existing specs for behavior already specified.
 
-## Investigating or reviewing
+3. Verify the agreed outcome.
+   For specification or design work, the reviewed specification or design is the deliverable.
 
-1. Define the work.
-   A. Create a task.
-      a. Initialize it with `status = "pending"` and the applicable `modifies`.
-      b. State the question or scope, method or standards, required evidence, and stop conditions.
-      c. Set `status = "active"` before investigating or reviewing.
+## Fixing a bug (NEEDS APPROVAL)
 
-2. Gather and assess evidence.
-   A. Investigate the question or inspect the complete stated scope.
-   B. Record evidence, findings, uncertainty, and impact.
-   C. Retain, discard, or separately govern experimental artifacts.
+1. Start a task around the reported failure.
+   Reproduce it and compare observed behavior with governing specs.
 
-3. Resolve the findings.
-   A. Present the findings for human review and obtain approval for behavioral conclusions.
-   B. Write accepted current-state findings into the governing specs.
-   C. Create follow-up tasks and record each finding's disposition.
-   D. Set `status = "done"` and archive the task.
+2. Diagnose the cause and resolve any missing or incorrect intended behavior.
 
-## Refactoring
+3. Preserve a failing regression test or repeatable scenario, correct the general cause, and verify the result.
 
-1. Define the refactoring boundary.
-   A. Identify the governing specs and behavior that must remain unchanged.
-   B. Create a task for the refactoring.
-      a. Set `status = "pending"` and the applicable `modifies`.
-      b. Describe the intended restructuring.
+## Investigating or reviewing (NEEDS APPROVAL)
 
-2. Establish a baseline.
-   A. Set `status = "active"` before refactoring.
-   B. Run the existing verification.
+1. Start a task with the question or scope, initial method, required evidence, and stop conditions.
 
-3. Restructure and close the task.
-   A. Refactor incrementally.
-   B. Verify that observable behavior remains unchanged.
-   C. Update spec structure or `paths` when boundaries move.
-   D. Write back the specs, set `status = "done"`, and archive the task.
+2. Gather evidence and revise hypotheses and next actions as findings develop.
+   Retain, discard, or separately govern experimental artifacts.
 
-## Performing a chore or applying an urgent fix
+3. Resolve the findings, including any required review.
+   A supported negative or no-change conclusion can complete the task.
+   Keep task evidence in the task, reusable guidance in notes, and authoritative behavior in specs.
+   Continue into delivery or create follow-up tasks where the outcome calls for them.
 
-1. Assess the change.
-   A. Identify affected behavior and existing worklog entities.
-   B. Keep urgent work narrowly scoped.
+## Refactoring (NEEDS APPROVAL)
 
-2. Make and verify the change.
+1. Start a task for the restructuring.
+   Identify behavior to preserve and establish a verification baseline.
 
-3. Reconcile worklog only when needed.
-   A. Leave specs untouched when their current-state wording remains accurate.
-   B. Leave tasks untouched when the work finishes in the current session and creates no follow-up or resumable state.
-   C. Otherwise, update affected specs or tasks.
-   D. Create follow-up tasks for deferred work.
+2. Refactor incrementally and verify unchanged behavior.
+   Handle discovered defects or behavioral changes through their applicable workflows.
+
+3. Update spec structure and `paths` where boundaries moved.
+
+## Performing a chore or applying an urgent fix (NEEDS APPROVAL)
+
+1. Assess affected behavior and existing entities; keep urgent work narrowly scoped.
+
+2. Make and verify the change, reassessing task needs if the work grows.
+
+3. Reconcile worklog where needed.
+   A. Leave specs untouched when their wording remains accurate and no enduring behavior or constraint needs new or revised coverage.
+   B. Leave tasks untouched when the work finishes in the current session with no follow-up or resumable state.
+   C. Otherwise, update affected entities and record deferred work.
