@@ -16,9 +16,9 @@ Only tasks get archived to flat `worklog/archive/task/`.
 IDs are type-unique including archives. Filenames start with standard form, such as `s0001`. Refer to entities by ID, not path.
 
 - Spec (`s`): authoritative current behavior; optional `paths` map governed files.
-- Task (`t`): one-session work with `status`, governing specs in `modifies`, and optional task dependencies in `blocked_by`.
-- Note (`n`): reusable guidance, never behavior authority.
-- Reference: faithful external material with no ID or mode; interpretation belongs in a citing spec or note; avoid later edits.
+- Task (`t`): one unit of work, normally one session, with `status`, governing specs in `modifies`, and optional task dependencies in `blocked_by`.
+- Note (`n`): reusable guidance or findings, never behavior authority.
+- Reference: faithful external material with no ID or mode; interpretation belongs in a citing task, note, or spec; avoid later edits.
 
 For specs/tasks/notes, optional `parent` organizes same-type entities; it implies no authority, dependency, order, status, or lifecycle.
 
@@ -50,13 +50,17 @@ It approves no inferred or out-of-scope behavior or implementation state; the ta
 
 ## Carrying Out Work
 
-Reviewable work SHOULD have a one-session task created before substantive work.
-Keep its `status` (values: `pending`, `active`, `blocked`, `done`, `cancelled`) current; set `active` before starting.
-State scope and completion conditions; keep every touched governing spec in `modifies` as scope changes.
+Reviewable work SHOULD have a task created before substantive work.
+A chore or urgent fix MAY omit a task when it finishes in the current session with no follow-up or resumable state.
+State known scope, initial completion conditions, and unresolved questions.
+Finalizing `modifies` before activation is RECOMMENDED so other agents can identify the planned scope.
+Keep `status` (`pending`, `active`, `blocked`, `done`, `cancelled`) current; set `active` before starting.
+Refine scope, completion conditions, `modifies`, and `blocked_by` as understanding develops; keep findings and next actions usable for continuation.
 
-After work, verify those conditions; stubs, mocks, and placeholders are not completion.
+Verify the stated outcome with appropriate evidence and required human acceptance.
+Findings or a reviewed specification can be the outcome; stubs, mocks, and placeholders are not completion.
 
-Before archiving, fold delivered state into every `modifies` spec or confirm coverage, then update implementation markers from verified evidence.
+Keep governing specs and verified implementation markers current during work; before archiving, reconcile every `modifies` spec or confirm coverage.
 Required `NEEDS APPROVAL` spec content or a required `read_only` spec change prevents completion and archival.
 Resolved tasks (`done` or `cancelled`) SHOULD be archived promptly.
 

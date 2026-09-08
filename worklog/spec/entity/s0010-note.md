@@ -30,7 +30,7 @@ paths = ["plugin/skills/worklog/scripts/worklog_lib/entity_commands.py"]
 
 ### Creation
 
-- Create a note for guidance that is not verifiable as project behavior, such as conventions, recurring mistakes, or working advice.
+- Create a note for reusable non-authoritative guidance or findings.
 
 ### Maintenance
 

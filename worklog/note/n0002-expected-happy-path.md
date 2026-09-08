@@ -16,6 +16,7 @@ Use this lifecycle for task work, with the scenario-specific steps below.
 1. Select an existing task or create one with `status = "pending"`.
    A. State the known outcome, constraints, initial completion conditions, and unresolved questions.
    B. Record known affected specs in `modifies` and task prerequisites in `blocked_by`.
+      Finalizing `modifies` before activation is RECOMMENDED for coordination with other agents.
    C. Check current progress and prerequisites when continuing work, then set `status = "active"` before substantive work.
 
 2. Develop the task through execution.

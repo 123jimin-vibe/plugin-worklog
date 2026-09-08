@@ -15,7 +15,7 @@ paths = ["plugin/skills/worklog/scripts/worklog_lib/entities.py", "plugin/skills
 ## Principles
 
 - A reference separates copied external material from worklog judgment.
-- Judgment about a reference belongs in the spec or note that cites it.
+- Judgment about a reference belongs in the task, note, or spec that cites it.
 
 ## Inherent properties
 

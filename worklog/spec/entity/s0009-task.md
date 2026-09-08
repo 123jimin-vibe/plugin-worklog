@@ -57,11 +57,18 @@ paths = ["plugin/skills/worklog/scripts/worklog_lib/entity_commands.py", "plugin
 
 ### Scope
 
-- Create a task for work that produces a reviewable change.
+- Reviewable work SHOULD have a task.
+  - A chore or urgent fix MAY omit a task when it finishes in the current session and leaves no follow-up or resumable state.
 - Work spanning more than one session SHOULD be split into multiple tasks.
-- State what the work must accomplish and enough conditions to determine when it is done.
-- List in `modifies` every spec whose governed behavior the work touches.
-  - Leave it empty only when no spec governs the work.
+- A task MAY begin with incomplete requirements or unidentified affected specs.
+  - It is RECOMMENDED to finalize list of affected specs before a task is put in `active` state.
+  - State the known outcome, initial completion conditions, and unresolved questions.
+- Refine the scope, completion conditions, and task breakdown as understanding develops.
+- Completion conditions SHOULD identify the evidence and any required human acceptance.
+  - Findings or a reviewed specification MAY complete a task when that is its stated outcome.
+- Record known affected specs in `modifies` and update it as governing coverage becomes clear.
+  - State unresolved coverage in the task.
+- Update `blocked_by` when actual prerequisites change.
 - If evidence or conclusions conflict with a spec, notify the user.
 
 ### Body organization
@@ -72,6 +79,8 @@ paths = ["plugin/skills/worklog/scripts/worklog_lib/entity_commands.py", "plugin
 
 ### Lifecycle
 
+- Keep findings, unresolved questions, remaining work, and next actions clear enough to continue the task.
+- Before continuing work, check recorded progress and prerequisites against the current project state.
 - Before archiving, fold the delivered state into every spec in `modifies`, or confirm that its existing wording covers the delivery.
 - Archive a task as soon as it is resolved.
 - Done, cancelled, and archived tasks SHOULD remain terminal.
