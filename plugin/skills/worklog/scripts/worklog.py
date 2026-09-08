@@ -16,7 +16,7 @@ from worklog_lib.task_command import run_task
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(prog="worklog", description="Manage worklog workflows.")
+    parser = argparse.ArgumentParser(prog="worklog", description="Manage worklog workflows with action-scoped diagnostics and file access.")
     commands = parser.add_subparsers(dest="command", required=True)
     init = commands.add_parser("init", help="Initialize an explicitly adopted worklog.",
                                description="Create missing worklog structure, preserving existing data.",
@@ -34,7 +34,9 @@ def main(argv=None) -> int:
             sub.add_argument("--description")
         if action == "update":
             sub.add_argument("--name")
-    status = commands.add_parser("status", help="Orient from declared worklog state (not certification).")
+    status = commands.add_parser("status", help="Orient from declared worklog state (not certification).",
+                                 description="Summarize the selected relationship working set; omit selectors for the whole worklog.",
+                                 epilog="Diagnostics concern the requested results. Relevant errors retain useful partial output and return a nonzero exit status.")
     status.add_argument("entities", nargs="*", metavar="ENTITY")
     status.add_argument("--path", nargs="+", action="extend", metavar="PATH")
     status.add_argument("--project", default=".", metavar="PROJECT")

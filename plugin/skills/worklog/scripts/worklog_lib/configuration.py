@@ -7,10 +7,10 @@ DEFAULT_MODES = {"spec": "propose", "task": "draft", "note": "draft"}
 MODES = {"read_only", "propose", "draft", "autonomous"}
 
 
-def read_configuration(path: Path) -> dict:
+def read_configuration(path: Path, *, kinds=DEFAULT_MODES) -> dict:
     with path.open("rb") as stream:
         data = tomllib.load(stream)
-    for kind in DEFAULT_MODES:
+    for kind in kinds:
         table = data.get(kind, {})
         if not isinstance(table, dict):
             raise ValueError(f"{path}: {kind} must be a policy table")

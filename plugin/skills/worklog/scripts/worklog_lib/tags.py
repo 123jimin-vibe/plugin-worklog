@@ -11,21 +11,21 @@ def normalize_tag(value: str) -> str:
     return name
 
 
-def read_tags(path: Path) -> dict[str, str]:
-    """Read a required database, rejecting malformed rows and name collisions."""
+def read_tags(path: Path, *, raw: bytes | None = None) -> dict[str, str]:
+    """Read a database once, or parse bytes retained by its mutation caller."""
     tags = {}
     try:
-        with path.open(encoding="utf-8", newline="") as stream:
-            rows = csv.reader(stream, strict=True)
-            if next(rows, None) != ["tag", "description"]:
-                raise ValueError("expected exactly the columns tag,description")
-            for row in rows:
-                if len(row) != 2:
-                    raise ValueError(f"CSV line {rows.line_num}: expected two columns")
-                name = normalize_tag(row[0])
-                if name in tags:
-                    raise ValueError(f"CSV line {rows.line_num}: duplicate normalized tag {name!r}")
-                tags[name] = row[1]
+        stream = io.StringIO((path.read_bytes() if raw is None else raw).decode("utf-8"), newline="")
+        rows = csv.reader(stream, strict=True)
+        if next(rows, None) != ["tag", "description"]:
+            raise ValueError("expected exactly the columns tag,description")
+        for row in rows:
+            if len(row) != 2:
+                raise ValueError(f"CSV line {rows.line_num}: expected two columns")
+            name = normalize_tag(row[0])
+            if name in tags:
+                raise ValueError(f"CSV line {rows.line_num}: duplicate normalized tag {name!r}")
+            tags[name] = row[1]
     except (ValueError, csv.Error) as exc:
         raise ValueError(f"{path}: {exc}") from exc
     return tags

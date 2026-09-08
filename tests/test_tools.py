@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -84,6 +85,33 @@ class ToolTests(unittest.TestCase):
         self.run_tool("tag", "update", "old", "--name", "unknown", ok=False)
         self.assertEqual(self.files(), before)
         self.assertIn("unknown", self.run_tool("tag", "list"))
+
+    def test_tag_rename_ignores_unrelated_reference_metadata_defects(self):
+        self.run_tool("tag", "add", "old")
+        reference = self.root / "ref" / "source.md"
+        reference.write_text('+++\nid = ["not", "an", "id"]\ntitle = 7\ntags = ["old"]\n+++\nSource.\n')
+        self.run_tool("tag", "update", "old", "--name", "new")
+        header, body = reference.read_text().split("+++", 2)[1:]
+        self.assertEqual(tomllib.loads(header), {"id": ["not", "an", "id"], "title": 7, "tags": ["new"]})
+        self.assertEqual(body, "\nSource.\n")
+
+    def test_tag_list_retains_database_rows_when_usage_is_incomplete(self):
+        self.run_tool("tag", "add", "known", "--description", "Preserved description")
+        reference = self.root / "ref" / "broken.md"
+        reference.write_text("Unreadable metadata")
+        before = self.files()
+        report = self.run_tool("tag", "list", ok=False)
+        self.assertIn("known", report)
+        self.assertIn("Preserved description", report)
+        self.assertIn(reference.name, report)
+        self.assertNotIn("unused", report.lower())
+        self.assertEqual(self.files(), before)
+
+    def test_create_rejects_forward_relationship_to_its_new_identity(self):
+        self.entity("note", "n0001", {"parent": "n2"})
+        before = self.files()
+        self.run_tool("create", "note", "Cycle", "--parent", "n1", ok=False)
+        self.assertEqual(self.files(), before)
 
     def test_tag_requires_database_and_update_argument(self):
         self.run_tool("tag", "add", "unused")
@@ -167,8 +195,7 @@ class ToolTests(unittest.TestCase):
         self.assertIn("Service down", path.read_text())
         self.run_tool("task", "resume", "t1", "--checked", "Service restored")
         self.assertIn("Service restored", path.read_text())
-        report = self.run_tool("task", "finish", "t1")
-        self.assertIn("write-back", report)
+        self.run_tool("task", "finish", "t1")
         self.assertFalse(path.exists())
         archived = self.root / "archive/task" / path.name
         self.assertEqual(read_entity(archived, "task").fields["status"], "done")
@@ -239,6 +266,7 @@ class ToolTests(unittest.TestCase):
         source = self.entity("task", "t0001", {"status": "active"})
         context = Context(self.project)
         destination = self.root / "archive/task" / source.name
+        context.resolve("t1")
         destination.write_text("appeared after discovery")
         before = self.files()
         _, errors = run_task(context, argparse.Namespace(action="finish", entities=["t1"]))
@@ -333,6 +361,58 @@ class ToolTests(unittest.TestCase):
         self.run_tool("task", "finish", "t1", "t2", ok=False)
         self.assertEqual(broken.read_text(), "malformed entity")
         self.assertFalse(valid.exists())
+
+    def test_field_cycle_failure_does_not_block_independent_repairs(self):
+        parent = self.entity("note", "n0001")
+        repaired = self.entity("note", "n0002", {"parent": "n404"})
+        valid = self.entity("note", "n0003")
+        self.entity("note", "n0008", {"parent": "n9"})
+        self.entity("note", "n0009", {"parent": "n8"})
+        before_parent = parent.read_bytes()
+        report = self.run_tool("field", "set", "n1", "n2", "n3",
+                               "--field", "parent", "--value", "n1", ok=False)
+        self.assertEqual(parent.read_bytes(), before_parent)
+        self.assertEqual(read_entity(repaired, "note").fields["parent"], "n0001")
+        self.assertEqual(read_entity(valid, "note").fields["parent"], "n0001")
+        self.assertNotIn("n0008", report)
+        self.assertNotIn("n0009", report)
+        self.assertNotIn("n404", report)
+
+    def test_field_removal_does_not_resolve_discarded_relationships(self):
+        self.entity("task", "t0002", {"status": "done"}, archived=True)
+        self.entity("spec", "s0001")
+        task = self.entity("task", "t0001", {
+            "blocked_by": ["t404", "t2"], "modifies": ["s404", "s1"], "parent": "t404"})
+        self.run_tool("field", "remove", "t1", "--field", "blocked_by", "--value", "t404")
+        self.run_tool("field", "remove", "t1", "--field", "modifies", "--value", "s404")
+        self.run_tool("field", "unset", "t1", "--field", "parent")
+        fields = read_entity(task, "task").fields
+        self.assertEqual(fields["blocked_by"], ["t0002"])
+        self.assertEqual(fields["modifies"], ["s0001"])
+        self.assertNotIn("parent", fields)
+
+    def test_task_batch_observes_dependency_archived_by_previous_target(self):
+        first = self.entity("task", "t0001", {"status": "active"})
+        second = self.entity("task", "t0002", {"status": "active", "blocked_by": ["t1"]})
+        self.run_tool("task", "finish", "t1", "t2")
+        for source in (first, second):
+            self.assertFalse(source.exists())
+            archived = self.root / "archive/task" / source.name
+            self.assertEqual(read_entity(archived, "task", archived=True).fields["status"], "done")
+
+    def test_noop_field_tag_and_archived_task_preserve_metadata(self):
+        note = self.entity("note", "n0001")
+        archived = self.entity("task", "t0001", {"status": "done"}, archived=True)
+        self.run_tool("tag", "add", "registered", "--description", "Current description")
+        paths = (note, archived, self.root / "tags.csv")
+        for path in paths:
+            os.utime(path, ns=(1_500_000_000_000_000_000, 1_500_000_000_000_000_000))
+        before = {path: (path.read_bytes(), path.stat().st_mtime_ns) for path in paths}
+        self.run_tool("field", "set", "n1", "--field", "title", "--value", "Example")
+        self.run_tool("field", "unset", "n1", "--field", "parent")
+        self.run_tool("tag", "update", "registered", "--description", "Current description")
+        self.run_tool("task", "finish", "t1")
+        self.assertEqual({path: (path.read_bytes(), path.stat().st_mtime_ns) for path in paths}, before)
 
 
 if __name__ == "__main__":

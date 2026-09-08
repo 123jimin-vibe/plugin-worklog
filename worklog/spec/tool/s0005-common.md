@@ -7,112 +7,61 @@ paths = ["plugin/skills/worklog/scripts/**"]
 # Common tool rules
 
 Tools shipped with the plugin for managing worklogs.
-
-Individual tool specs define each tool's usage and behavior.
-
-## Related specs
-
-- s0013 defines the `init` tool.
-- s0015 defines tags and the tag database.
+Command-specific contracts belong to their individual tool specs.
 
 ## Tool inventory
 
-### `init`
+| Command | Governing spec | Purpose |
+| --- | --- | --- |
+| `init` | s0013 | Create missing compatible worklog structure after project adoption. |
+| `tag` | s0016 | Inspect and maintain the tag database. |
+| `status` | s0017 | Orient from declared state across the worklog or a selected working set. |
+| `create` | s0018 | Allocate minimal specs, tasks, or notes. |
+| `field` | s0019 | Change supported entity metadata. |
+| `task` | s0020 | Transition tasks and close them with archival. |
 
-Initializes the minimum compatible worklog structure after the project has chosen to use worklog.
-It is idempotent, preserves existing worklog data, and neither creates semantic entities nor implies adequate spec coverage.
+s0002 defines entity validity and identity, s0012 defines agent modes, and s0015 defines tags and the tag database.
 
-```text
-worklog init [PROJECT]
-```
-
-### `tag`
-
-Inspects and maintains the tag database defined by s0015.
-
-```text
-worklog tag list [--project PROJECT]
-worklog tag add TAG [--description TEXT] [--project PROJECT]
-worklog tag update TAG [--name NEW_TAG] [--description TEXT] [--project PROJECT]
-worklog tag remove TAG [--project PROJECT]
-```
-
-- Every command requires an existing valid tag database.
-  A missing or malformed database is reported without changing worklog files.
-- `list` reports every registered tag and description in normalized-name order.
-  It identifies unknown entity tags and unused database rows, without treating unused rows as errors.
-- `add` stores the normalized name and uses an empty description when `--description` is omitted.
-- `update` MUST receive `--name`, `--description`, or both.
-  A rename reports every changed entity.
-- `remove` rejects a referenced tag and identifies every referring entity.
-- Mutations preflight the complete change and leave every affected file unchanged when validation fails.
-
-### `status`
-
-Summarizes the current worklog or a working set selected by entity IDs and project paths so an agent can orient or resume without reading every entity.
-It reports canonical entities, effective agent modes, governing specs, hierarchy, task dependencies and actionability, unresolved markers and review needs, and the next mechanically available worklog actions.
-Its output reflects declared worklog state for orientation; it is not a project-wide integrity check and does not certify that authority, spec coverage, implementation, verification, or completion is correct.
-
-```text
-worklog status [ENTITY...] [--path PATH...] [--project PROJECT]
-```
-
-### `create`
-
-Creates one or more same-type specs, tasks, or notes with allocated standard IDs, minimal valid content, and only fields available to that entity type.
-All entities in one invocation receive the same optional fields; new tasks are always `pending`.
-The tool validates supplied fields before writing, avoids fixed body templates, reports the effective agent mode, and does not treat invocation as approval for generated content.
-
-```text
-worklog create (spec|task|note) TITLE... [--parent ID] [--tag TAG...] [--paths GLOB...] [--modifies SPEC...] [--blocked-by TASK...] [--project PROJECT]
-```
-
-### `field`
-
-Changes supported mutable fields on one or more current specs, tasks, or notes, including `parent`, `paths`, `modifies`, and `blocked_by`.
-It validates field applicability, value types, references, cardinality, and hierarchy and dependency cycles before writing; reports the effective agent mode without claiming to know the caller's authorization; and never infers values from hierarchy, filenames, or implementation.
-IDs are immutable, task status is changed only by `task`, and `agent_mode` changes remain deliberate approval-governed document edits.
-
-```text
-worklog field set ENTITY... --field FIELD --value VALUE... [--project PROJECT]
-worklog field add ENTITY... --field FIELD --value VALUE... [--project PROJECT]
-worklog field remove ENTITY... --field FIELD --value VALUE... [--project PROJECT]
-worklog field unset ENTITY... --field FIELD [--project PROJECT]
-```
-
-### `task`
-
-Manages task lifecycle, including activation, blocking, resumption, completion, cancellation, and archival.
-`finish` and `cancel` each apply the terminal status and archive atomically; the corresponding command also closes an already-resolved but unarchived task after the same preflight, so archival is not a separate lifecycle path.
-The tool enforces declared transition and dependency rules and mechanically detectable close-out gates, but leaves semantic verification and approval judgments to the caller; command success is not proof of completion, and `--reason` is required when newly cancelling rather than archiving an already-cancelled task.
-
-```text
-worklog task start TASK... [--project PROJECT]
-worklog task block TASK... --reason TEXT [--project PROJECT]
-worklog task resume TASK... --checked TEXT [--project PROJECT]
-worklog task finish TASK... [--project PROJECT]
-worklog task cancel TASK... [--reason TEXT] [--project PROJECT]
-```
-
-### Tag integration
-
-- `create` and `field` normalize tag inputs.
-  When the database exists, they report unknown tags without rejecting the change.
-- Without a database, `create` and `field` accept normalized non-empty tag names without creating the database.
-- `status` reports whether the database is missing or malformed, duplicate normalized names, unknown entity tags, and unused database rows.
-  A missing database is informational.
-  Unknown entity tags and unused database rows are advisory rather than errors.
-  A malformed database and duplicate normalized names are errors.
-
-### Implementation
+## Implementation
 
 - Tools MUST be written in Python.
-  - Each tool SHOULD NOT introduce an additional dependency.
+  Each tool SHOULD NOT introduce an additional dependency.
 - Tools MAY generate Python bytecode within their shipped scripts directory.
   Generated bytecode MUST be ignored by version control.
 - Tools SHOULD expose workflow operations instead of requiring callers to manipulate entity file frontmatter directly.
+- Commands other than `init` accept `--project PROJECT`, defaulting to the current directory, and require an existing worklog.
 
-### Efficiency and implementation scope
+## Action-scoped diagnostics
+
+An action's scope consists of its requested targets, the inputs needed to produce its requested results, and the checks needed to preserve its safety conditions.
+A command spec defines which identity, relationship, policy, and tag information its action needs.
+Discovering another file does not by itself make that file's contents part of the action's validation scope.
+
+- Tools MUST validate required inputs and safety conditions before changing affected files.
+  Entity validity requirements remain unchanged; action-scoped validation is not a declaration that unexamined entities are valid.
+- Tools SHOULD NOT block a safe action because of an unrelated defect.
+  They SHOULD NOT emit that defect as a warning, advisory, or other diagnostic instead.
+- An advisory describes a relevant condition that does not prevent the requested result or change.
+  Advisories MUST NOT make an otherwise successful command fail.
+- A target-local failure prevents that target's action, not independent targets.
+  A failed shared prerequisite prevents only the actions that require it.
+- Read-only commands SHOULD retain useful results when a relevant error prevents part of the requested summary.
+  They MUST identify the affected result or missing coverage rather than present partial output as complete.
+- Exit status MUST be zero when all requested actions or results succeed, including successful no-ops and results with advisories.
+  It MUST be nonzero when a requested action fails or a relevant error prevents a required result.
+  Unrelated defects MUST NOT affect exit status.
+
+## Necessary disk I/O
+
+Tools SHOULD limit discovery, reads, and writes to the current action's required inputs and affected files.
+They SHOULD NOT load all worklog entities, project configuration, or the tag database merely to prepare an invocation.
+
+Mutations preflight affected files and stage replacement content before publishing it.
+Caught failures roll back that operation; incomplete rollback is reported explicitly and prevents further mutations in that invocation.
+Body text, unrelated frontmatter, and comments are retained; comments inside a replaced array remain adjacent to its field.
+These guarantees do not provide crash recovery, transactional visibility to concurrent readers, or coordination with concurrent writers.
+
+## Efficiency and implementation scope
 
 For this section, `n` is the relevant input size, most commonly the number of worklog entries an operation must consider.
 An individual tool spec MAY define another measure when appropriate.
@@ -120,41 +69,46 @@ Quasi-linear means `O(n polylog n)`, and quasi-constant means `O(polylog n)`.
 
 - Every tool MUST run in quasi-linear time or better with respect to `n`.
 - An operation SHOULD admit a quasi-constant-time implementation when all necessary optimizations are assumed, apart from work proportional to explicitly supplied target data and required output.
-  - This is an optimizability requirement, not a requirement to implement those optimizations now; a linear entity-ID search satisfies it if indexing could make the search quasi-constant.
+  This is an optimizability requirement, not a requirement to implement those optimizations now; a linear entity-ID search satisfies it if indexing could make the search quasi-constant.
 - Tools SHOULD NOT require auxiliary tool-specific state files, such as a search index.
-  - This preference is not a compatibility guarantee for future worklog versions.
+  This preference is not a compatibility guarantee for future worklog versions.
 - Tools SHOULD be straightforward to implement.
-  - Operations whose correctness depends on open-ended interpretation or support for many unrelated formats SHOULD instead be assigned to an auxiliary agent.
+  Operations whose correctness depends on open-ended interpretation or support for many unrelated formats SHOULD instead be assigned to an auxiliary agent.
 
-### Entity IDs
+## Entity IDs and hierarchy
 
 - Every entity ID parameter MUST follow the identity and interoperability rules in s0002.
 - Tools SHOULD emit entity IDs in standard form.
-
-### Entity hierarchy
-
-- Tools MUST validate `parent` availability, references, and cycles according to s0002.
+- Tools MUST validate `parent` availability, references, and cycles according to s0002 within the action's required relationship scope.
 - Parent lookup and validation MUST include archived tasks.
 - Hierarchy cycles MUST be validated independently from type-specific relationship cycles such as `blocked_by`.
 - Reverse lookup and hierarchy grouping MUST derive children from `parent` rather than duplicated parent metadata.
 - A summary view MAY group entities beneath their parent.
 - Tools MUST determine task actionability from ordinary task status and `blocked_by`, not from `parent`.
 
-### Batch operations
+## Entity tag inputs
 
-- `create`, `field`, and `task` process independent targets and report each target's result.
-  A failed target MUST NOT prevent valid targets from succeeding.
+`create` and `field` normalize supplied tag names according to s0015.
+When relevant non-empty tag values need database advice, an existing database MUST be valid before the affected mutation.
+Unknown names are advisory and a missing database is informational; neither rejects the change.
+A malformed database is a relevant failure for that tag action, not for targets that require no tag advice.
+These conditions do not authorize creating or repairing the database.
+Commands that do not concern tags SHOULD NOT read the database or emit tag diagnostics.
 
-- An operation that can target multiple independent entities SHOULD accept multiple targets in one invocation.
-  - Examples include creating multiple entities and finishing or cancelling multiple tasks.
-  - A batch operation SHOULD report the result for each target.
-  - Whether a failed target prevents changes to the remaining targets MUST be specified.
+## Batch operations
 
-### Tool communication
+- An operation that can target multiple independent entities SHOULD accept multiple targets in one invocation and report each target's result.
+- `create`, `field`, and `task` process independent targets in supplied order.
+  Duplicate entity ID arguments are processed once.
+  A failed target MUST NOT prevent valid independent targets from succeeding or undo earlier successes.
+- A batch MUST distinguish successful, unchanged, failed, and unattempted targets where applicable, so the caller can retry only necessary work.
+  Shared prerequisites and incomplete rollback follow the failure rules above.
+
+## Tool communication
 
 Tool messages are produced through an installed worklog plugin and need not independently explain the complete methodology.
 
-Help text, error messages, and normal output SHOULD provide enough local context to understand:
+Help text, error messages, and normal output SHOULD provide enough context to understand:
 
 - what operation or result the message concerns;
 - whether the operation changed worklog state;
@@ -174,7 +128,7 @@ When relevant to the immediate operation, messages SHOULD restate constraints th
 Messages SHOULD NOT repeat general methodology, obvious argument meanings, or unrelated constraints solely to be fully standalone.
 Messages MAY refer to the worklog skill for background information.
 
-### Generated files
+## Generated files
 
 Unlike tool messages, generated files SHOULD remain understandable and usable without the worklog plugin.
 Generated files SHOULD contain concise comments identifying their purpose and any non-obvious fields, authority, or handling, following the governing specs.

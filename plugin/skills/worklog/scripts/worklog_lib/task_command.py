@@ -2,6 +2,7 @@
 
 from .context import RESOLVED, relation_ids
 from .editing import edit_fields
+from .entities import _closing_fence
 from .identity import normalize_id
 from .initialization import RollbackError
 from .markers import markers
@@ -28,7 +29,6 @@ def unresolved(context, entity):
 
 
 def run_task(context, args):
-    context.require_configuration()
     messages, errors, seen = [], [], set()
     allowed, target_status = TRANSITIONS[args.action]
     for index, raw in enumerate(args.entities):
@@ -80,7 +80,7 @@ def run_task(context, args):
                 append = f"Resume check: {checked}"
             elif args.action == "cancel" and status != "cancelled":
                 append = f"Cancellation reason: {reason}"
-            raw_bytes = entity.path.read_bytes()
+            raw_bytes = entity.raw
             content = edit_fields(raw_bytes, {"status": target_status}, append)
             changes, expected = {entity.path: content}, {entity.path: raw_bytes}
             destination = entity.path
@@ -88,10 +88,16 @@ def run_task(context, args):
                 destination = context.root / "archive/task" / entity.path.name
                 changes = {destination: content, entity.path: None}
                 expected[destination] = None
-            commit_changes(context.root, changes, expected)
+            if closing or content != raw_bytes:
+                commit_changes(context.root, changes, expected)
             entity.fields["status"] = target_status
             entity.path = destination
             entity.archived = closing
+            entity.raw = content
+            if append:
+                lines = content.decode("utf-8-sig").splitlines(keepends=True)
+                entity.body = "".join(lines[_closing_fence(lines) + 1:])
+            context.register(entity)
             messages.append(f"Updated {identity}: {target_status}" + (f"; archived at {destination}" if closing else "") + f"; {policy}")
             if closing:
                 messages.append(f"{identity}: caller is responsible for verification and spec write-back before closure; command success is not proof of completion. Governing specs: " + (", ".join(governed) or "none"))

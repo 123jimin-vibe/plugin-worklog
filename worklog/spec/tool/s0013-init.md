@@ -64,17 +64,22 @@ When the project already has a complete worklog, it makes no changes and exits s
 When the project has a partial but compatible worklog, it creates only the missing standard structure.
 Existing compatible files and directories are preserved.
 
-When `tags.csv` is missing, `init` scans every current entity and archived task before writing.
+Only when `tags.csv` is missing, `init` scans tag metadata from every current entity and archived task before writing.
 It creates one normalized, alphabetically sorted row with an empty description for each distinct tag.
 It creates only the header when no entity uses tags.
 
 An existing valid `tags.csv` is used unchanged.
 An existing `tags.csv` with invalid CSV structure, an empty normalized tag name, or duplicate normalized database rows prevents initialization.
-A normalized duplicate within one entity also prevents initialization.
-Unknown entity tags and unused database rows do not prevent initialization.
+While creating a missing database, invalid entity tags, including a normalized duplicate within one entity, or unparseable metadata that prevents determining tag usage prevent initialization.
+Unrelated entity title, identity, hierarchy, or dependency defects do not prevent tag initialization or produce diagnostics.
+Unknown entity tags and unused database rows do not prevent initialization and need not be discovered when the database already exists.
 
 If a required path is occupied by an incompatible file or directory, `init` fails without making partial changes.
 It never requires a destructive `--force` mode.
+
+The command checks required structural paths and validates an existing tag database without scanning entity files.
+A complete compatible worklog with a valid database MUST NOT trigger an entity scan or any writes.
+Existing configuration is preserved without loading its policy for unrelated mode diagnostics.
 
 ## Result
 

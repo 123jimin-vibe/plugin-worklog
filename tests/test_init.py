@@ -125,17 +125,12 @@ class InitTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertEqual(snapshot(self.project), before)
 
-    def test_duplicate_entity_tags_fail_with_or_without_database(self):
+    def test_duplicate_entity_tags_prevent_seeding_a_missing_database(self):
         self.write("task/t0001-task.md", '+++\nid = "t0001"\ntitle = "Task"\ntags = [" X ", "x"]\n+++\n')
-        for database in (False, True):
-            with self.subTest(database=database):
-                if database:
-                    self.write("tags.csv", "tag,description\n")
-                before = snapshot(self.project)
-                result = self.run_cli("init")
-                self.assertNotEqual(result.returncode, 0)
-                self.assertIn("duplicate", result.stderr.lower())
-                self.assertEqual(snapshot(self.project), before)
+        before = snapshot(self.project)
+        result = self.run_cli("init")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(snapshot(self.project), before)
 
     def test_invalid_entity_cannot_be_silently_omitted_from_seed(self):
         self.write("note/n0001-note.md", '+++\nid = "n0001"\ntitle = "Note"\ntags = [" "]\n+++\n')

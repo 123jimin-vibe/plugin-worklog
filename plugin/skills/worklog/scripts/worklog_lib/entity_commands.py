@@ -2,7 +2,7 @@
 
 import re
 
-from .context import find_cycle, graph, reachable
+from .context import find_cycle, graph
 from .editing import edit_fields, encode_value
 from .entities import Entity
 from .identity import normalize_id
@@ -20,7 +20,7 @@ FIELDS = {
 }
 
 
-def field_values(context, kind, name, values):
+def field_values(context, kind, name, values, *, resolve=True):
     if not isinstance(values, list):
         raise ValueError(f"{name}: an array of values is required")
     if name not in FIELDS or kind not in FIELDS[name][1]:
@@ -37,9 +37,10 @@ def field_values(context, kind, name, values):
     if name in ("parent", "modifies", "blocked_by"):
         values = [normalize_id(value) for value in values]
         expected = kind if name == "parent" else "spec" if name == "modifies" else "task"
-        for value in values:
-            if context.resolve(value).type != expected:
-                raise ValueError(f"{name}: {value} must be a {expected}")
+        if resolve:
+            for value in values:
+                if context.resolve(value).type != expected:
+                    raise ValueError(f"{name}: {value} must be a {expected}")
     if len(values) != len(set(values)):
         raise ValueError(f"{name}: duplicate values")
     return values[0] if cardinality == "scalar" else values
@@ -47,7 +48,7 @@ def field_values(context, kind, name, values):
 
 def next_identity(context, kind):
     prefix = {"spec": "s", "task": "t", "note": "n"}[kind]
-    digits = [identity[1:].lstrip("0") or "0" for identity in context.store.by_id if identity.startswith(prefix)]
+    digits = [identity[1:].lstrip("0") or "0" for identity in context.identities(kind)]
     return increment_identity(prefix + (max(digits, key=lambda value: (len(value), value)) if digits else "0"))
 
 
@@ -65,12 +66,21 @@ def increment_identity(identity):
 
 
 def run_create(context, args):
-    context.require_readable()
+    context.require_configuration()
     common = {}
     for field, option in (("parent", args.parent), ("tags", args.tag), ("paths", args.paths),
                           ("modifies", args.modifies), ("blocked_by", args.blocked_by)):
         if option is not None:
             common[field] = field_values(context, args.kind, field, [option] if field == "parent" else option)
+    for name in ("parent", "blocked_by"):
+        if common.get(name):
+            starts = [common[name]] if name == "parent" else common[name]
+            edges, graph_errors = graph(context, name, starts)
+            if graph_errors:
+                raise ValueError("; ".join(graph_errors))
+            if find_cycle(edges):
+                raise ValueError(f"{name}: supplied relationship leads to a cycle")
+    advice = context.tag_advice(common.get("tags", []))
     messages, errors = [], []
     mode = context.mode(args.kind)
     identity = next_identity(context, args.kind)
@@ -87,10 +97,10 @@ def run_create(context, args):
             marker = " (NEEDS APPROVAL)" if mode != "autonomous" else ""
             body = f"\n# {heading}{marker}\n"
             content = "+++\n" + "\n".join(f"{key} = {encode_value(value)}" for key, value in fields.items()) + "\n+++\n" + body
-            commit_changes(context.root, {path: content.encode("utf-8")}, {path: None})
-            entity = Entity(path, args.kind, fields, body)
-            context.store.entities.append(entity)
-            context.store.by_id[identity] = entity
+            raw_bytes = content.encode("utf-8")
+            commit_changes(context.root, {path: raw_bytes}, {path: None})
+            entity = Entity(path, args.kind, fields, body, raw=raw_bytes)
+            context.register(entity)
             messages.append(f"Created {identity} {title!r}: {path}; {context.mode_message(entity)}")
             identity = increment_identity(identity)
         except RollbackError as exc:
@@ -99,12 +109,11 @@ def run_create(context, args):
             return messages, errors
         except (ValueError, OSError) as exc:
             errors.append(f"create {title!r}: failed; no changes for this target: {exc}")
-    messages.extend(context.tag_advice(common.get("tags", [])))
+    messages.extend(advice)
     return messages, errors
 
 
 def run_field(context, args):
-    context.require_configuration()
     if args.field not in FIELDS:
         raise ValueError(f"{args.field}: unsupported or protected field; use task for status, edit agent_mode deliberately under its approval rules")
     cardinality, kinds, required = FIELDS[args.field]
@@ -112,15 +121,7 @@ def run_field(context, args):
         raise ValueError(f"{args.field}: add/remove require a list field")
     if args.action == "unset" and required:
         raise ValueError(f"{args.field}: required field cannot be unset")
-    # All targets receive the same new edges. Cache reachability once per kind.
-    forbidden = set()
-    if args.field in ("parent", "blocked_by") and args.action in ("set", "add"):
-        edges, graph_errors = graph(context, args.field)
-        if graph_errors or find_cycle(edges):
-            raise ValueError("Existing relationship errors must be resolved before adding edges: " + "; ".join(graph_errors or ["cycle"]))
-        starts = [normalize_id(value) for value in args.value]
-        forbidden = reachable(edges, starts)
-    messages, errors, seen, advice_tags = [], [], set(), set()
+    messages, errors, seen, advice = [], [], set(), set()
     for index, raw in enumerate(args.entities):
         try:
             identity = normalize_id(raw)
@@ -131,15 +132,14 @@ def run_field(context, args):
             if entity.archived or entity.type not in kinds:
                 raise ValueError("only supported current entities may be changed")
             policy = context.mode_message(entity)
-            if identity in forbidden:
-                raise ValueError(f"{args.field}: change would create a cycle")
             if args.action == "unset":
                 value = None
             else:
-                incoming = field_values(context, entity.type, args.field, args.value)
+                incoming = field_values(context, entity.type, args.field, args.value,
+                                        resolve=args.action != "remove")
                 if args.action in ("add", "remove"):
-                    current = entity.fields.get(args.field, [])
-                    current = field_values(context, entity.type, args.field, current)
+                    current = field_values(context, entity.type, args.field,
+                                           entity.fields.get(args.field, []), resolve=False)
                     if args.action == "add":
                         value = list(dict.fromkeys(current + incoming))
                     else:
@@ -147,15 +147,34 @@ def run_field(context, args):
                         value = [item for item in current if item not in remove]
                 else:
                     value = incoming
-            raw_bytes = entity.path.read_bytes()
+            if args.field in ("parent", "blocked_by") and value:
+                original = entity.fields.get(args.field)
+                entity.fields[args.field] = value
+                try:
+                    edges, graph_errors = graph(context, args.field, [identity])
+                finally:
+                    if original is None:
+                        entity.fields.pop(args.field, None)
+                    else:
+                        entity.fields[args.field] = original
+                if graph_errors:
+                    raise ValueError("; ".join(graph_errors))
+                if find_cycle(edges):
+                    raise ValueError(f"{args.field}: change would create a cycle")
+            elif args.field == "modifies" and value:
+                field_values(context, entity.type, args.field, value)
+            target_advice = context.tag_advice(value or []) if args.field == "tags" else []
+            raw_bytes = entity.raw
             updated = edit_fields(raw_bytes, {args.field: value})
-            commit_changes(context.root, {entity.path: updated}, {entity.path: raw_bytes})
+            if updated != raw_bytes:
+                commit_changes(context.root, {entity.path: updated}, {entity.path: raw_bytes})
             if value is None:
                 entity.fields.pop(args.field, None)
             else:
                 entity.fields[args.field] = value
-            if args.field == "tags":
-                advice_tags.update(value or [])
+            entity.raw = updated
+            context.register(entity)
+            advice.update(target_advice)
             state = "Unchanged" if updated == raw_bytes else "Updated"
             messages.append(f"{state} {identity}: {args.field}; {policy}")
         except RollbackError as exc:
@@ -164,6 +183,5 @@ def run_field(context, args):
             return messages, errors
         except (ValueError, OSError) as exc:
             errors.append(f"field {raw}: failed; no changes for this target: {exc}")
-    if args.field == "tags":
-        messages.extend(context.tag_advice(advice_tags))
+    messages.extend(sorted(advice))
     return messages, errors

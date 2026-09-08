@@ -17,6 +17,7 @@ class Entity:
     fields: dict
     body: str
     archived: bool = False
+    raw: bytes = field(default=b"", repr=False, compare=False)
 
     @property
     def id(self) -> str | None:
@@ -70,9 +71,10 @@ def _closing_fence(lines: list[str]) -> int | None:
     return None
 
 
-def read_entity(path: Path, entity_type: str, *, archived: bool = False) -> Entity:
-    """Read fenced TOML and preserve body whitespace and unknown metadata."""
-    text = path.read_bytes().decode("utf-8-sig")
+def read_entity(path: Path, entity_type: str, *, archived: bool = False, validate: bool = True) -> Entity:
+    """Read once; metadata-only consumers validate just the fields they need."""
+    raw = path.read_bytes()
+    text = raw.decode("utf-8-sig")
     lines = text.splitlines(keepends=True)
     if not lines or lines[0].strip() != "+++":
         raise ValueError(f"{path}: missing opening +++ frontmatter fence")
@@ -83,6 +85,14 @@ def read_entity(path: Path, entity_type: str, *, archived: bool = False) -> Enti
         data = tomllib.loads("".join(lines[1:end]))
     except tomllib.TOMLDecodeError as exc:
         raise ValueError(f"{path}: invalid TOML: {exc}") from exc
+    entity = Entity(path, entity_type, data, "".join(lines[end + 1:]), archived, raw)
+    if validate:
+        validate_entity(entity)
+    return entity
+
+
+def validate_entity(entity: Entity) -> None:
+    path, entity_type, data = entity.path, entity.type, entity.fields
     if not isinstance(data.get("title"), str):
         raise ValueError(f"{path}: title must be a string")
     if entity_type == "ref" and "id" in data:
@@ -96,20 +106,48 @@ def read_entity(path: Path, entity_type: str, *, archived: bool = False) -> Enti
     tags = data.get("tags", [])
     if not isinstance(tags, list) or any(not isinstance(tag, str) for tag in tags):
         raise ValueError(f"{path}: tags must be an array of strings")
-    return Entity(path, entity_type, data, "".join(lines[end + 1:]), archived)
 
 
-def discover_entities(root: Path) -> EntityStore:
-    """Scan current types recursively and task archives flat, collecting errors."""
+def entity_paths(root: Path, kinds=ENTITY_TYPES, *, archived: bool = True):
+    """List relevant entity paths without reading file contents."""
+    paths, errors = [], []
+    locations = [(kind, False) for kind in kinds]
+    if archived and "task" in kinds:
+        locations.append(("task", True))
+    for kind, old in locations:
+        directory = root / ("archive/task" if old else kind)
+        if not directory.exists():
+            continue
+        if not directory.is_dir() or is_link(directory):
+            errors.append(f"{directory}: expected an unlinked directory")
+            continue
+        for current, dirs, files in os.walk(directory, onerror=lambda exc: errors.append(str(exc))):
+            dirs.sort()
+            for name in dirs[:]:
+                path = Path(current) / name
+                if is_link(path):
+                    errors.append(f"{path}: linked entity directory cannot be scanned safely")
+                    dirs.remove(name)
+            if old:
+                errors.extend(f"{Path(current) / name}: task archive must be flat" for name in dirs)
+                dirs[:] = []
+            paths.extend((Path(current) / name, kind, old) for name in sorted(files) if name.endswith(".md"))
+    return paths, errors
+
+
+def discover_entities(root: Path, *, metadata: bool = False) -> EntityStore:
+    """Explicit full discovery for operations requiring all entity metadata."""
     store = EntityStore()
+    paths, store.errors = entity_paths(root)
     duplicates: set[str] = set()
-
-    def add(path: Path, kind: str, archived: bool):
+    for path, kind, archived in paths:
         try:
-            entity = read_entity(path, kind, archived=archived)
+            if is_link(path):
+                raise ValueError(f"{path}: linked entity file cannot be read safely")
+            entity = read_entity(path, kind, archived=archived, validate=not metadata)
             store.entities.append(entity)
-            if entity.id is not None:
-                identity = normalize_id(entity.id)
+            if not metadata and entity.id is not None:
+                identity = entity.id
                 if identity in store.by_id or identity in duplicates:
                     store.errors.append(f"{path}: duplicate entity ID {identity}")
                     store.by_id.pop(identity, None)
@@ -117,31 +155,5 @@ def discover_entities(root: Path) -> EntityStore:
                 else:
                     store.by_id[identity] = entity
         except (OSError, UnicodeError, ValueError) as exc:
-            store.errors.append(str(exc))
-
-    for kind, archived in [(kind, False) for kind in ENTITY_TYPES] + [("task", True)]:
-        directory = root / ("archive/task" if archived else kind)
-        if not directory.exists():
-            continue
-        if not directory.is_dir():
-            store.errors.append(f"{directory}: expected a directory")
-            continue
-        for current, dirs, files in os.walk(directory, onerror=lambda exc: store.errors.append(str(exc))):
-            dirs.sort()
-            for name in dirs[:]:
-                path = Path(current) / name
-                try:
-                    if is_link(path):
-                        store.errors.append(f"{path}: linked entity directory cannot be scanned safely")
-                        dirs.remove(name)
-                except OSError as exc:
-                    store.errors.append(str(exc))
-                    dirs.remove(name)
-            if archived:
-                if dirs:
-                    store.errors.extend(f"{Path(current) / name}: task archive must be flat" for name in dirs)
-                dirs[:] = []
-            for name in sorted(files):
-                if name.endswith(".md"):
-                    add(Path(current) / name, kind, archived)
+            store.errors.append(f"{path}: {exc}")
     return store

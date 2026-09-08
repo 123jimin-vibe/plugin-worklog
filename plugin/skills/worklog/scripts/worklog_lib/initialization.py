@@ -65,18 +65,19 @@ def initialize(project: Path) -> InitResult:
     if errors:
         raise PreflightError(errors)
 
-    store = discover_entities(root)
-    errors.extend(store.errors)
     names: set[str] = set()
-    for entity in store.entities:
-        seen: set[str] = set()
-        for tag in entity.tags:
+    if root / "tags.csv" in missing:
+        store = discover_entities(root, metadata=True)
+        errors.extend(store.errors)
+        for entity in store.entities:
             try:
-                name = normalize_tag(tag)
-                if name in seen:
-                    raise ValueError(f"duplicate normalized tag {name!r}")
-                seen.add(name)
-                names.add(name)
+                values = entity.fields.get("tags", [])
+                if not isinstance(values, list):
+                    raise ValueError("tags must be an array of strings")
+                normalized = [normalize_tag(tag) for tag in values]
+                if len(normalized) != len(set(normalized)):
+                    raise ValueError("duplicate normalized entity tags")
+                names.update(normalized)
             except ValueError as exc:
                 errors.append(f"{entity.path}: {exc}")
 
