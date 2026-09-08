@@ -6,60 +6,37 @@ paths = ["plugin/skills/worklog/scripts/worklog.py", "plugin/skills/worklog/scri
 
 # The `status` tool
 
-Summarizes declared worklog state so an agent can orient or resume without reading every entity itself.
-s0005 governs shared diagnostics, disk I/O, IDs, and hierarchy; s0002, s0009, s0012, and s0015 define entity state, task lifecycle, modes, and tags.
-
-## Usage
-
 ```text
 worklog status [ENTITY...] [--path PATH...] [--project PROJECT]
 ```
 
+Read-only orientation from declared state, not an integrity check or certification of authority, coverage, implementation, verification, or completion.
+Shared rules follow s0005.
+
 ## Selection
 
-- With no entity or path selectors, the initial selection is every current entity.
-- Entity IDs and project-path selections are combined.
-  Entity files and their containing directories can be selected by project-relative path.
-  Absolute paths MUST be within the project.
-- Source paths select governing specs by their declared `paths` globs, using Python's case-sensitive `fnmatch` conventions.
-  Directory selections also include matching entity paths and declared path prefixes.
-- The selection expands through `parent`, `blocked_by`, and `modifies` relationships in both directions.
-  Archived tasks reached through the selection are identified as history, not current-state authority.
+- Without selectors, start with all current entities.
+- Combine ID and path selections.
+  Paths select entity files/directories; absolute paths MUST be within the project.
+- Source paths select specs through case-sensitive Python `fnmatch` matching against `paths`.
+  Directory selections also match entity paths and declared path prefixes.
+- Expand through `parent`, `blocked_by`, and `modifies` in both directions.
+  Identify reached archived tasks as history.
 
-## Output
+## Output and scope
 
-For the selected working set, the tool reports:
+Report selected entities' canonical IDs, paths, types, modes, governing specs, hierarchy/children, governing tasks, status, declared/unresolved dependencies, and mechanically available next actions.
+Actionability follows s0020; close-out actions MUST retain verification and spec write-back obligations.
+Report approval/review/implementation markers in prose, excluding code examples.
 
-- canonical entities, their paths and types, and effective agent modes;
-- governing specs, hierarchy and derived children, and tasks governed by a spec;
-- task status, declared dependencies, unresolved dependencies, and mechanically available next actions;
-- unresolved approval, review, and implementation markers in entity prose, not marker examples in code;
-- relevant errors and tag advice within the scope below.
+Selection MAY inspect broader relationship and spec-path metadata.
+It MUST NOT validate unrelated fields or read unselected reference contents merely for ID summaries or filename matching.
+Requested entities and their required relationships are validated; unrelated defects MUST NOT appear in diagnostics or affect exit status.
+Relevant failures MUST identify affected or incomplete results while retaining independent useful output.
 
-Task actionability follows s0020's transition and dependency rules, not hierarchy.
-Available close-out actions MUST retain the caller's verification and spec write-back obligations.
-The result is read-only orientation, not a project-wide integrity check or certification of authority, spec coverage, implementation, verification, or completion.
+Tag reporting:
 
-## Required inputs and diagnostics
-
-A selected summary MAY discover relation metadata beyond its selected entities to establish reverse lookups and relationship expansion, and spec path metadata to match path selectors.
-This metadata discovery MUST NOT validate unrelated required fields or emit unrelated defects.
-Unselected reference contents MUST NOT be read merely to summarize selected IDs or discover entity filenames for path matching.
-Full selected records provide their validity, modes, markers, and tag values.
-
-Errors in requested IDs, selected entities, their required relationships, or metadata needed to establish the requested selection are relevant.
-A relevant failure MUST identify the affected result or incomplete coverage while retaining independent useful output under s0005.
-Unrelated malformed entities or disconnected relationship errors MUST NOT appear as warnings or errors or affect exit status.
-
-Tag reporting is scoped as follows:
-
-- A missing database is informational.
-  A malformed database, including duplicate normalized database names, is an error when the requested tag result requires it.
-- Selected summaries report unknown tags from their selected working set as advisory information.
-  They MUST NOT scan all entity tags merely to diagnose unrelated unknown tags or unused rows.
-- An unselected, worklog-wide summary uses current entities and archived tasks to establish tag-usage coverage.
-  It reports unknown entity tags and unused database rows as advisory information, not errors.
-  It MUST NOT claim complete usage results if a relevant tag-coverage error prevents them.
-
-A worklog-wide summary necessarily has broader discovery and diagnostic scope than a selected summary.
-Neither form writes worklog files.
+- A missing database is informational; a malformed one is an error when the requested result requires it.
+- Selected summaries report advisory unknown tags only for their working set, without scanning all tags for unrelated usage diagnostics.
+- Worklog-wide summaries use current entities and archived tasks to report advisory unknown tags and unused rows.
+  They MUST NOT claim complete usage results when coverage fails.

@@ -6,62 +6,37 @@ paths = ["plugin/skills/worklog/scripts/worklog.py", "plugin/skills/worklog/scri
 
 # The `task` tool
 
-Manages activation, blocking, resumption, completion, cancellation, and archival.
-s0005 governs shared diagnostics, necessary I/O, independent batches, and mutation guarantees.
-s0009 defines task lifecycle and spec write-back obligations; s0002 and s0012 define markers and approval rules.
-
-## Usage
-
 ```text
-worklog task start TASK... [--project PROJECT]
-worklog task block TASK... --reason TEXT [--project PROJECT]
-worklog task resume TASK... --checked TEXT [--project PROJECT]
-worklog task finish TASK... [--project PROJECT]
-worklog task cancel TASK... [--reason TEXT] [--project PROJECT]
+worklog task COMMAND TASK... [--project PROJECT]
 ```
 
-## Transitions
+Shared rules follow s0005; lifecycle and approval obligations follow s0009 and s0012.
 
 | Command | Starting status | Result |
 | --- | --- | --- |
 | `start` | pending | active |
-| `block` | pending, active | blocked; append the supplied reason |
-| `resume` | blocked | active; append the supplied check |
+| `block --reason TEXT` | pending, active | blocked; append reason |
+| `resume --checked TEXT` | blocked | active; append check |
 | `finish` | active, done | done and archived |
-| `cancel` | pending, active, blocked, cancelled | cancelled and archived |
+| `cancel [--reason TEXT]` | pending, active, blocked, cancelled | cancelled and archived |
 
-- `start`, `resume`, and `finish` require resolved declared dependencies.
-  A dependency is resolved when it is `done` or `cancelled`, including archived tasks.
-- `block` requires a non-empty `--reason`.
-  `resume` requires a non-empty `--checked` description of checking that the blocker no longer prevents work.
-- A new cancellation requires a non-empty `--reason`.
-  Closing an already-cancelled task requires no additional reason.
-- `finish` and `cancel` each apply terminal status and archive as one operation.
-  The matching command also archives an already-resolved current task after the same close-out preflight.
-  Archival is not a separate lifecycle path.
-- Repeating the matching closing command on an already archived task succeeds without a change.
-  Other transitions out of terminal states are rejected; further work belongs to a new task.
+- `start`, `resume`, and `finish` require resolved dependencies, including archived tasks.
+- Block reasons, resume checks, and reasons for new cancellations must be non-empty.
+  Resume checks describe checking that the blocker no longer prevents work.
+  Already-cancelled tasks need no new reason.
+- `finish` and `cancel` apply terminal status and archival atomically after close-out checks.
+  Repeating the matching operation on an archived task is a no-op; other terminal-state transitions are rejected.
 
 ## Close-out and results
 
-Before closing a current task, the tool MUST resolve each spec in `modifies` and reject missing, invalid, or wrong-type references.
-Mechanically detected `NEEDS APPROVAL` or `NEEDS REVIEW` content in those governing specs prevents closure.
-Marker examples in code are not approval gates.
+Before closing a current task, the tool MUST resolve `modifies` specs and reject invalid, missing, or wrong-type references.
+Their `NEEDS APPROVAL` or `NEEDS REVIEW` content prevents closure; code examples do not.
+The caller remains responsible for semantic verification, approval review, and spec write-back.
+Tool success MUST NOT be presented as proof of completion.
 
-The tool enforces these mechanically detectable gates, not semantic completion, verification, or approval judgments.
-Before invoking closure, the caller remains responsible for verification, required approval review, and spec write-back under s0009 and s0012.
-Command success MUST NOT be presented as proof of completion.
+Report each target's state, mode, and archival result.
+Close-out output also identifies governing specs and modes and reminds the caller of verification and write-back obligations.
 
-Results identify each target's state, effective mode, and archival result where applicable.
-Close-out output identifies the governing specs and their modes and reminds the caller of verification and write-back obligations.
-
-## Required inputs
-
-Each action reads its selected task and the configuration needed for mode reporting.
-`start`, `resume`, and `finish` additionally resolve the dependencies needed to determine actionability.
-Closing a current task additionally reads its declared governing specs for close-out gates and mode reporting.
-`block` and `cancel` do not require dependencies to be resolved.
-The matching no-op on an already archived task requires no new dependency or governing-spec scan.
-
-Task lifecycle actions MUST NOT scan unrelated entities, hierarchy graphs, or tag usage, or read the tag database.
-A selected task's invalid state, required dependency, or close-out gate fails that target without blocking independent targets.
+Actions read selected tasks and needed mode policy; only `start`/`resume`/`finish` require dependency resolution, and only current-task closure requires governing-spec checks.
+Archived no-ops require neither dependency nor governing-spec scans.
+Task actions MUST NOT scan unrelated entities, hierarchy graphs, or tag usage, or read the tag database.
