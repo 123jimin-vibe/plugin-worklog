@@ -50,7 +50,8 @@ Report unresolved authority decisions explicitly; required unapproved spec conte
 ## Note revision checkpoint (NEEDS APPROVAL)
 
 n0002 and n0003 have revised drafts awaiting approval.
-n0002 now describes a developing task lifecycle shared by the individual happy paths.
+n0002 separates the common task lifecycle, project setup, and scenario-specific steps.
+Intent resolution and verification are integrated into the lifecycle rather than presented as a separate workflow.
 n0003 distinguishes legitimate uncertainty and task refinement from fabricated precision, stale relationships, weakened acceptance, and misplaced current state.
 New generalized pitfalls are classified as anticipated rather than asserting new observed incidents.
 
