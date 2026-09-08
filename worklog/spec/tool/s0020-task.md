@@ -2,6 +2,7 @@
 id = "s0020"
 title = "The task tool"
 paths = ["plugin/skills/worklog/scripts/worklog.py", "plugin/skills/worklog/scripts/worklog_lib/task_command.py"]
+agent_mode = "draft"
 +++
 
 # The `task` tool

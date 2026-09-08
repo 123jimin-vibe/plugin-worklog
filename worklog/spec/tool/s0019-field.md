@@ -2,6 +2,7 @@
 id = "s0019"
 title = "The field tool"
 paths = ["plugin/skills/worklog/scripts/worklog.py", "plugin/skills/worklog/scripts/worklog_lib/entity_commands.py"]
+agent_mode = "draft"
 +++
 
 # The `field` tool

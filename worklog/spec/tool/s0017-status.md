@@ -2,6 +2,7 @@
 id = "s0017"
 title = "The status tool"
 paths = ["plugin/skills/worklog/scripts/worklog.py", "plugin/skills/worklog/scripts/worklog_lib/status_command.py"]
+agent_mode = "draft"
 +++
 
 # The `status` tool

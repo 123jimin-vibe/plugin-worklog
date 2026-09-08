@@ -2,6 +2,7 @@
 id = "s0013"
 title = "The init tool"
 paths = ["plugin/skills/worklog/scripts/worklog.py", "plugin/skills/worklog/scripts/worklog_lib/initialization.py"]
+agent_mode = "draft"
 +++
 
 # The `init` tool

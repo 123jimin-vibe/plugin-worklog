@@ -2,6 +2,7 @@
 id = "s0018"
 title = "The create tool"
 paths = ["plugin/skills/worklog/scripts/worklog.py", "plugin/skills/worklog/scripts/worklog_lib/entity_commands.py"]
+agent_mode = "draft"
 +++
 
 # The `create` tool
