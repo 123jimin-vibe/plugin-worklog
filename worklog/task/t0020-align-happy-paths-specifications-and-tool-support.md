@@ -47,7 +47,7 @@ During creation of this task, `status` reported reference-file parsing errors an
 Complete when n0002 is amended, n0003 has a justified revision or no-change decision, every in-scope spec has a review disposition with required ambiguity resolutions addressed, and the tool review records exercised scenarios, sufficiency findings, and recommended actions for gaps.
 Report unresolved authority decisions explicitly; required unapproved spec content is not completed work.
 
-## Note revision checkpoint (NEEDS APPROVAL)
+## Note revision checkpoint
 
 n0002 and n0003 have revised drafts awaiting approval.
 n0002 separates the common task lifecycle, project setup, and scenario-specific steps.
