@@ -1,3 +1,7 @@
++++
+title = "Agent Pitfalls"
++++
+
 # Agent Pitfalls
 
 Observed and anticipated failure modes when LLM agents work with the worklog methodology. Consolidates pitfalls previously scattered across entity specs (Dangers, Observed Agent Failure Modes) into one manageable reference.

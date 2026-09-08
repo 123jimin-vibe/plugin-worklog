@@ -12,6 +12,7 @@ Its absence may mean worklog does not apply; initialize only after explicit proj
 
 Entities: `worklog/{spec,task,note,ref}/**/*.md`, with `+++` TOML frontmatter and `title`.
 Only tasks may be archived, to flat `worklog/archive/task/`.
+Decision worklog entries are deprecated and should not be created.
 IDs are type-unique including archives; filenames start with standard-form IDs, e.g. `s0001`.
 Refer by ID, not path.
 

@@ -1,4 +1,5 @@
 +++
+title = "Using scripts in skills"
 source = "https://agentskills.io/skill-creation/using-scripts.md"
 +++
 

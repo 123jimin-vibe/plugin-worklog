@@ -1,4 +1,5 @@
 +++
+title = "How to add skills support to your agent"
 source = "https://agentskills.io/client-implementation/adding-skills-support.md"
 +++
 

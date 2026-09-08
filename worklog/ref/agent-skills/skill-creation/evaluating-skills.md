@@ -1,4 +1,5 @@
 +++
+title = "Evaluating skill output quality"
 source = "https://agentskills.io/skill-creation/evaluating-skills.md"
 +++
 

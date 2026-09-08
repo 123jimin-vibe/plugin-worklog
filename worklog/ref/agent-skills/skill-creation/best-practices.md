@@ -1,4 +1,5 @@
 +++
+title = "Best practices for skill creators"
 source = "https://agentskills.io/skill-creation/best-practices.md"
 +++
 

@@ -1,4 +1,5 @@
 +++
+title = "Optimizing skill descriptions"
 source = "https://agentskills.io/skill-creation/optimizing-descriptions.md"
 +++
 

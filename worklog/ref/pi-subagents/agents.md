@@ -1,4 +1,5 @@
 +++
+title = "Agents"
 source = "https://github.com/nicobailon/pi-subagents/blob/main/docs/agents.md"
 +++
 

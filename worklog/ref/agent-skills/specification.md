@@ -1,4 +1,5 @@
 +++
+title = "Specification"
 source = "https://agentskills.io/specification.md"
 +++
 
