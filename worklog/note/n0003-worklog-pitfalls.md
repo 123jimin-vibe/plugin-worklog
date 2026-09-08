@@ -57,7 +57,7 @@ Repository-specific incidents belong in n0004.
   - Pressure: Spec writing naturally describes the intended end state.
   - Check: Verify implementation state separately from authority and mark every authorized gap.
 
-- **Durable behavior has no spec (NEEDS APPROVAL)** — High; observed; s0003.
+- **Durable behavior has no spec** — High; observed; s0003.
   - Failure: Behavior expected to outlast the current task is implemented without governing coverage, including maintenance that adds behavior without making any existing spec statement false.
   - Pressure: A small change or incomplete initial understanding makes specification feel unnecessary.
   - Check: Establish authoritative governing behavior for the part being implemented; extend coverage as new enduring subjects become known without requiring the whole task to be specified first.
