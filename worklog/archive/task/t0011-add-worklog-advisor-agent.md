@@ -2,7 +2,7 @@
 id = "t0011"
 title = "Add a worklog advisor agent"
 tags = ["agents", "guidance"]
-status = "pending"
+status = "done"
 modifies = ["s0014"]
 +++
 

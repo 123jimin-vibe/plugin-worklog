@@ -66,6 +66,9 @@ Report remaining approval needs and material verification limits at session end.
 
 ## Tools
 
+When authority, scope, work order, completion, or archival is uncertain, consult the bundled `worklog-advisor` before acting.
+It returns a proceed, conditional, blocked, or insufficient-information verdict with blocking findings and the smallest safe next action; its verdict is not approval.
+
 Run `python <skill-directory>/scripts/worklog.py ...` with Python 3.11+.
 Use command/subcommand `--help` for arguments; `scripts/README.md` for details.
 
